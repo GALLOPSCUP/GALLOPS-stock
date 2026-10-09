@@ -1,10 +1,11 @@
 // Offline Service Worker for Gaalops Wholesale Stock Application
-const CACHE_NAME = 'gaalops-stock-v2';
+const CACHE_NAME = 'gaalops-stock-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './logo.png',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
