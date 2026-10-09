@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=10">
+  <link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -63,7 +63,7 @@
         </button>
         <button class="nav-item" data-tab="matrix">
           <span class="nav-icon">📦</span>
-          <span class="nav-text">Stock Matrix (13 SKUs)</span>
+          <span class="nav-text">Stock Matrix</span>
         </button>
         <button class="nav-item" data-tab="inward">
           <span class="nav-icon">🏭</span>
@@ -152,7 +152,7 @@
                 <h3 class="section-title">Valuation & Sales Overview</h3>
                 <p class="section-desc">Factory cost valuation and wholesale realization</p>
               </div>
-              <button class="btn btn-ghost" id="btnGoToMatrix">Open Full 13-SKU Matrix Table →</button>
+              <button class="btn btn-ghost" id="btnGoToMatrix">Open Full Stock Matrix Table →</button>
             </div>
 
             <div class="metrics-grid">
@@ -236,12 +236,12 @@
 
         </section>
 
-        <!-- ================= STOCK MATRIX TAB (15 SKUs) ================= -->
+        <!-- ================= STOCK MATRIX TAB ================= -->
         <section id="tab-matrix" class="tab-pane">
           <div class="section-header-row">
             <div>
-              <h2 class="section-title">15-SKU Stock Matrix Grid</h2>
-              <p class="section-desc">Live inventory table: 5 Shapes (Rows) × 3 Sizes (Columns). Click "+" or "−" to quickly adjust stock.</p>
+              <h2 class="section-title">Stock Matrix Grid</h2>
+              <p class="section-desc">Live inventory table: All Shapes & Colors × 3 Sizes (Columns). Click "+" or "−" to quickly adjust stock.</p>
             </div>
             <div class="action-btn-group">
               <button class="btn btn-secondary" id="btnRefreshMatrix">🔄 Refresh</button>
@@ -283,7 +283,7 @@
 
           <!-- SKU DETAIL TILES -->
           <div class="sku-cards-section">
-            <h3 class="subsection-title">All 15 SKU Cards (Click to see transaction history)</h3>
+            <h3 class="subsection-title">All Product SKU Cards</h3>
             <div class="sku-cards-grid" id="skuCardsGrid">
               <!-- Dynamically filled -->
             </div>
@@ -743,6 +743,6 @@
 
   </div>
 
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

@@ -22,7 +22,7 @@
     { id: 'REGULAR', name: 'Regular Shape', icon: '🌸', colors: ['PINK', 'BLUE', 'PURPLE'] },
     { id: 'BELL', name: 'Bell Shape', icon: '🔔', colors: ['PINK', 'BLUE', 'PURPLE'] },
     { id: 'SINGLE_FOLD', name: 'Single Fold', icon: '📐', colors: ['PINK', 'BLUE', 'PURPLE'] },
-    { id: 'MULTI_FOLD', name: 'Multi Fold', icon: '🥏', colors: ['PINK', 'BLUE', 'PURPLE'] },
+    { id: 'MULTI_FOLD', name: 'Multi Fold', icon: '🥏', colors: ['PINK'] },
     { id: 'LSR', name: 'LSR', icon: '💎', colors: ['WHITE'] }
   ];
 
@@ -84,16 +84,10 @@
     'SINGLE_FOLD_PURPLE_M': 110,
     'SINGLE_FOLD_PURPLE_L': 35, // Low stock alert
 
-    // MULTI FOLD
+    // MULTI FOLD (Pink Only)
     'MULTI_FOLD_PINK_S': 140,
     'MULTI_FOLD_PINK_M': 240,
     'MULTI_FOLD_PINK_L': 105,
-    'MULTI_FOLD_BLUE_S': 85,
-    'MULTI_FOLD_BLUE_M': 140,
-    'MULTI_FOLD_BLUE_L': 55,
-    'MULTI_FOLD_PURPLE_S': 70,
-    'MULTI_FOLD_PURPLE_M': 120,
-    'MULTI_FOLD_PURPLE_L': 40, // Low stock alert
 
     // LSR (Only White Available)
     'LSR_WHITE_S': 110,
@@ -179,15 +173,18 @@
   };
 
   function loadSettings() {
+    let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       if (stored) {
-        return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(stored));
+        settings = Object.assign({}, DEFAULT_SETTINGS, JSON.parse(stored));
       }
     } catch (e) {
       console.warn('Error loading settings', e);
     }
-    return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    // Enforce business rules for shapes and allowed colors
+    settings.shapes = DEFAULT_SHAPES;
+    return settings;
   }
 
   function saveSettings() {
@@ -195,15 +192,32 @@
   }
 
   function loadStock() {
+    let stock = JSON.parse(JSON.stringify(INITIAL_STOCK_SAMPLE));
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.STOCK);
       if (stored) {
-        return JSON.parse(stored);
+        stock = JSON.parse(stored);
       }
     } catch (e) {
       console.warn('Error loading stock', e);
     }
-    return JSON.parse(JSON.stringify(INITIAL_STOCK_SAMPLE));
+    // Clean up deleted variations (Multi Fold Blue/Purple, LSR non-white)
+    delete stock['MULTI_FOLD_BLUE_S'];
+    delete stock['MULTI_FOLD_BLUE_M'];
+    delete stock['MULTI_FOLD_BLUE_L'];
+    delete stock['MULTI_FOLD_PURPLE_S'];
+    delete stock['MULTI_FOLD_PURPLE_M'];
+    delete stock['MULTI_FOLD_PURPLE_L'];
+    delete stock['LSR_PINK_S'];
+    delete stock['LSR_PINK_M'];
+    delete stock['LSR_PINK_L'];
+    delete stock['LSR_BLUE_S'];
+    delete stock['LSR_BLUE_M'];
+    delete stock['LSR_BLUE_L'];
+    delete stock['LSR_PURPLE_S'];
+    delete stock['LSR_PURPLE_M'];
+    delete stock['LSR_PURPLE_L'];
+    return stock;
   }
 
   function saveStock() {
