@@ -1,6 +1,6 @@
 /* ====================================================================
    GAALOPS STOCK MANAGEMENT - LUXURY MODERN DESIGN SYSTEM
-   Optimized for Wholesale IndiaMART Menstrual Cup Operations
+   Optimized for Wholesale Menstrual Cup Operations
    ==================================================================== */
 
 :root {
@@ -831,6 +831,43 @@ body.theme-light .metric-value {
   background: rgba(236, 72, 153, 0.15);
   color: #f472b6;
   border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.tag-cash {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.tag-account {
+  background: rgba(37, 99, 235, 0.15);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.3);
+}
+
+.tag-gpay {
+  background: rgba(124, 58, 237, 0.15);
+  color: #7c3aed;
+  border: 1px solid rgba(124, 58, 237, 0.3);
+}
+
+.tag-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+body.theme-dark .tag-cash {
+  color: #34d399;
+}
+body.theme-dark .tag-account {
+  color: #60a5fa;
+}
+body.theme-dark .tag-gpay {
+  color: #a78bfa;
+}
+body.theme-dark .tag-pending {
+  color: #fbbf24;
 }
 
 /* Fast Moving List */

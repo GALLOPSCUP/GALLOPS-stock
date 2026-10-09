@@ -1,6 +1,6 @@
 /**
  * GALLOPS WHOLESALE STOCK APPLICATION - CORE CONTROLLER
- * Full Shape, Color & Size Matrix for Wholesale Menstrual Cup Business (IndiaMART)
+ * Full Shape, Color & Size Matrix for Wholesale Menstrual Cup Business
  * Shapes: Regular Shape, Bell Shape, Single Fold, Multi Fold, LSR
  * Colors: Pink, Blue, Purple, Standard / Natural
  * Sizes: Small (S), Medium (M), Large (L)
@@ -131,9 +131,9 @@
       partyName: 'Aarav Surgical & Pharmacy, Delhi',
       phone: '+91 98112 34567',
       city: 'Delhi',
-      paymentStatus: 'Paid',
-      reference: 'IM-ORDER-9921',
-      notes: 'IndiaMART verified buyer, Bell Pink M cups',
+      paymentStatus: 'CASH',
+      reference: 'ORD-9921',
+      notes: 'Wholesale buyer, Bell Pink M cups',
       timestamp: Date.now() - 6 * 86400000
     },
     {
@@ -141,17 +141,17 @@
       type: 'OUT',
       date: '2026-10-05',
       shapeId: 'SINGLE_FOLD',
-      colorId: 'BLUE',
-      sizeId: 'L',
+      colorId: 'PINK',
+      sizeId: 'M',
       quantity: 80,
       rate: 92,
       total: 7360,
       partyName: 'Femina Care Wholesale, Bangalore',
       phone: '+91 94480 12345',
       city: 'Bangalore, Karnataka',
-      paymentStatus: 'Partial',
-      reference: 'IM-LEAD-7744',
-      notes: 'Single Fold Blue L wholesale dispatch',
+      paymentStatus: 'ACCOUNT',
+      reference: 'ORD-7744',
+      notes: 'Single Fold Pink M wholesale dispatch',
       timestamp: Date.now() - 4 * 86400000
     },
     {
@@ -914,15 +914,23 @@
       const color = getColorById(t.colorId);
       const size = getSizeById(t.sizeId);
 
+      let payBadgeClass = 'tag-pending';
+      const statusUpper = (t.paymentStatus || 'PENDING').toUpperCase();
+      if (statusUpper === 'CASH') payBadgeClass = 'tag-cash';
+      else if (statusUpper === 'ACCOUNT') payBadgeClass = 'tag-account';
+      else if (statusUpper === 'GPAY') payBadgeClass = 'tag-gpay';
+      else if (statusUpper === 'PENDING') payBadgeClass = 'tag-pending';
+      else if (statusUpper === 'PAID') payBadgeClass = 'tag-cash';
+
       return `
         <tr>
           <td>${formatDate(t.date)}</td>
-          <td><strong>${t.partyName || 'IndiaMART Buyer'}</strong><br><small class="text-muted">${t.city || ''}</small></td>
+          <td><strong>${t.partyName || 'Wholesale Buyer'}</strong><br><small class="text-muted">${t.city || ''}</small></td>
           <td>${shape.icon} ${shape.name} • ${color.name} (${size.name})</td>
           <td><strong style="color:var(--accent-pink);">-${t.quantity}</strong></td>
           <td>₹${t.rate || 0}</td>
           <td><strong>${formatCurrency(t.total)}</strong></td>
-          <td><span class="tag-badge ${t.paymentStatus === 'Paid' ? 'tag-in' : 'tag-out'}">${t.paymentStatus || 'Pending'}</span></td>
+          <td><span class="tag-badge ${payBadgeClass}">${t.paymentStatus || 'PENDING'}</span></td>
           <td>
             <button class="btn-link" style="color:var(--accent-rose);" onclick="window.gallopsDeleteTxn('${t.id}')">Delete</button>
           </td>
@@ -1002,7 +1010,7 @@
         if (!buyersMap[name]) {
           buyersMap[name] = {
             name,
-            city: t.city || 'IndiaMART Buyer',
+            city: t.city || 'Wholesale Buyer',
             phone: t.phone || '',
             totalOrders: 0,
             totalUnits: 0,
@@ -1120,7 +1128,7 @@
     showToast(`Successfully added ${quantity} cups to stock!`, 'success');
   }
 
-  // Handle Form Stock Out (Wholesale Sale / IndiaMART)
+  // Handle Form Stock Out (Wholesale Sale / Dispatch)
   function handleStockOutSubmit(e) {
     e.preventDefault();
 
@@ -1166,7 +1174,7 @@
       phone: phone,
       city: city,
       paymentStatus: paymentStatus,
-      reference: orderRef || 'IM-ORDER-' + Date.now().toString().slice(-4),
+      reference: orderRef || 'ORD-' + Date.now().toString().slice(-4),
       notes: notes,
       timestamp: Date.now()
     };
