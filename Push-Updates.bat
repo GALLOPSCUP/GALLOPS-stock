@@ -1,7 +1,7 @@
 @echo off
 title Push Updates to GitHub
 echo ==============================================
-echo   Pushing Gaalops Stock Updates to GitHub...
+echo   Pushing Gallops Stock Updates to GitHub...
 echo ==============================================
 git add .
 git commit -m "App update %date% %time%"

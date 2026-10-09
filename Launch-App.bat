@@ -1,7 +1,7 @@
 @echo off
-title Gaalops Stock Manager
+title Gallops Stock Manager
 echo ========================================================
-echo    Launching Gaalops Menstrual Cup Stock Manager...
+echo    Launching Gallops Menstrual Cup Stock Manager...
 echo ========================================================
 echo.
 
