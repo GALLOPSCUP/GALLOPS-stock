@@ -731,18 +731,21 @@
           statusBadge = '<span class="size-pill-status status-good">Healthy</span>';
         }
 
-        // Shape name shown on first color row or per row
-        const shapeCell = colorIdx === 0
-          ? `<td rowspan="${colors.length}" style="vertical-align:middle; background:var(--bg-secondary); border-right:1px solid var(--border-color);">
-               <div class="matrix-shape-cell">
-                 <span class="shape-icon">${shape.icon}</span>
-                 <strong>${shape.name}</strong>
-               </div>
-             </td>`
-          : '';
+        // Show shape on every row for total clarity
+        const isFirstColor = colorIdx === 0;
+        const groupBorder = isFirstColor ? 'border-top: 2px solid var(--border-color);' : '';
+
+        const shapeCell = `
+          <td style="vertical-align:middle; text-align:left; background:var(--bg-secondary); border-right:1px solid var(--border-color); ${groupBorder}">
+            <div class="matrix-shape-cell">
+              <span class="shape-icon">${shape.icon}</span>
+              <strong>${shape.name}</strong>
+            </div>
+          </td>
+        `;
 
         rowsHtml += `
-          <tr>
+          <tr style="${groupBorder}">
             ${shapeCell}
             <td style="text-align:left;">
               <span class="color-pill">
