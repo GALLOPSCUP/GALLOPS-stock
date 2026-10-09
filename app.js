@@ -486,51 +486,70 @@
       }
     }
 
-    renderShapesOverviewGrid();
+    renderChatGptCards();
     renderRecentTransactions();
     renderFastMovingSizes();
   }
 
-  function renderShapesOverviewGrid() {
-    const container = document.getElementById('shapesOverviewGrid');
+  // Render ChatGPT Mockup Style Product Cards
+  function renderChatGptCards() {
+    const container = document.getElementById('chatgptProductCardsContainer');
     if (!container) return;
 
     let html = '';
     appState.settings.shapes.forEach(shape => {
-      let shapeTotal = 0;
       const colors = getColorsForShape(shape.id);
+      const colorCountText = `${colors.length} Colour${colors.length > 1 ? 's' : ''}`;
+      const shapeDotColor = shape.id === 'REGULAR' ? '#f472b6' : shape.id === 'BELL' ? '#ec4899' : shape.id === 'SINGLE_FOLD' ? '#8b5cf6' : shape.id === 'MULTI_FOLD' ? '#3b82f6' : '#94a3b8';
 
-      let sizePills = '';
-      appState.settings.sizes.forEach(size => {
-        let sizeTotal = 0;
-        colors.forEach(color => {
-          sizeTotal += getStockQty(shape.id, color.id, size.id);
+      let colorSectionsHtml = '';
+
+      colors.forEach(color => {
+        let sizesColsHtml = '';
+
+        appState.settings.sizes.forEach(size => {
+          const qty = getStockQty(shape.id, color.id, size.id);
+          const sizeUpperName = size.id === 'S' ? 'SMALL' : size.id === 'M' ? 'MEDIUM' : 'LARGE';
+
+          sizesColsHtml += `
+            <div class="cg-size-item" onclick="window.gallopsOpenAdjust('${shape.id}', '${color.id}', '${size.id}')" title="Tap to enter stock count for ${shape.name} ${color.name} (${sizeUpperName})">
+              <div class="cg-size-label">${sizeUpperName}</div>
+              <div class="cg-size-val-row">
+                <span class="cg-size-val">${qty}</span>
+              </div>
+              <div class="cg-size-unit">pcs</div>
+              <div class="cg-size-stepper" onclick="event.stopPropagation()">
+                <button type="button" class="cg-btn-step" onclick="window.gallopsQuickStep('${shape.id}', '${color.id}', '${size.id}', -1, event)" title="-1 pc">−</button>
+                <button type="button" class="cg-btn-step" onclick="window.gallopsQuickStep('${shape.id}', '${color.id}', '${size.id}', 1, event)" title="+1 pc">+</button>
+              </div>
+            </div>
+          `;
         });
-        shapeTotal += sizeTotal;
 
-        let statusClass = sizeTotal === 0 ? 'status-empty' : sizeTotal < 50 ? 'status-low' : 'status-good';
-        let statusText = sizeTotal === 0 ? 'Zero' : sizeTotal < 50 ? 'Low' : 'In Stock';
-
-        sizePills += `
-          <div class="size-pill-box">
-            <div class="size-pill-label">${size.name}</div>
-            <div class="size-pill-qty">${sizeTotal}</div>
-            <span class="size-pill-status ${statusClass}">${statusText}</span>
+        colorSectionsHtml += `
+          <div class="cg-color-section">
+            <div class="cg-color-title-row">
+              <span class="cg-color-dot" style="background-color: ${color.hex}; ${color.id === 'WHITE' ? 'border: 1px solid #94a3b8;' : ''}"></span>
+              <span class="cg-color-name">${color.name.toUpperCase()}</span>
+            </div>
+            <div class="cg-sizes-grid">
+              ${sizesColsHtml}
+            </div>
           </div>
         `;
       });
 
       html += `
-        <div class="shape-card">
-          <div class="shape-card-header">
-            <div class="shape-name-tag">
-              <span class="shape-icon">${shape.icon}</span>
-              <span>${shape.name}</span>
+        <div class="cg-shape-card">
+          <div class="cg-card-header">
+            <div class="cg-card-title-wrap">
+              <span class="cg-shape-bullet" style="background-color: ${shapeDotColor};"></span>
+              <span class="cg-shape-name">${shape.name.toUpperCase()}</span>
             </div>
-            <span class="shape-total-badge">${shapeTotal} Pcs</span>
+            <span class="cg-colours-badge">${colorCountText}</span>
           </div>
-          <div class="shape-sizes-breakdown" style="grid-template-columns: repeat(3, 1fr);">
-            ${sizePills}
+          <div class="cg-card-body">
+            ${colorSectionsHtml}
           </div>
         </div>
       `;
@@ -538,6 +557,20 @@
 
     container.innerHTML = html;
   }
+
+  // Quick Stepper Handler (+1 / -1)
+  window.gallopsQuickStep = function (shapeId, colorId, sizeId, delta, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    const current = getStockQty(shapeId, colorId, sizeId);
+    const newQty = Math.max(0, current + delta);
+    setStockQty(shapeId, colorId, sizeId, newQty);
+    renderAll();
+    const sign = delta > 0 ? '+' : '';
+    showToast(`${sign}${delta} pc: ${getShapeById(shapeId).name} • ${getColorById(colorId).name} (${sizeId})`, 'success');
+  };
 
   function renderRecentTransactions() {
     const tbody = document.getElementById('recentTransactionsTbody');

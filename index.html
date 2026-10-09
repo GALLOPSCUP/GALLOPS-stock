@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="Wholesale Menstrual Cup Stock Maintenance & Inventory App for IndiaMART Sellers">
-  <title>Gallops Cups - Wholesale Stock Manager</title>
+  <meta name="description" content="GALLOPS Wholesale Menstrual Cup Stock Management Dashboard">
+  <title>GALLOPS Inventory - Stock Management Dashboard</title>
   
   <link rel="icon" type="image/png" href="icon-192.png?v=6">
   <link rel="apple-touch-icon" href="icon-192.png?v=6">
@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=10">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -22,24 +22,29 @@
     <!-- TOP NAVIGATION BAR -->
     <header class="top-header">
       <div class="brand-section">
-        <div class="brand-logo">
-          <img src="logo.png?v=4" alt="Gallops Logo" class="brand-logo-img">
+        <div class="brand-logo-cube">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
         </div>
         <div class="brand-info">
-          <h1 class="brand-title">GALLOPS STOCK</h1>
-          <span class="brand-tag">Wholesale Menstrual Cup Inventory • IndiaMART</span>
+          <h1 class="brand-title">GALLOPS Inventory</h1>
+          <span class="brand-tag">Stock Management Dashboard</span>
         </div>
       </div>
 
       <div class="header-actions">
+        <span class="badge-pill-inventory">Inventory</span>
         <!-- Quick Action Buttons -->
         <button id="btnQuickIn" class="btn btn-in" title="Add Factory Stock">
           <span class="btn-icon">📥</span>
-          <span class="btn-label">Stock In (Factory)</span>
+          <span class="btn-label">Stock In</span>
         </button>
         <button id="btnQuickOut" class="btn btn-out" title="Sell Wholesale">
           <span class="btn-icon">📤</span>
-          <span class="btn-label">Stock Out (IndiaMART)</span>
+          <span class="btn-label">Stock Out</span>
         </button>
         <button id="btnThemeToggle" class="btn-icon-only" title="Toggle Dark/Light Mode">
           🌓
@@ -58,7 +63,7 @@
         </button>
         <button class="nav-item" data-tab="matrix">
           <span class="nav-icon">📦</span>
-          <span class="nav-text">Stock Matrix (15 SKUs)</span>
+          <span class="nav-text">Stock Matrix (13 SKUs)</span>
         </button>
         <button class="nav-item" data-tab="inward">
           <span class="nav-icon">🏭</span>
@@ -88,74 +93,108 @@
         <!-- ================= DASHBOARD TAB ================= -->
         <section id="tab-dashboard" class="tab-pane active">
           
-          <!-- QUICK METRICS ROW -->
-          <div class="metrics-grid">
-            <div class="metric-card card-gradient-purple">
-              <div class="metric-header">
-                <span class="metric-title">TOTAL CUPS IN STOCK</span>
-                <span class="metric-badge">All Products</span>
+          <!-- CHATGPT STYLE TOP SUMMARY CARDS (TOTAL STOCK & LOW STOCK) -->
+          <div class="cg-summary-grid">
+            <div class="cg-summary-card">
+              <div class="cg-summary-top">
+                <span class="cg-summary-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="5" r="2.5"></circle>
+                    <circle cx="5" cy="18" r="2.5"></circle>
+                    <circle cx="19" cy="18" r="2.5"></circle>
+                    <line x1="7.2" y1="16.5" x2="10.8" y2="7"></line>
+                    <line x1="16.8" y1="16.5" x2="13.2" y2="7"></line>
+                    <line x1="7.5" y1="18" x2="16.5" y2="18"></line>
+                  </svg>
+                </span>
+                <span class="cg-summary-title">Total Stock</span>
               </div>
-              <div class="metric-value" id="kpiTotalUnits">0</div>
-              <div class="metric-sub" id="kpiTotalBoxes">≈ 0 boxes</div>
+              <div class="cg-summary-val" id="kpiTotalUnits">0</div>
+              <div class="cg-summary-sub">Total pieces</div>
             </div>
 
-            <div class="metric-card card-gradient-blue">
-              <div class="metric-header">
-                <span class="metric-title">ESTIMATED STOCK VALUE</span>
-                <span class="metric-badge">At Cost</span>
+            <div class="cg-summary-card">
+              <div class="cg-summary-top">
+                <span class="cg-summary-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                </span>
+                <span class="cg-summary-title">Low Stock Items</span>
               </div>
-              <div class="metric-value" id="kpiStockValuation">₹0</div>
-              <div class="metric-sub" id="kpiStockPotential">Selling Potential: ₹0</div>
-            </div>
-
-            <div class="metric-card card-gradient-emerald">
-              <div class="metric-header">
-                <span class="metric-title">TOTAL DISPATCHED / SOLD</span>
-                <span class="metric-badge">Wholesale</span>
-              </div>
-              <div class="metric-value" id="kpiTotalSold">0</div>
-              <div class="metric-sub" id="kpiRevenue">Total Revenue: ₹0</div>
-            </div>
-
-            <div class="metric-card card-gradient-rose">
-              <div class="metric-header">
-                <span class="metric-title">LOW STOCK ALERTS</span>
-                <span class="metric-badge badge-warning" id="kpiLowStockBadge">0 Alerts</span>
-              </div>
-              <div class="metric-value" id="kpiLowStockCount">0</div>
-              <div class="metric-sub">Need re-order from factory</div>
+              <div class="cg-summary-val" id="kpiLowStockCount">0</div>
+              <div class="cg-summary-sub">Need restocking</div>
             </div>
           </div>
 
-          <!-- QUICK SHORTCUT HERO BANNER FOR BEGINNERS -->
-          <div class="info-guide-banner">
-            <div class="guide-text">
-              <h3>👋 Wholesale Stock Made Easy (No Accounting Knowledge Needed!)</h3>
-              <p>You have <strong>5 Cup Shapes (Regular, Bell, Single Fold, Multi Fold, LSR)</strong>, <strong>4 Colors (Pink, Blue, Purple, LSR)</strong>, and <strong>3 Sizes (S, M, L)</strong>. When your factory delivers cups, click <strong>"Stock In"</strong>. When you get an order on IndiaMART, click <strong>"Stock Out"</strong>. The app updates everything automatically!</p>
-            </div>
-            <div class="guide-actions">
-              <button class="btn btn-outline" id="btnDownloadSamplePdf">🖨️ Print Stock Summary</button>
-              <button class="btn btn-primary" id="btnExportExcelQuick">📊 Download Excel Sheet</button>
-            </div>
+          <!-- CHATGPT STYLE PRODUCT INVENTORY HEADER -->
+          <div class="cg-section-intro">
+            <h2 class="cg-section-title">Product Inventory</h2>
+            <p class="cg-section-subtitle">Shape પ્રમાણે તમારો stock દાખલ કરો.</p>
+          </div>
+
+          <!-- CHATGPT STYLE SHAPE CARDS CONTAINER -->
+          <div id="chatgptProductCardsContainer" class="cg-shape-cards-list">
+            <!-- Dynamically populated: Regular, Bell, Single Fold, Multi Fold, LSR (White only) -->
           </div>
 
           <!-- LOW STOCK WARNINGS CONTAINER -->
-          <div id="lowStockWarningSection" class="alert-box-container hidden">
+          <div id="lowStockWarningSection" class="alert-box-container hidden mt-4">
             <!-- Dynamically populated if items are low -->
           </div>
 
-          <!-- LIVE STOCK OVERVIEW BY SHAPE (CARDS) -->
-          <div class="section-header-row">
-            <div>
-              <h2 class="section-title">Stock Overview By Shape</h2>
-              <p class="section-desc">Current inventory breakdown across all 5 shapes and 3 sizes</p>
+          <!-- SECONDARY FINANCIAL & WHOLESALE METRICS -->
+          <div class="dashboard-details-section mt-4">
+            <div class="section-header-row">
+              <div>
+                <h3 class="section-title">Valuation & Sales Overview</h3>
+                <p class="section-desc">Factory cost valuation and wholesale realization</p>
+              </div>
+              <button class="btn btn-ghost" id="btnGoToMatrix">Open Full 13-SKU Matrix Table →</button>
             </div>
-            <button class="btn btn-ghost" id="btnGoToMatrix">View Detailed 15-SKU Matrix →</button>
-          </div>
 
-          <div class="shapes-overview-grid" id="shapesOverviewGrid">
-            <!-- Dynamically rendered -->
-          </div>
+            <div class="metrics-grid">
+              <div class="metric-card card-gradient-blue">
+                <div class="metric-header">
+                  <span class="metric-title">ESTIMATED STOCK VALUE</span>
+                  <span class="metric-badge">At Factory Cost</span>
+                </div>
+                <div class="metric-value" id="kpiStockValuation">₹0</div>
+                <div class="metric-sub" id="kpiStockPotential">Selling Potential: ₹0</div>
+              </div>
+
+              <div class="metric-card card-gradient-emerald">
+                <div class="metric-header">
+                  <span class="metric-title">TOTAL DISPATCHED / SOLD</span>
+                  <span class="metric-badge">Wholesale</span>
+                </div>
+                <div class="metric-value" id="kpiTotalSold">0</div>
+                <div class="metric-sub" id="kpiRevenue">Total Revenue: ₹0</div>
+              </div>
+
+              <div class="metric-card card-gradient-purple">
+                <div class="metric-header">
+                  <span class="metric-title">MASTER CARTONS</span>
+                  <span class="metric-badge">100 Pcs/Box</span>
+                </div>
+                <div class="metric-value" id="kpiTotalBoxes">≈ 0 boxes</div>
+                <div class="metric-sub">Ready for logistics</div>
+              </div>
+            </div>
+
+            <!-- QUICK SHORTCUT HERO BANNER FOR BEGINNERS -->
+            <div class="info-guide-banner mt-3">
+              <div class="guide-text">
+                <h3>👋 Wholesale Stock Made Easy (No Accounting Knowledge Needed!)</h3>
+                <p>You have <strong>5 Cup Shapes (Regular, Bell, Single Fold, Multi Fold, LSR)</strong>, <strong>4 Colors (Pink, Blue, Purple, White)</strong>, and <strong>3 Sizes (S, M, L)</strong>. Tap any size to update stock directly, or use <strong>"Stock In"</strong> from factory and <strong>"Stock Out"</strong> for IndiaMART wholesale orders.</p>
+              </div>
+              <div class="guide-actions">
+                <button class="btn btn-outline" id="btnDownloadSamplePdf">🖨️ Print Stock Summary</button>
+                <button class="btn btn-primary" id="btnExportExcelQuick">📊 Download Excel Sheet</button>
+              </div>
+            </div>
 
           <!-- RECENT ACTIVITY ROW -->
           <div class="dashboard-split-row">
@@ -704,6 +743,6 @@
 
   </div>
 
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
