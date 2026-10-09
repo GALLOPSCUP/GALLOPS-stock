@@ -1401,26 +1401,129 @@
     }, 100);
   }
 
-  // ================= THEME TOGGLE =================
-  function setupThemeToggle() {
-    let currentTheme = localStorage.getItem(STORAGE_KEYS.THEME);
-    if (!currentTheme || currentTheme === 'theme-dark') {
-      currentTheme = 'theme-light';
-      localStorage.setItem(STORAGE_KEYS.THEME, 'theme-light');
+  // ================= 5 USER-FRIENDLY THEMES & COLOR PICKER =================
+  const THEME_OPTIONS = [
+    {
+      id: 'theme-clean',
+      name: 'Clean Slate & Pure White',
+      icon: '⚪',
+      badge: 'Recommended',
+      desc: 'Crisp white & cool slate. High contrast, zero eye strain.',
+      swatches: ['#f8fafc', '#ffffff', '#2563eb', '#0f172a']
+    },
+    {
+      id: 'theme-rose',
+      name: 'Gallops Rose & Pink',
+      icon: '🌸',
+      badge: 'Brand Signature',
+      desc: 'Signature warm Gallops rose and soft berry accents.',
+      swatches: ['#fff5f7', '#ffffff', '#db2777', '#881337']
+    },
+    {
+      id: 'theme-blue',
+      name: 'Corporate Navy & Sky Blue',
+      icon: '🔵',
+      badge: 'ERP Style',
+      desc: 'Professional sapphire and fresh blue corporate tone.',
+      swatches: ['#f0f7ff', '#ffffff', '#0284c7', '#0c4a6e']
+    },
+    {
+      id: 'theme-emerald',
+      name: 'Emerald Business Mint',
+      icon: '🟢',
+      badge: 'Restful Accounting',
+      desc: 'Peaceful, natural mint green for comfortable wholesale work.',
+      swatches: ['#f0fdf4', '#ffffff', '#059669', '#064e3b']
+    },
+    {
+      id: 'theme-dark',
+      name: 'Night Owl OLED Dark',
+      icon: '🌙',
+      badge: 'Low Light',
+      desc: 'Deep charcoal dark mode for night shifts & battery saving.',
+      swatches: ['#0f111a', '#161926', '#8b5cf6', '#f8fafc']
     }
-    document.body.className = currentTheme;
+  ];
 
-    document.getElementById('btnThemeToggle')?.addEventListener('click', () => {
-      const isDark = document.body.classList.contains('theme-dark');
-      const newTheme = isDark ? 'theme-light' : 'theme-dark';
-      document.body.className = newTheme;
-      localStorage.setItem(STORAGE_KEYS.THEME, newTheme);
+  function getActiveTheme() {
+    let saved = localStorage.getItem(STORAGE_KEYS.THEME);
+    if (!saved || saved === 'theme-light') return 'theme-clean';
+    return saved;
+  }
+
+  function applyTheme(themeId) {
+    document.body.classList.remove('theme-clean', 'theme-light', 'theme-rose', 'theme-blue', 'theme-emerald', 'theme-dark');
+    document.body.classList.add(themeId);
+    localStorage.setItem(STORAGE_KEYS.THEME, themeId);
+    renderThemePickers();
+  }
+
+  function renderThemePickers() {
+    const active = getActiveTheme();
+    const containers = [
+      document.getElementById('themePickerGridModal'),
+      document.getElementById('themePickerGridSettings')
+    ];
+
+    const html = THEME_OPTIONS.map(opt => {
+      const isActive = (active === opt.id) || (opt.id === 'theme-clean' && (active === 'theme-light' || !active));
+      const activeClass = isActive ? 'is-active' : '';
+      return `
+        <div class="theme-choice-card ${activeClass}" onclick="window.gallopsSelectTheme('${opt.id}')">
+          <div class="theme-card-top">
+            <div class="theme-card-title">
+              <span>${opt.icon}</span>
+              <span>${opt.name}</span>
+            </div>
+            <span class="theme-active-tag">Active ✓</span>
+          </div>
+          <div class="theme-card-desc">${opt.desc}</div>
+          <div class="theme-swatches">
+            ${opt.swatches.map(c => `<span class="theme-swatch" style="background-color: ${c};"></span>`).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    containers.forEach(c => {
+      if (c) c.innerHTML = html;
     });
+  }
+
+  window.gallopsSelectTheme = function (themeId) {
+    applyTheme(themeId);
+    const chosen = THEME_OPTIONS.find(t => t.id === themeId);
+    showToast(`Layout color set to: ${chosen ? chosen.name : themeId}`, 'success');
+  };
+
+  window.gallopsOpenThemeModal = function () {
+    renderThemePickers();
+    document.getElementById('themeChoiceModal')?.classList.remove('hidden');
+  };
+
+  window.gallopsCloseThemeModal = function () {
+    document.getElementById('themeChoiceModal')?.classList.add('hidden');
+  };
+
+  function setupThemeSystem() {
+    applyTheme(getActiveTheme());
+    renderThemePickers();
+
+    document.getElementById('btnOpenThemeModal')?.addEventListener('click', window.gallopsOpenThemeModal);
+    document.getElementById('btnThemeChoiceClose')?.addEventListener('click', window.gallopsCloseThemeModal);
+    document.getElementById('btnThemeChoiceDone')?.addEventListener('click', window.gallopsCloseThemeModal);
+
+    const modal = document.getElementById('themeChoiceModal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) window.gallopsCloseThemeModal();
+      });
+    }
   }
 
   // ================= INITIALIZATION =================
   function init() {
-    setupThemeToggle();
+    setupThemeSystem();
     populateDropdowns();
     renderAll();
     setupAdjustModalControls();

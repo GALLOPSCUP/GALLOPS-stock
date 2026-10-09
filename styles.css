@@ -47,34 +47,88 @@
   --transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Dark Theme Variables (Optional Toggle) */
+/* ====================================================================
+   5 USER-FRIENDLY THEME PALETTES (CHOICE OPTIONS)
+   ==================================================================== */
+
+/* 1. CLEAN SLATE & PURE WHITE (Default & Recommended - High Contrast, Zero Eye Strain) */
+body.theme-clean, body.theme-light {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --border-color: #e2e8f0;
+  --border-highlight: rgba(37, 99, 235, 0.25);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --accent-purple: #2563eb;
+  --accent-pink: #ec4899;
+}
+
+/* 2. GALLOPS ROSE & PINK (Signature Brand Palette) */
+body.theme-rose {
+  --bg-primary: #fff5f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #ffe4e6;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fff1f2;
+  --border-color: #fecdd3;
+  --border-highlight: rgba(225, 29, 72, 0.25);
+  --text-primary: #4c0519;
+  --text-secondary: #881337;
+  --text-muted: #9f1239;
+  --accent-purple: #e11d48;
+  --accent-pink: #db2777;
+}
+
+/* 3. ROYAL NAVY & SKY BLUE (Professional ERP Style) */
+body.theme-blue {
+  --bg-primary: #f0f7ff;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e0f2fe;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f7ff;
+  --border-color: #bae6fd;
+  --border-highlight: rgba(2, 132, 199, 0.25);
+  --text-primary: #082f49;
+  --text-secondary: #0c4a6e;
+  --text-muted: #0369a1;
+  --accent-purple: #0284c7;
+  --accent-pink: #0284c7;
+}
+
+/* 4. EMERALD BUSINESS MINT (Calm, Restful Accounting Tone) */
+body.theme-emerald {
+  --bg-primary: #f0fdf4;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #dcfce7;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0fdf4;
+  --border-color: #bbf7d0;
+  --border-highlight: rgba(5, 150, 105, 0.25);
+  --text-primary: #022c22;
+  --text-secondary: #064e3b;
+  --text-muted: #047857;
+  --accent-purple: #059669;
+  --accent-pink: #10b981;
+}
+
+/* 5. NIGHT OWL OLED DARK (Dark Mode for Low Light) */
 body.theme-dark {
   --bg-primary: #0f111a;
   --bg-secondary: #161926;
   --bg-tertiary: #1f2337;
-  --bg-card: rgba(26, 31, 51, 0.75);
-  --bg-card-hover: rgba(35, 42, 69, 0.85);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-highlight: rgba(139, 92, 246, 0.3);
-
+  --bg-card: #181d2e;
+  --bg-card-hover: #21273d;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-highlight: rgba(139, 92, 246, 0.35);
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-
   --accent-purple: #8b5cf6;
   --accent-pink: #ec4899;
-
-  --badge-green-bg: rgba(16, 185, 129, 0.15);
-  --badge-green-text: #34d399;
-  --badge-yellow-bg: rgba(245, 158, 11, 0.15);
-  --badge-yellow-text: #fbbf24;
-  --badge-red-bg: rgba(239, 68, 68, 0.15);
-  --badge-red-text: #f87171;
-
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 25px rgba(139, 92, 246, 0.25);
 }
 
 /* Reset & Base */
@@ -94,31 +148,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Glassmorphism backdrop effect */
-body::before {
-  content: '';
-  position: fixed;
-  top: -200px;
-  right: -200px;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(236, 72, 153, 0.05) 50%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  bottom: -200px;
-  left: -200px;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
+/* Disabled gradient clouds for clean, high-contrast, user-friendly visibility */
+body::before, body::after {
+  display: none !important;
 }
 
 /* Container */
@@ -1636,14 +1668,115 @@ label {
   }
 }
 
+/* ================= THEME CHOICE PICKER ================= */
+.theme-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.theme-choice-card {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  position: relative;
+}
+
+.theme-choice-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-purple);
+  box-shadow: var(--shadow-md);
+}
+
+.theme-choice-card.is-active {
+  border-color: var(--accent-purple);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+.theme-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.theme-card-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-primary);
+}
+
+.theme-card-desc {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.theme-swatches {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.theme-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  display: inline-block;
+}
+
+.theme-active-tag {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+  padding: 2px 7px;
+  border-radius: 9999px;
+  display: none;
+}
+
+.theme-choice-card.is-active .theme-active-tag {
+  display: inline-block;
+}
+
 @media (max-width: 600px) {
   .top-header {
-    padding: 0 0.85rem;
-    height: 64px;
+    padding: 0 0.65rem;
+    height: 58px;
   }
   
   .brand-title {
-    font-size: 1.05rem;
+    font-size: 0.98rem;
+    white-space: nowrap;
+  }
+
+  .brand-tag {
+    display: none !important;
+  }
+
+  .badge-pill-inventory {
+    display: none !important;
+  }
+
+  .header-actions {
+    gap: 0.35rem;
+  }
+
+  .header-actions .btn {
+    padding: 0.42rem 0.6rem;
+    font-size: 0.8rem;
   }
   
   .metrics-grid {

@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=24">
+  <link rel="stylesheet" href="styles.css?v=26">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -36,7 +36,6 @@
       </div>
 
       <div class="header-actions">
-        <span class="badge-pill-inventory">Inventory</span>
         <!-- Quick Action Buttons -->
         <button id="btnQuickIn" class="btn btn-in" title="Add Factory Stock">
           <span class="btn-icon">📥</span>
@@ -46,8 +45,9 @@
           <span class="btn-icon">📤</span>
           <span class="btn-label">Stock Out</span>
         </button>
-        <button id="btnThemeToggle" class="btn-icon-only" title="Toggle Dark/Light Mode">
-          🌓
+        <button id="btnOpenThemeModal" class="btn btn-secondary" title="Choose Layout Color Scheme" style="display:inline-flex; align-items:center; gap:0.4rem;">
+          <span>🎨</span>
+          <span class="btn-label">Theme</span>
         </button>
       </div>
     </header>
@@ -638,6 +638,16 @@
               <button class="btn btn-primary mt-3" id="btnSavePreferences">💾 Save Preferences</button>
             </div>
 
+            <!-- LAYOUT COLOR & THEME PREFERENCES -->
+            <div class="settings-card">
+              <h3 class="settings-card-title">🎨 Application Layout Color Theme</h3>
+              <p class="settings-card-desc">Choose a comfortable, eye-friendly layout color palette for your screen</p>
+
+              <div class="theme-picker-grid" id="themePickerGridSettings">
+                <!-- 5 selectable theme cards rendered by JS -->
+              </div>
+            </div>
+
             <!-- BACKUP & EXPORT DATA -->
             <div class="settings-card">
               <h3 class="settings-card-title">Backup & Restore</h3>
@@ -715,6 +725,30 @@
       </div>
     </div>
 
+    <!-- APPLICATION LAYOUT COLOR THEME MODAL -->
+    <div id="themeChoiceModal" class="modal-overlay hidden">
+      <div class="modal-box" style="max-width: 540px;">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:0.65rem;">
+            <span style="font-size:1.6rem; line-height:1;">🎨</span>
+            <div>
+              <h3 style="font-size:1.2rem; font-weight:800; color:var(--text-primary); margin:0;">Application Layout Color</h3>
+              <p class="text-muted" style="font-size:0.8rem; margin:2px 0 0 0;">Select your preferred eye-friendly color palette</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="btnThemeChoiceClose">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="theme-picker-grid" id="themePickerGridModal">
+            <!-- 5 selectable theme cards populated by JS -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="btnThemeChoiceDone">Done</button>
+        </div>
+      </div>
+    </div>
+
     <!-- QUICK ADJUST STOCK MODAL -->
     <div id="quickAdjustModal" class="modal-overlay hidden">
       <div class="modal-box">
@@ -748,6 +782,6 @@
 
   </div>
 
-  <script src="app.js?v=24"></script>
+  <script src="app.js?v=26"></script>
 </body>
 </html>
