@@ -23,14 +23,17 @@
     { id: 'BELL', name: 'Bell Shape', icon: '🔔', colors: ['PINK', 'BLUE', 'PURPLE'] },
     { id: 'SINGLE_FOLD', name: 'Single Fold', icon: '📐', colors: ['PINK', 'BLUE', 'PURPLE'] },
     { id: 'MULTI_FOLD', name: 'Multi Fold', icon: '🥏', colors: ['PINK'] },
-    { id: 'LSR', name: 'LSR', icon: '💎', colors: ['WHITE'] }
+    { id: 'GALLOPS_CUP', name: 'Gallops Cup', icon: '🏆', colors: ['PINK'] },
+    { id: 'LSR', name: 'LSR', icon: '💎', colors: ['WHITE'] },
+    { id: 'BOX', name: 'Box', icon: '📦', colors: ['PRINTED'] }
   ];
 
   const DEFAULT_COLORS = [
     { id: 'PINK', name: 'Pink', hex: '#ec4899', dot: '🔴' },
     { id: 'BLUE', name: 'Blue', hex: '#2563eb', dot: '🔵' },
     { id: 'PURPLE', name: 'Purple', hex: '#9333ea', dot: '🟣' },
-    { id: 'WHITE', name: 'White', hex: '#64748b', dot: '⚪' }
+    { id: 'WHITE', name: 'White', hex: '#64748b', dot: '⚪' },
+    { id: 'PRINTED', name: 'Printed Box', hex: '#f59e0b', dot: '📦' }
   ];
 
   const DEFAULT_SIZES = [
@@ -89,10 +92,20 @@
     'MULTI_FOLD_PINK_M': 240,
     'MULTI_FOLD_PINK_L': 105,
 
+    // GALLOPS CUP (Pink Only)
+    'GALLOPS_CUP_PINK_S': 150,
+    'GALLOPS_CUP_PINK_M': 250,
+    'GALLOPS_CUP_PINK_L': 110,
+
     // LSR (Only White Available)
     'LSR_WHITE_S': 110,
     'LSR_WHITE_M': 190,
-    'LSR_WHITE_L': 85
+    'LSR_WHITE_L': 85,
+
+    // BOX (Packaging Box: Small, Medium, Large)
+    'BOX_PRINTED_S': 400,
+    'BOX_PRINTED_M': 650,
+    'BOX_PRINTED_L': 300
   };
 
   const INITIAL_TRANSACTIONS_SAMPLE = [
@@ -184,6 +197,7 @@
     }
     // Enforce business rules for shapes and allowed colors
     settings.shapes = DEFAULT_SHAPES;
+    settings.colors = DEFAULT_COLORS;
     return settings;
   }
 
@@ -217,6 +231,18 @@
     delete stock['LSR_PURPLE_S'];
     delete stock['LSR_PURPLE_M'];
     delete stock['LSR_PURPLE_L'];
+
+    // Ensure new shapes exist in stock
+    if (stock['GALLOPS_CUP_PINK_S'] === undefined) {
+      stock['GALLOPS_CUP_PINK_S'] = 150;
+      stock['GALLOPS_CUP_PINK_M'] = 250;
+      stock['GALLOPS_CUP_PINK_L'] = 110;
+    }
+    if (stock['BOX_PRINTED_S'] === undefined) {
+      stock['BOX_PRINTED_S'] = 400;
+      stock['BOX_PRINTED_M'] = 650;
+      stock['BOX_PRINTED_L'] = 300;
+    }
     return stock;
   }
 
@@ -514,7 +540,13 @@
     appState.settings.shapes.forEach(shape => {
       const colors = getColorsForShape(shape.id);
       const colorCountText = `${colors.length} Colour${colors.length > 1 ? 's' : ''}`;
-      const shapeDotColor = shape.id === 'REGULAR' ? '#f472b6' : shape.id === 'BELL' ? '#ec4899' : shape.id === 'SINGLE_FOLD' ? '#8b5cf6' : shape.id === 'MULTI_FOLD' ? '#3b82f6' : '#94a3b8';
+      const shapeDotColor = shape.id === 'REGULAR' ? '#f472b6' 
+        : shape.id === 'BELL' ? '#ec4899' 
+        : shape.id === 'SINGLE_FOLD' ? '#8b5cf6' 
+        : shape.id === 'MULTI_FOLD' ? '#3b82f6' 
+        : shape.id === 'GALLOPS_CUP' ? '#ec4899' 
+        : shape.id === 'LSR' ? '#94a3b8' 
+        : '#f59e0b';
 
       let colorSectionsHtml = '';
 
