@@ -19,12 +19,12 @@
 
   // ================= DEFAULT CONFIGURATION =================
   const DEFAULT_SHAPES = [
+    { id: 'GALLOPS_CUP', name: 'Gallops Cup', icon: '🏆', colors: ['PINK'] },
     { id: 'REGULAR', name: 'Regular Shape', icon: '🌸', colors: ['PINK', 'BLUE', 'PURPLE'] },
     { id: 'BELL', name: 'Bell Shape', icon: '🔔', colors: ['PINK', 'BLUE', 'PURPLE'] },
+    { id: 'LSR', name: 'LSR', icon: '💎', colors: ['WHITE'] },
     { id: 'SINGLE_FOLD', name: 'Single Fold', icon: '📐', colors: ['PINK', 'BLUE', 'PURPLE'] },
     { id: 'MULTI_FOLD', name: 'Multi Fold', icon: '🥏', colors: ['PINK'] },
-    { id: 'GALLOPS_CUP', name: 'Gallops Cup', icon: '🏆', colors: ['PINK'] },
-    { id: 'LSR', name: 'LSR', icon: '💎', colors: ['WHITE'] },
     { id: 'BOX', name: 'Box', icon: '📦', colors: ['PRINTED'] }
   ];
 
@@ -54,7 +54,12 @@
 
   // Sample stock covering user's actual wholesale product matrix
   const INITIAL_STOCK_SAMPLE = {
-    // REGULAR SHAPE
+    // 1. GALLOPS CUP (Pink Only)
+    'GALLOPS_CUP_PINK_S': 150,
+    'GALLOPS_CUP_PINK_M': 250,
+    'GALLOPS_CUP_PINK_L': 110,
+
+    // 2. REGULAR SHAPE
     'REGULAR_PINK_S': 160,
     'REGULAR_PINK_M': 280,
     'REGULAR_PINK_L': 120,
@@ -65,7 +70,7 @@
     'REGULAR_PURPLE_M': 150,
     'REGULAR_PURPLE_L': 65,
 
-    // BELL SHAPE
+    // 3. BELL SHAPE
     'BELL_PINK_S': 210,
     'BELL_PINK_M': 350,
     'BELL_PINK_L': 140,
@@ -76,7 +81,12 @@
     'BELL_PURPLE_M': 160,
     'BELL_PURPLE_L': 45, // Low stock alert (< 50)
 
-    // SINGLE FOLD
+    // 4. LSR (Only White Available)
+    'LSR_WHITE_S': 110,
+    'LSR_WHITE_M': 190,
+    'LSR_WHITE_L': 85,
+
+    // 5. SINGLE FOLD
     'SINGLE_FOLD_PINK_S': 130,
     'SINGLE_FOLD_PINK_M': 220,
     'SINGLE_FOLD_PINK_L': 90,
@@ -87,22 +97,12 @@
     'SINGLE_FOLD_PURPLE_M': 110,
     'SINGLE_FOLD_PURPLE_L': 35, // Low stock alert
 
-    // MULTI FOLD (Pink Only)
+    // 6. MULTI FOLD (Pink Only)
     'MULTI_FOLD_PINK_S': 140,
     'MULTI_FOLD_PINK_M': 240,
     'MULTI_FOLD_PINK_L': 105,
 
-    // GALLOPS CUP (Pink Only)
-    'GALLOPS_CUP_PINK_S': 150,
-    'GALLOPS_CUP_PINK_M': 250,
-    'GALLOPS_CUP_PINK_L': 110,
-
-    // LSR (Only White Available)
-    'LSR_WHITE_S': 110,
-    'LSR_WHITE_M': 190,
-    'LSR_WHITE_L': 85,
-
-    // BOX (Packaging Box: Small, Medium, Large)
+    // 7. BOX (Packaging Box: Small, Medium, Large)
     'BOX_PRINTED_S': 400,
     'BOX_PRINTED_M': 650,
     'BOX_PRINTED_L': 300
