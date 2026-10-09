@@ -1350,7 +1350,16 @@
 
     // Register Service Worker for offline capability & instant auto-updates
     if ('serviceWorker' in navigator) {
+      let isRefreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!isRefreshing) {
+          isRefreshing = true;
+          window.location.reload();
+        }
+      });
+
       navigator.serviceWorker.register('sw.js').then((reg) => {
+        reg.update().catch(() => {});
         window.addEventListener('focus', () => {
           reg.update().catch(() => {});
         });
