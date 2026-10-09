@@ -499,35 +499,35 @@ body.theme-light .nav-item.active {
 }
 
 .card-gradient-purple {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(26, 31, 51, 0.8) 100%);
-  border-color: rgba(139, 92, 246, 0.25);
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
 }
 .card-gradient-purple::before {
-  background: linear-gradient(90deg, #8b5cf6, #ec4899);
+  background: linear-gradient(90deg, #f97316, #ec4899);
 }
 
 .card-gradient-blue {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(26, 31, 51, 0.8) 100%);
-  border-color: rgba(59, 130, 246, 0.25);
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
 }
 .card-gradient-blue::before {
-  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  background: linear-gradient(90deg, #2563eb, #06b6d4);
 }
 
 .card-gradient-emerald {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(26, 31, 51, 0.8) 100%);
-  border-color: rgba(16, 185, 129, 0.25);
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
 }
 .card-gradient-emerald::before {
   background: linear-gradient(90deg, #10b981, #34d399);
 }
 
 .card-gradient-rose {
-  background: linear-gradient(135deg, rgba(244, 63, 94, 0.12) 0%, rgba(26, 31, 51, 0.8) 100%);
-  border-color: rgba(244, 63, 94, 0.25);
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
 }
 .card-gradient-rose::before {
-  background: linear-gradient(90deg, #f43f5e, #f59e0b);
+  background: linear-gradient(90deg, #ef4444, #f59e0b);
 }
 
 .metric-header {
@@ -538,49 +538,53 @@ body.theme-light .nav-item.active {
 }
 
 .metric-title {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-secondary);
+  color: #475569;
 }
 
 .metric-badge {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-secondary);
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
 }
 
 .badge-warning {
-  background: var(--badge-yellow-bg);
-  color: var(--badge-yellow-text);
+  background: rgba(245, 158, 11, 0.15);
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
 .metric-value {
-  font-size: 2.1rem;
+  font-size: 2.2rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  color: #fff;
+  color: #0f172a !important;
 }
 
 body.theme-light .metric-value {
-  color: var(--text-primary);
+  color: #0f172a !important;
 }
 
 .metric-sub {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 600;
   margin-top: 0.4rem;
 }
 
 /* ================= INFO / GUIDE BANNER ================= */
 .info-guide-banner {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(236, 72, 153, 0.12));
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
+  border-left: 5px solid #f97316;
   border-radius: var(--radius-lg);
   padding: 1.25rem 1.5rem;
   display: flex;
@@ -589,18 +593,19 @@ body.theme-light .metric-value {
   margin-bottom: 1.75rem;
   gap: 1.5rem;
   flex-wrap: wrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 .guide-text h3 {
   font-size: 1.05rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-  color: var(--text-primary);
+  font-weight: 800;
+  margin-bottom: 0.3rem;
+  color: #0f172a;
 }
 
 .guide-text p {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
+  font-size: 0.88rem;
+  color: #475569;
   line-height: 1.5;
 }
 
