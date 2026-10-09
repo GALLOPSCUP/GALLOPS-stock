@@ -1226,7 +1226,12 @@
 
   // ================= THEME TOGGLE =================
   function setupThemeToggle() {
-    const currentTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'theme-dark';
+    let currentTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+    // Default to clean white theme
+    if (!currentTheme || currentTheme === 'theme-dark') {
+      currentTheme = 'theme-light';
+      localStorage.setItem(STORAGE_KEYS.THEME, 'theme-light');
+    }
     document.body.className = currentTheme;
 
     document.getElementById('btnThemeToggle')?.addEventListener('click', () => {

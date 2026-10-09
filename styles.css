@@ -4,7 +4,51 @@
    ==================================================================== */
 
 :root {
-  /* Color Palette - Vibrant Dark Mode */
+  /* Color Palette - Clean Professional White Theme (Default) */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --border-color: #e2e8f0;
+  --border-highlight: rgba(249, 115, 22, 0.3);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --accent-purple: #f97316;
+  --accent-pink: #15803d;
+  --accent-rose: #ef4444;
+  --accent-blue: #2563eb;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-cyan: #06b6d4;
+
+  --badge-green-bg: rgba(16, 185, 129, 0.12);
+  --badge-green-text: #059669;
+  --badge-yellow-bg: rgba(245, 158, 11, 0.12);
+  --badge-yellow-text: #d97706;
+  --badge-red-bg: rgba(239, 68, 68, 0.12);
+  --badge-red-text: #dc2626;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 20px rgba(249, 115, 22, 0.15);
+
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dark Theme Variables (Optional Toggle) */
+body.theme-dark {
   --bg-primary: #0f111a;
   --bg-secondary: #161926;
   --bg-tertiary: #1f2337;
@@ -19,11 +63,6 @@
 
   --accent-purple: #8b5cf6;
   --accent-pink: #ec4899;
-  --accent-rose: #f43f5e;
-  --accent-blue: #3b82f6;
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-cyan: #06b6d4;
 
   --badge-green-bg: rgba(16, 185, 129, 0.15);
   --badge-green-text: #34d399;
@@ -32,39 +71,10 @@
   --badge-red-bg: rgba(239, 68, 68, 0.15);
   --badge-red-text: #f87171;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
-
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.4);
   --shadow-glow: 0 0 25px rgba(139, 92, 246, 0.25);
-
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Light Theme Variables */
-body.theme-light {
-  --bg-primary: #f1f5f9;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #e2e8f0;
-  --bg-card: rgba(255, 255, 255, 0.9);
-  --bg-card-hover: #ffffff;
-  --border-color: rgba(0, 0, 0, 0.08);
-  --border-highlight: rgba(139, 92, 246, 0.4);
-
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-
-  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.15);
 }
 
 /* Reset & Base */
@@ -166,14 +176,13 @@ body::after {
   font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #0f172a;
   line-height: 1.2;
 }
 
-body.theme-light .brand-title {
-  background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%);
+body.theme-dark .brand-title {
+  color: #f8fafc;
+  background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
