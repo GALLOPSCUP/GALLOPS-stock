@@ -7,14 +7,14 @@
   <meta name="description" content="Wholesale Menstrual Cup Stock Maintenance & Inventory App for IndiaMART Sellers">
   <title>Gallops Cups - Wholesale Stock Manager</title>
   
-  <link rel="icon" type="image/png" href="icon-192.png?v=5">
-  <link rel="apple-touch-icon" href="icon-192.png?v=5">
-  <link rel="manifest" href="manifest.json?v=5">
+  <link rel="icon" type="image/png" href="icon-192.png?v=6">
+  <link rel="apple-touch-icon" href="icon-192.png?v=6">
+  <link rel="manifest" href="manifest.json?v=6">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -216,11 +216,12 @@
               <table class="matrix-table" id="stockMatrixTable">
                 <thead>
                   <tr>
-                    <th class="matrix-th-shape">Cup Shape / Design</th>
-                    <th class="matrix-th-size" data-size="S">Size S (Small)</th>
-                    <th class="matrix-th-size" data-size="M">Size M (Medium)</th>
-                    <th class="matrix-th-size" data-size="L">Size L (Large)</th>
-                    <th class="matrix-th-total">Total by Shape</th>
+                    <th class="matrix-th-shape">Cup Shape</th>
+                    <th class="matrix-th-color">Color</th>
+                    <th class="matrix-th-size" data-size="S">Small (S)</th>
+                    <th class="matrix-th-size" data-size="M">Medium (M)</th>
+                    <th class="matrix-th-size" data-size="L">Large (L)</th>
+                    <th class="matrix-th-total">Total by Color</th>
                     <th class="matrix-th-status">Status</th>
                   </tr>
                 </thead>
@@ -229,7 +230,7 @@
                 </tbody>
                 <tfoot>
                   <tr class="matrix-total-row">
-                    <td><strong>TOTAL BY SIZE</strong></td>
+                    <td colspan="2"><strong>TOTAL BY SIZE</strong></td>
                     <td id="matrixTotalSizeS">0</td>
                     <td id="matrixTotalSizeM">0</td>
                     <td id="matrixTotalSizeL">0</td>
@@ -266,6 +267,13 @@
                 <div class="form-group">
                   <label for="inShape">Select Cup Shape <span class="req">*</span></label>
                   <select id="inShape" required class="form-control">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="inColor">Select Color <span class="req">*</span></label>
+                  <select id="inColor" required class="form-control">
                     <!-- Populated dynamically -->
                   </select>
                 </div>
@@ -362,6 +370,13 @@
                 <div class="form-group">
                   <label for="outShape">Select Cup Shape <span class="req">*</span></label>
                   <select id="outShape" required class="form-control">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="outColor">Select Color <span class="req">*</span></label>
+                  <select id="outColor" required class="form-control">
                     <!-- Populated dynamically -->
                   </select>
                 </div>
@@ -486,6 +501,13 @@
               <label>Filter Shape</label>
               <select id="filterLedgerShape" class="form-control">
                 <option value="ALL">All Shapes</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label>Filter Color</label>
+              <select id="filterLedgerColor" class="form-control">
+                <option value="ALL">All Colors</option>
               </select>
             </div>
 
@@ -682,6 +704,6 @@
 
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
