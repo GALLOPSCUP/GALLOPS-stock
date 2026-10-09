@@ -558,16 +558,12 @@
           const sizeUpperName = size.id === 'S' ? 'SMALL' : size.id === 'M' ? 'MEDIUM' : 'LARGE';
 
           sizesColsHtml += `
-            <div class="cg-size-item" onclick="window.gallopsOpenAdjust('${shape.id}', '${color.id}', '${size.id}')" title="Tap to enter stock count for ${shape.name} ${color.name} (${sizeUpperName})">
+            <div class="cg-size-item">
               <div class="cg-size-label">${sizeUpperName}</div>
               <div class="cg-size-val-row">
                 <span class="cg-size-val">${qty}</span>
               </div>
               <div class="cg-size-unit">pcs</div>
-              <div class="cg-size-stepper" onclick="event.stopPropagation()">
-                <button type="button" class="cg-btn-step" onclick="window.gallopsQuickStep('${shape.id}', '${color.id}', '${size.id}', -1, event)" title="-1 pc">−</button>
-                <button type="button" class="cg-btn-step" onclick="window.gallopsQuickStep('${shape.id}', '${color.id}', '${size.id}', 1, event)" title="+1 pc">+</button>
-              </div>
             </div>
           `;
         });
@@ -712,11 +708,6 @@
             <td>
               <div class="matrix-cell-box ${cellClass}" data-shape="${shape.id}" data-color="${color.id}" data-size="${size.id}">
                 <div class="matrix-cell-qty">${qty}</div>
-                <div class="matrix-cell-actions">
-                  <button class="btn-mini-adjust btn-adj-minus" data-shape="${shape.id}" data-color="${color.id}" data-size="${size.id}" title="Reduce 1">−</button>
-                  <button class="btn-mini-adjust btn-adj-edit" data-shape="${shape.id}" data-color="${color.id}" data-size="${size.id}" title="Set Stock">✏️</button>
-                  <button class="btn-mini-adjust btn-adj-plus" data-shape="${shape.id}" data-color="${color.id}" data-size="${size.id}" title="Add 1">+</button>
-                </div>
               </div>
             </td>
           `;
@@ -779,42 +770,8 @@
   }
 
   function attachMatrixEventListeners() {
-    document.querySelectorAll('.btn-adj-plus').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const { shape: shapeId, color: colorId, size: sizeId } = btn.dataset;
-        const current = getStockQty(shapeId, colorId, sizeId);
-        setStockQty(shapeId, colorId, sizeId, current + 1);
-        renderAll();
-        showToast(`+1 pc to ${getShapeById(shapeId).name} • ${getColorById(colorId).name} (${sizeId})`, 'success');
-      });
-    });
-
-    document.querySelectorAll('.btn-adj-minus').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const { shape: shapeId, color: colorId, size: sizeId } = btn.dataset;
-        const current = getStockQty(shapeId, colorId, sizeId);
-        if (current <= 0) {
-          showToast('Stock is already 0', 'error');
-          return;
-        }
-        setStockQty(shapeId, colorId, sizeId, current - 1);
-        renderAll();
-        showToast(`-1 pc from ${getShapeById(shapeId).name} • ${getColorById(colorId).name} (${sizeId})`, 'info');
-      });
-    });
-
-    document.querySelectorAll('.btn-adj-edit, .matrix-cell-box').forEach(el => {
-      el.addEventListener('click', () => {
-        const shapeId = el.dataset.shape || el.closest('[data-shape]')?.dataset.shape;
-        const colorId = el.dataset.color || el.closest('[data-color]')?.dataset.color;
-        const sizeId = el.dataset.size || el.closest('[data-size]')?.dataset.size;
-        if (shapeId && colorId && sizeId) {
-          openAdjustModal(shapeId, colorId, sizeId);
-        }
-      });
-    });
+    // Read-only grid: direct cell adjustment is disabled.
+    // Stock is only modified via Stock In or Stock Out transactions.
   }
 
   function renderSkuCards() {
@@ -833,7 +790,7 @@
           let statusText = qty === 0 ? 'Out of Stock' : qty < appState.settings.lowStockThreshold ? 'Low Stock' : 'Adequate';
 
           html += `
-            <div class="sku-card" onclick="window.gallopsOpenAdjust('${shape.id}', '${color.id}', '${size.id}')">
+            <div class="sku-card">
               <div>
                 <div class="sku-card-tag">${shape.icon} ${shape.name}</div>
                 <div class="sku-card-title">${color.dot} ${color.name} • ${size.name}</div>
