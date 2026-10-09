@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=20">
+  <link rel="stylesheet" href="styles.css?v=22">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -109,7 +109,7 @@
               <div class="cg-summary-sub">Total pieces</div>
             </div>
 
-            <div class="cg-summary-card">
+            <div class="cg-summary-card" id="kpiLowStockCard" style="cursor: pointer;" title="Click to view low stock details">
               <div class="cg-summary-top">
                 <span class="cg-summary-icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -121,8 +121,13 @@
                 <span class="cg-summary-title">Low Stock Items</span>
               </div>
               <div class="cg-summary-val" id="kpiLowStockCount">0</div>
-              <div class="cg-summary-sub">Need restocking</div>
+              <div class="cg-summary-sub" id="kpiLowStockSub">Need restocking</div>
             </div>
+          </div>
+
+          <!-- LOW STOCK WARNINGS CONTAINER (Placed right below KPI cards for instant visibility) -->
+          <div id="lowStockWarningSection" class="alert-box-container hidden mt-3">
+            <!-- Dynamically populated with exact shape and size -->
           </div>
 
           <!-- CHATGPT STYLE PRODUCT INVENTORY HEADER -->
@@ -133,12 +138,7 @@
 
           <!-- CHATGPT STYLE SHAPE CARDS CONTAINER -->
           <div id="chatgptProductCardsContainer" class="cg-shape-cards-list">
-            <!-- Dynamically populated: Regular, Bell, Single Fold, Multi Fold, LSR (White only) -->
-          </div>
-
-          <!-- LOW STOCK WARNINGS CONTAINER -->
-          <div id="lowStockWarningSection" class="alert-box-container hidden mt-4">
-            <!-- Dynamically populated if items are low -->
+            <!-- Dynamically populated -->
           </div>
 
           <!-- SECONDARY FINANCIAL & WHOLESALE METRICS -->
@@ -725,6 +725,6 @@
 
   </div>
 
-  <script src="app.js?v=20"></script>
+  <script src="app.js?v=22"></script>
 </body>
 </html>

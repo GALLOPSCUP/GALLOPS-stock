@@ -494,26 +494,60 @@
     if (kpiLowStockCount) kpiLowStockCount.textContent = lowStockCount;
     if (kpiLowStockBadge) kpiLowStockBadge.textContent = `${lowStockCount} SKUs Low`;
 
-    // Render Low Stock Warnings
+    // Highlight Low Stock KPI Card with exact item info
+    const kpiLowStockCard = document.getElementById('kpiLowStockCard');
+    const kpiLowStockSub = document.getElementById('kpiLowStockSub');
+    if (kpiLowStockCard) {
+      if (lowStockCount > 0) {
+        kpiLowStockCard.style.borderColor = '#f97316';
+        kpiLowStockCard.style.background = 'rgba(249, 115, 22, 0.04)';
+        if (kpiLowStockSub) {
+          if (lowStockCount === 1) {
+            const first = lowStockItems[0];
+            kpiLowStockSub.innerHTML = `<span style="color:#ea580c; font-weight:700;">⚠️ ${first.shape.name} ${first.color.name} (${first.size.id}) • ${first.qty} pcs</span>`;
+          } else {
+            kpiLowStockSub.innerHTML = `<span style="color:#ea580c; font-weight:700;">⚠️ ${lowStockCount} items low • View list ▾</span>`;
+          }
+        }
+      } else {
+        kpiLowStockCard.style.borderColor = '';
+        kpiLowStockCard.style.background = '';
+        if (kpiLowStockSub) {
+          kpiLowStockSub.textContent = 'All healthy';
+          kpiLowStockSub.style.color = '';
+        }
+      }
+    }
+
+    // Render Prominent Low Stock Alert Panel
     const warningSection = document.getElementById('lowStockWarningSection');
     if (warningSection) {
       if (lowStockCount > 0) {
         warningSection.classList.remove('hidden');
-        const itemsListHtml = lowStockItems.slice(0, 6).map(item => `
-          <span>${item.shape.icon} ${item.shape.name} • ${item.color.name} (${item.size.name}): <strong>${item.qty} pcs left</strong></span>
-        `).join(' • ');
-
         warningSection.innerHTML = `
-          <div class="alert-box">
-            <div class="alert-box-text">
-              <span>⚠️</span>
-              <div>
-                <strong>Low Stock Notice (${lowStockCount} items below ${appState.settings.lowStockThreshold} pcs threshold):</strong>
-                <div style="font-size:0.8rem; margin-top:2px;">${itemsListHtml}</div>
+          <div class="low-stock-alert-panel">
+            <div class="low-stock-alert-header">
+              <div class="low-stock-alert-title">
+                <span class="low-stock-alert-icon">⚠️</span>
+                <div>
+                  <h4>Low Stock Alert: ${lowStockCount} Item${lowStockCount > 1 ? 's' : ''} Below Reorder Limit (&lt; ${appState.settings.lowStockThreshold} pcs)</h4>
+                  <p>The following shape & size needs factory production or stock inward:</p>
+                </div>
               </div>
+              <button class="btn btn-in btn-sm" id="btnLowStockReorder">📥 Inward Stock (Stock In)</button>
             </div>
-            <div class="alert-box-action">
-              <button class="btn btn-in btn-sm" id="btnLowStockReorder">Order Factory Stock 📥</button>
+            <div class="low-stock-items-chips">
+              ${lowStockItems.map(item => `
+                <div class="low-stock-chip" onclick="window.gallopsOrderSku('${item.shape.id}', '${item.color.id}', '${item.size.id}')" title="Click to fill Stock In voucher for ${item.shape.name} ${item.color.name} (${item.size.name})">
+                  <span class="chip-shape-icon">${item.shape.icon}</span>
+                  <span class="chip-shape-name">${item.shape.name}</span>
+                  <span class="chip-color-dot" style="background:${item.color.hex}; ${item.color.id === 'WHITE' ? 'border:1px solid #94a3b8;' : ''}"></span>
+                  <span class="chip-color-name" style="color:${item.color.hex === '#ffffff' ? '#64748b' : item.color.hex};">${item.color.name}</span>
+                  <span class="chip-size-tag">${item.size.id === 'S' ? 'SMALL' : item.size.id === 'M' ? 'MEDIUM' : 'LARGE'} (${item.size.id})</span>
+                  <span class="chip-qty-warn">⚠️ <strong>${item.qty} pcs left</strong> (Threshold: ${appState.settings.lowStockThreshold})</span>
+                  <span class="chip-action-btn">+ Stock In</span>
+                </div>
+              `).join('')}
             </div>
           </div>
         `;
@@ -530,6 +564,30 @@
     renderRecentTransactions();
     renderFastMovingSizes();
   }
+
+  // Quick helper to jump to inward tab with SKU pre-selected
+  window.gallopsOrderSku = function (shapeId, colorId, sizeId) {
+    switchTab('inward');
+    setTimeout(() => {
+      const selShape = document.getElementById('inShape');
+      const selColor = document.getElementById('inColor');
+      const selSize = document.getElementById('inSize');
+      if (selShape) {
+        selShape.value = shapeId;
+        selShape.dispatchEvent(new Event('change'));
+      }
+      if (selColor) {
+        selColor.value = colorId;
+        selColor.dispatchEvent(new Event('change'));
+      }
+      if (selSize) {
+        selSize.value = sizeId;
+        selSize.dispatchEvent(new Event('change'));
+      }
+      const qtyInput = document.getElementById('inQuantity');
+      if (qtyInput) qtyInput.focus();
+    }, 50);
+  };
 
   // Render ChatGPT Mockup Style Product Cards
   function renderChatGptCards() {
@@ -548,6 +606,7 @@
         : shape.id === 'LSR' ? '#94a3b8' 
         : '#f59e0b';
 
+      let shapeHasLow = false;
       let colorSectionsHtml = '';
 
       colors.forEach(color => {
@@ -555,15 +614,23 @@
 
         appState.settings.sizes.forEach(size => {
           const qty = getStockQty(shape.id, color.id, size.id);
+          const isLow = qty < appState.settings.lowStockThreshold;
+          if (isLow) shapeHasLow = true;
+
           const sizeUpperName = size.id === 'S' ? 'SMALL' : size.id === 'M' ? 'MEDIUM' : 'LARGE';
+          const lowClass = isLow ? 'is-low-stock' : '';
+          const lowBadgeHtml = isLow 
+            ? `<div class="cg-low-badge">⚠️ Low Stock (${qty} pcs)</div>` 
+            : '';
 
           sizesColsHtml += `
-            <div class="cg-size-item">
+            <div class="cg-size-item ${lowClass}">
               <div class="cg-size-label">${sizeUpperName}</div>
               <div class="cg-size-val-row">
-                <span class="cg-size-val">${qty}</span>
+                <span class="cg-size-val" style="${isLow ? 'color:#ea580c;' : ''}">${qty}</span>
               </div>
               <div class="cg-size-unit">pcs</div>
+              ${lowBadgeHtml}
             </div>
           `;
         });
@@ -581,12 +648,17 @@
         `;
       });
 
+      const lowHeaderBadge = shapeHasLow 
+        ? `<span class="cg-shape-low-pill">⚠️ Low Stock</span>` 
+        : '';
+
       html += `
         <div class="cg-shape-card">
           <div class="cg-card-header">
             <div class="cg-card-title-wrap">
               <span class="cg-shape-bullet" style="background-color: ${shapeDotColor};"></span>
               <span class="cg-shape-name">${shape.name.toUpperCase()}</span>
+              ${lowHeaderBadge}
             </div>
             <span class="cg-colours-badge">${colorCountText}</span>
           </div>
