@@ -955,80 +955,12 @@
     }).join('');
   }
 
-  // 5. Render Buyers Directory
-  function renderBuyersDirectory() {
-    const container = document.getElementById('buyersGrid');
-    if (!container) return;
-
-    const buyersMap = {};
-    appState.transactions.forEach(t => {
-      if (t.type === 'OUT' && t.partyName) {
-        const name = t.partyName.trim();
-        if (!buyersMap[name]) {
-          buyersMap[name] = {
-            name,
-            city: t.city || 'Wholesale Buyer',
-            phone: t.phone || '',
-            totalOrders: 0,
-            totalUnits: 0,
-            totalSpend: 0,
-            lastOrderDate: t.date
-          };
-        }
-        buyersMap[name].totalOrders++;
-        buyersMap[name].totalUnits += (t.quantity || 0);
-        buyersMap[name].totalSpend += (t.total || 0);
-        if (t.date > buyersMap[name].lastOrderDate) {
-          buyersMap[name].lastOrderDate = t.date;
-        }
-      }
-    });
-
-    const buyersList = Object.values(buyersMap).sort((a, b) => b.totalSpend - a.totalSpend);
-
-    if (buyersList.length === 0) {
-      container.innerHTML = `<div class="text-muted" style="padding:2rem; grid-column:1/-1; text-align:center;">No buyer records yet. Dispatches logged in "Wholesale Sales" will automatically generate this buyer directory!</div>`;
-      return;
-    }
-
-    container.innerHTML = buyersList.map(b => `
-      <div class="buyer-card">
-        <div>
-          <div class="buyer-header">
-            <div>
-              <div class="buyer-name">${b.name}</div>
-              <div class="buyer-city">📍 ${b.city}</div>
-            </div>
-            <span class="tag-badge tag-in">${b.totalOrders} Orders</span>
-          </div>
-          ${b.phone ? `<div style="font-size:0.8rem; color:var(--text-secondary); margin-top:0.4rem;">📞 ${b.phone}</div>` : ''}
-        </div>
-        <div>
-          <div class="buyer-stats">
-            <div class="buyer-stat-item">
-              <div class="buyer-stat-label">Total Cups</div>
-              <div class="buyer-stat-val">${b.totalUnits.toLocaleString('en-IN')}</div>
-            </div>
-            <div class="buyer-stat-item">
-              <div class="buyer-stat-label">Total Billed</div>
-              <div class="buyer-stat-val" style="color:var(--accent-emerald);">${formatCurrency(b.totalSpend)}</div>
-            </div>
-          </div>
-          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem; text-align:right;">
-            Last Order: ${formatDate(b.lastOrderDate)}
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
   // Master render
   function renderAll() {
     populateDropdowns();
     renderDashboard();
     renderStockMatrix();
     renderHistoryTables();
-    renderBuyersDirectory();
   }
 
   // ================= TRANSACTION ACTIONS =================

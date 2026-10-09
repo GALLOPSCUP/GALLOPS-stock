@@ -1171,69 +1171,6 @@ label {
   min-width: 220px;
 }
 
-/* ================= BUYERS GRID ================= */
-.buyers-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
-}
-
-.buyer-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 1rem;
-  transition: all var(--transition-fast);
-}
-
-.buyer-card:hover {
-  border-color: var(--accent-purple);
-  box-shadow: var(--shadow-md);
-}
-
-.buyer-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.buyer-name {
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-
-.buyer-city {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.buyer-stats {
-  display: flex;
-  gap: 1rem;
-  background: var(--bg-tertiary);
-  padding: 0.65rem 0.85rem;
-  border-radius: var(--radius-md);
-}
-
-.buyer-stat-item {
-  flex: 1;
-}
-
-.buyer-stat-label {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-
-.buyer-stat-val {
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-
 /* ================= SETTINGS ================= */
 .settings-grid {
   display: grid;
