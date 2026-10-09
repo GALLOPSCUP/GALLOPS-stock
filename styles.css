@@ -1469,6 +1469,63 @@ label {
   margin-top: 1.5rem;
 }
 
+/* ================= LOW STOCK MODAL ================= */
+.low-stock-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.low-stock-modal-item {
+  background: var(--bg-card);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  border-left: 4px solid #f97316;
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: all 0.15s ease;
+}
+
+.low-stock-modal-item:hover {
+  background: rgba(249, 115, 22, 0.05);
+  border-color: #f97316;
+}
+
+.low-stock-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.low-stock-item-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+}
+
+.low-stock-item-qty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.qty-warning-pill {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #ea580c;
+  background: rgba(249, 115, 22, 0.12);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
 .adjust-control-group {
   display: flex;
   gap: 0.5rem;

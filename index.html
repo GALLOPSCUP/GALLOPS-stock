@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=22">
+  <link rel="stylesheet" href="styles.css?v=24">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -123,11 +123,6 @@
               <div class="cg-summary-val" id="kpiLowStockCount">0</div>
               <div class="cg-summary-sub" id="kpiLowStockSub">Need restocking</div>
             </div>
-          </div>
-
-          <!-- LOW STOCK WARNINGS CONTAINER (Placed right below KPI cards for instant visibility) -->
-          <div id="lowStockWarningSection" class="alert-box-container hidden mt-3">
-            <!-- Dynamically populated with exact shape and size -->
           </div>
 
           <!-- CHATGPT STYLE PRODUCT INVENTORY HEADER -->
@@ -692,6 +687,34 @@
     </div>
 
     <!-- QUICK MODALS -->
+    <!-- LOW STOCK ALERT POPUP MODAL -->
+    <div id="lowStockModal" class="modal-overlay hidden">
+      <div class="modal-box" style="max-width: 580px;">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:0.65rem;">
+            <span style="font-size:1.6rem; line-height:1;">⚠️</span>
+            <div>
+              <h3 id="lowStockModalTitle" style="font-size:1.2rem; font-weight:800; color:#ea580c; margin:0;">Low Stock Alert</h3>
+              <p id="lowStockModalSubtitle" class="text-muted" style="font-size:0.8rem; margin:2px 0 0 0;">Items running below reorder limit</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="btnLowStockClose">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="lowStockModalContent">
+            <!-- Dynamically populated with items list -->
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between; align-items: center;">
+          <span style="font-size:0.78rem; color:var(--text-muted);" id="lowStockModalThresholdNote">Alert Threshold: &lt; 50 pcs</span>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-secondary" id="btnLowStockDismiss">Close</button>
+            <button class="btn btn-in" id="btnLowStockModalInward">📥 Stock In (Factory)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- QUICK ADJUST STOCK MODAL -->
     <div id="quickAdjustModal" class="modal-overlay hidden">
       <div class="modal-box">
@@ -725,6 +748,6 @@
 
   </div>
 
-  <script src="app.js?v=22"></script>
+  <script src="app.js?v=24"></script>
 </body>
 </html>

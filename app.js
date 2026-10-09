@@ -460,6 +460,9 @@
       });
     });
 
+    // Save low stock items to state for popup modal
+    appState.lowStockItems = lowStockItems;
+
     // Calculate Sales KPIs
     let totalUnitsSold = 0;
     let totalRevenue = 0;
@@ -494,7 +497,7 @@
     if (kpiLowStockCount) kpiLowStockCount.textContent = lowStockCount;
     if (kpiLowStockBadge) kpiLowStockBadge.textContent = `${lowStockCount} SKUs Low`;
 
-    // Highlight Low Stock KPI Card with exact item info
+    // Highlight Low Stock KPI Card with exact item info & click trigger
     const kpiLowStockCard = document.getElementById('kpiLowStockCard');
     const kpiLowStockSub = document.getElementById('kpiLowStockSub');
     if (kpiLowStockCard) {
@@ -504,59 +507,18 @@
         if (kpiLowStockSub) {
           if (lowStockCount === 1) {
             const first = lowStockItems[0];
-            kpiLowStockSub.innerHTML = `<span style="color:#ea580c; font-weight:700;">⚠️ ${first.shape.name} ${first.color.name} (${first.size.id}) • ${first.qty} pcs</span>`;
+            kpiLowStockSub.innerHTML = `<span style="color:#ea580c; font-weight:700;">⚠️ ${first.shape.name} ${first.color.name} (${first.size.id}) • ${first.qty} pcs 👆 Tap for Popup</span>`;
           } else {
-            kpiLowStockSub.innerHTML = `<span style="color:#ea580c; font-weight:700;">⚠️ ${lowStockCount} items low • View list ▾</span>`;
+            kpiLowStockSub.innerHTML = `<span style="color:#ea580c; font-weight:700;">⚠️ ${lowStockCount} items low • 👆 Tap for Popup</span>`;
           }
         }
       } else {
         kpiLowStockCard.style.borderColor = '';
         kpiLowStockCard.style.background = '';
         if (kpiLowStockSub) {
-          kpiLowStockSub.textContent = 'All healthy';
+          kpiLowStockSub.textContent = 'All healthy (Tap to check)';
           kpiLowStockSub.style.color = '';
         }
-      }
-    }
-
-    // Render Prominent Low Stock Alert Panel
-    const warningSection = document.getElementById('lowStockWarningSection');
-    if (warningSection) {
-      if (lowStockCount > 0) {
-        warningSection.classList.remove('hidden');
-        warningSection.innerHTML = `
-          <div class="low-stock-alert-panel">
-            <div class="low-stock-alert-header">
-              <div class="low-stock-alert-title">
-                <span class="low-stock-alert-icon">⚠️</span>
-                <div>
-                  <h4>Low Stock Alert: ${lowStockCount} Item${lowStockCount > 1 ? 's' : ''} Below Reorder Limit (&lt; ${appState.settings.lowStockThreshold} pcs)</h4>
-                  <p>The following shape & size needs factory production or stock inward:</p>
-                </div>
-              </div>
-              <button class="btn btn-in btn-sm" id="btnLowStockReorder">📥 Inward Stock (Stock In)</button>
-            </div>
-            <div class="low-stock-items-chips">
-              ${lowStockItems.map(item => `
-                <div class="low-stock-chip" onclick="window.gallopsOrderSku('${item.shape.id}', '${item.color.id}', '${item.size.id}')" title="Click to fill Stock In voucher for ${item.shape.name} ${item.color.name} (${item.size.name})">
-                  <span class="chip-shape-icon">${item.shape.icon}</span>
-                  <span class="chip-shape-name">${item.shape.name}</span>
-                  <span class="chip-color-dot" style="background:${item.color.hex}; ${item.color.id === 'WHITE' ? 'border:1px solid #94a3b8;' : ''}"></span>
-                  <span class="chip-color-name" style="color:${item.color.hex === '#ffffff' ? '#64748b' : item.color.hex};">${item.color.name}</span>
-                  <span class="chip-size-tag">${item.size.id === 'S' ? 'SMALL' : item.size.id === 'M' ? 'MEDIUM' : 'LARGE'} (${item.size.id})</span>
-                  <span class="chip-qty-warn">⚠️ <strong>${item.qty} pcs left</strong> (Threshold: ${appState.settings.lowStockThreshold})</span>
-                  <span class="chip-action-btn">+ Stock In</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
-
-        document.getElementById('btnLowStockReorder')?.addEventListener('click', () => {
-          switchTab('inward');
-        });
-      } else {
-        warningSection.classList.add('hidden');
       }
     }
 
@@ -565,8 +527,106 @@
     renderFastMovingSizes();
   }
 
+  // ================= LOW STOCK MODAL POPUP =================
+  window.gallopsOpenLowStockModal = function () {
+    const modal = document.getElementById('lowStockModal');
+    if (!modal) return;
+
+    const content = document.getElementById('lowStockModalContent');
+    const title = document.getElementById('lowStockModalTitle');
+    const subtitle = document.getElementById('lowStockModalSubtitle');
+    const note = document.getElementById('lowStockModalThresholdNote');
+
+    const threshold = appState.settings.lowStockThreshold || 50;
+    if (note) note.textContent = `Alert Threshold: < ${threshold} pcs (Change in Settings)`;
+
+    const items = appState.lowStockItems || [];
+    if (title) {
+      title.textContent = items.length === 0 ? 'Stock Status: All Healthy' : `Low Stock Alert (${items.length} Item${items.length > 1 ? 's' : ''})`;
+    }
+    if (subtitle) {
+      subtitle.textContent = items.length === 0 
+        ? 'All products are currently well stocked above your safety limit.' 
+        : `The following shapes & sizes have dropped below ${threshold} pieces:`;
+    }
+
+    if (content) {
+      if (items.length === 0) {
+        content.innerHTML = `
+          <div style="text-align:center; padding: 2rem 1rem;">
+            <div style="font-size: 2.75rem; margin-bottom: 0.5rem;">🎉</div>
+            <h4 style="font-weight:800; font-size:1.15rem; color:var(--accent-emerald); margin:0 0 0.4rem 0;">All Stock Levels Are Healthy!</h4>
+            <p class="text-muted" style="font-size:0.85rem; margin:0;">
+              No cup shapes or sizes are currently below the ${threshold} pcs minimum limit.
+            </p>
+          </div>
+        `;
+      } else {
+        content.innerHTML = `
+          <div class="low-stock-modal-list">
+            ${items.map(item => `
+              <div class="low-stock-modal-item">
+                <div class="low-stock-item-info">
+                  <div class="low-stock-item-title">
+                    <span style="font-size:1.3rem; line-height:1;">${item.shape.icon}</span>
+                    <strong style="color:var(--text-primary); font-size:1rem;">${item.shape.name}</strong>
+                    <span style="display:inline-flex; align-items:center; gap:4px; font-weight:700; color:${item.color.hex === '#ffffff' ? 'var(--text-secondary)' : item.color.hex};">
+                      <span style="width:10px; height:10px; border-radius:50%; background:${item.color.hex}; display:inline-block; ${item.color.id === 'WHITE' ? 'border:1px solid #94a3b8;' : ''}"></span>
+                      ${item.color.name}
+                    </span>
+                    <span class="chip-size-tag">${item.size.name}</span>
+                  </div>
+                  <div class="low-stock-item-qty">
+                    <span class="qty-warning-pill">⚠️ ${item.qty} pcs remaining</span>
+                    <span class="text-muted" style="font-size:0.75rem;">(Below reorder limit of ${threshold} pcs)</span>
+                  </div>
+                </div>
+                <div>
+                  <button class="btn btn-in btn-sm" onclick="window.gallopsOrderSku('${item.shape.id}', '${item.color.id}', '${item.size.id}')" title="Fill Factory Stock In for this SKU">
+                    + Inward Stock 📥
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+    }
+
+    modal.classList.remove('hidden');
+  };
+
+  window.gallopsCloseLowStockModal = function () {
+    const modal = document.getElementById('lowStockModal');
+    if (modal) modal.classList.add('hidden');
+  };
+
+  function setupLowStockModalControls() {
+    document.getElementById('btnLowStockClose')?.addEventListener('click', window.gallopsCloseLowStockModal);
+    document.getElementById('btnLowStockDismiss')?.addEventListener('click', window.gallopsCloseLowStockModal);
+    document.getElementById('btnLowStockModalInward')?.addEventListener('click', () => {
+      window.gallopsCloseLowStockModal();
+      switchTab('inward');
+    });
+
+    const modal = document.getElementById('lowStockModal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) window.gallopsCloseLowStockModal();
+      });
+    }
+
+    const kpiCard = document.getElementById('kpiLowStockCard');
+    if (kpiCard) {
+      kpiCard.addEventListener('click', () => {
+        window.gallopsOpenLowStockModal();
+      });
+    }
+  }
+
   // Quick helper to jump to inward tab with SKU pre-selected
   window.gallopsOrderSku = function (shapeId, colorId, sizeId) {
+    window.gallopsCloseLowStockModal();
     switchTab('inward');
     setTimeout(() => {
       const selShape = document.getElementById('inShape');
@@ -1364,6 +1424,7 @@
     populateDropdowns();
     renderAll();
     setupAdjustModalControls();
+    setupLowStockModalControls();
 
     // Nav Click handlers
     document.querySelectorAll('.side-nav .nav-item').forEach(btn => {
