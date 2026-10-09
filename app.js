@@ -11,10 +11,10 @@
 
   // ================= STORAGE KEYS =================
   const STORAGE_KEYS = {
-    STOCK: 'gallops_cup_stock_v3',
-    TRANSACTIONS: 'gallops_cup_transactions_v3',
-    SETTINGS: 'gallops_cup_settings_v3',
-    THEME: 'gallops_cup_theme_v3'
+    STOCK: 'gallops_cup_stock_v4',
+    TRANSACTIONS: 'gallops_cup_transactions_v4',
+    SETTINGS: 'gallops_cup_settings_v4',
+    THEME: 'gallops_cup_theme_v4'
   };
 
   // ================= DEFAULT CONFIGURATION =================
@@ -23,14 +23,14 @@
     { id: 'BELL', name: 'Bell Shape', icon: '🔔', colors: ['PINK', 'BLUE', 'PURPLE'] },
     { id: 'SINGLE_FOLD', name: 'Single Fold', icon: '📐', colors: ['PINK', 'BLUE', 'PURPLE'] },
     { id: 'MULTI_FOLD', name: 'Multi Fold', icon: '🥏', colors: ['PINK', 'BLUE', 'PURPLE'] },
-    { id: 'LSR', name: 'LSR', icon: '💎', colors: ['NATURAL', 'PINK', 'BLUE', 'PURPLE'] }
+    { id: 'LSR', name: 'LSR', icon: '💎', colors: ['WHITE'] }
   ];
 
   const DEFAULT_COLORS = [
     { id: 'PINK', name: 'Pink', hex: '#ec4899', dot: '🔴' },
     { id: 'BLUE', name: 'Blue', hex: '#2563eb', dot: '🔵' },
     { id: 'PURPLE', name: 'Purple', hex: '#9333ea', dot: '🟣' },
-    { id: 'NATURAL', name: 'Standard / Natural (LSR)', hex: '#64748b', dot: '⚪' }
+    { id: 'WHITE', name: 'White', hex: '#64748b', dot: '⚪' }
   ];
 
   const DEFAULT_SIZES = [
@@ -95,10 +95,10 @@
     'MULTI_FOLD_PURPLE_M': 120,
     'MULTI_FOLD_PURPLE_L': 40, // Low stock alert
 
-    // LSR
-    'LSR_NATURAL_S': 110,
-    'LSR_NATURAL_M': 190,
-    'LSR_NATURAL_L': 85
+    // LSR (Only White Available)
+    'LSR_WHITE_S': 110,
+    'LSR_WHITE_M': 190,
+    'LSR_WHITE_L': 85
   };
 
   const INITIAL_TRANSACTIONS_SAMPLE = [
@@ -158,14 +158,14 @@
       type: 'IN',
       date: '2026-10-07',
       shapeId: 'LSR',
-      colorId: 'NATURAL',
+      colorId: 'WHITE',
       sizeId: 'M',
       quantity: 350,
       rate: 52,
       total: 18200,
       partyName: 'Supreme Silicone Molds Ltd',
       reference: 'CHALLAN-901',
-      notes: 'LSR medical grade liquid silicone shipment',
+      notes: 'LSR White medical grade liquid silicone shipment',
       timestamp: Date.now() - 2 * 86400000
     }
   ];
@@ -500,21 +500,22 @@
       let shapeTotal = 0;
       const colors = getColorsForShape(shape.id);
 
-      let breakdownPills = '';
-      colors.forEach(color => {
-        let colorTotal = 0;
-        appState.settings.sizes.forEach(size => {
-          colorTotal += getStockQty(shape.id, color.id, size.id);
+      let sizePills = '';
+      appState.settings.sizes.forEach(size => {
+        let sizeTotal = 0;
+        colors.forEach(color => {
+          sizeTotal += getStockQty(shape.id, color.id, size.id);
         });
-        shapeTotal += colorTotal;
+        shapeTotal += sizeTotal;
 
-        breakdownPills += `
+        let statusClass = sizeTotal === 0 ? 'status-empty' : sizeTotal < 50 ? 'status-low' : 'status-good';
+        let statusText = sizeTotal === 0 ? 'Zero' : sizeTotal < 50 ? 'Low' : 'In Stock';
+
+        sizePills += `
           <div class="size-pill-box">
-            <div class="size-pill-label">${color.dot} ${color.name}</div>
-            <div class="size-pill-qty">${colorTotal}</div>
-            <span class="size-pill-status ${colorTotal === 0 ? 'status-empty' : colorTotal < 50 ? 'status-low' : 'status-good'}">
-              ${colorTotal === 0 ? 'Zero' : colorTotal < 50 ? 'Low' : 'Stock'}
-            </span>
+            <div class="size-pill-label">${size.name}</div>
+            <div class="size-pill-qty">${sizeTotal}</div>
+            <span class="size-pill-status ${statusClass}">${statusText}</span>
           </div>
         `;
       });
@@ -528,8 +529,8 @@
             </div>
             <span class="shape-total-badge">${shapeTotal} Pcs</span>
           </div>
-          <div class="shape-sizes-breakdown" style="grid-template-columns: repeat(${colors.length}, 1fr);">
-            ${breakdownPills}
+          <div class="shape-sizes-breakdown" style="grid-template-columns: repeat(3, 1fr);">
+            ${sizePills}
           </div>
         </div>
       `;
