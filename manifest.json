@@ -1,0 +1,24 @@
+{
+  "name": "Gaalops Menstrual Cup Wholesale Stock",
+  "short_name": "Gaalops Stock",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f111a",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "description": "Stock Maintenance & Inventory App for Wholesale Menstrual Cup Business on IndiaMART",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

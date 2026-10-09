@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1e1b4b">
+  <meta name="description" content="Wholesale Menstrual Cup Stock Maintenance & Inventory App for IndiaMART Sellers">
+  <title>Gaalops Cups - Wholesale Stock Manager</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-dark">
+  <div id="app" class="app-container">
+    
+    <!-- TOP NAVIGATION BAR -->
+    <header class="top-header">
+      <div class="brand-section">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2C8 2 5 6 5 11c0 5 4 8 7 11 3-3 7-6 7-11 0-5-3-9-7-11z" fill="url(#brandGrad)" stroke="none"/>
+            <path d="M12 2C8 2 5 6 5 11c0 5 4 8 7 11 3-3 7-6 7-11 0-5-3-9-7-11z" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+            <defs>
+              <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ec4899" />
+                <stop offset="100%" stop-color="#8b5cf6" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1 class="brand-title">GAALOPS STOCK</h1>
+          <span class="brand-tag">Wholesale Menstrual Cup Inventory • IndiaMART</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Quick Action Buttons -->
+        <button id="btnQuickIn" class="btn btn-in" title="Add Factory Stock">
+          <span class="btn-icon">📥</span>
+          <span class="btn-label">Stock In (Factory)</span>
+        </button>
+        <button id="btnQuickOut" class="btn btn-out" title="Sell Wholesale">
+          <span class="btn-icon">📤</span>
+          <span class="btn-label">Stock Out (IndiaMART)</span>
+        </button>
+        <button id="btnThemeToggle" class="btn-icon-only" title="Toggle Dark/Light Mode">
+          🌓
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN APP LAYOUT (Sidebar + Content) -->
+    <div class="main-body">
+      
+      <!-- NAVIGATION TABS -->
+      <nav class="side-nav">
+        <button class="nav-item active" data-tab="dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="matrix">
+          <span class="nav-icon">📦</span>
+          <span class="nav-text">Stock Matrix (15 SKUs)</span>
+        </button>
+        <button class="nav-item" data-tab="inward">
+          <span class="nav-icon">🏭</span>
+          <span class="nav-text">Factory Purchase (In)</span>
+        </button>
+        <button class="nav-item" data-tab="outward">
+          <span class="nav-icon">🛒</span>
+          <span class="nav-text">IndiaMART Sales (Out)</span>
+        </button>
+        <button class="nav-item" data-tab="ledger">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">Stock Ledger & Logs</span>
+        </button>
+        <button class="nav-item" data-tab="buyers">
+          <span class="nav-icon">👥</span>
+          <span class="nav-text">Wholesale Buyers</span>
+        </button>
+        <button class="nav-item" data-tab="settings">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Settings & Backup</span>
+        </button>
+      </nav>
+
+      <!-- CONTENT PANELS -->
+      <main class="content-panel">
+        
+        <!-- ================= DASHBOARD TAB ================= -->
+        <section id="tab-dashboard" class="tab-pane active">
+          
+          <!-- QUICK METRICS ROW -->
+          <div class="metrics-grid">
+            <div class="metric-card card-gradient-purple">
+              <div class="metric-header">
+                <span class="metric-title">TOTAL CUPS IN STOCK</span>
+                <span class="metric-badge">All 15 Types</span>
+              </div>
+              <div class="metric-value" id="kpiTotalUnits">0</div>
+              <div class="metric-sub" id="kpiTotalBoxes">≈ 0 boxes</div>
+            </div>
+
+            <div class="metric-card card-gradient-blue">
+              <div class="metric-header">
+                <span class="metric-title">ESTIMATED STOCK VALUE</span>
+                <span class="metric-badge">At Cost</span>
+              </div>
+              <div class="metric-value" id="kpiStockValuation">₹0</div>
+              <div class="metric-sub" id="kpiStockPotential">Selling Potential: ₹0</div>
+            </div>
+
+            <div class="metric-card card-gradient-emerald">
+              <div class="metric-header">
+                <span class="metric-title">TOTAL DISPATCHED / SOLD</span>
+                <span class="metric-badge">Wholesale</span>
+              </div>
+              <div class="metric-value" id="kpiTotalSold">0</div>
+              <div class="metric-sub" id="kpiRevenue">Total Revenue: ₹0</div>
+            </div>
+
+            <div class="metric-card card-gradient-rose">
+              <div class="metric-header">
+                <span class="metric-title">LOW STOCK ALERTS</span>
+                <span class="metric-badge badge-warning" id="kpiLowStockBadge">0 Alerts</span>
+              </div>
+              <div class="metric-value" id="kpiLowStockCount">0</div>
+              <div class="metric-sub">Need re-order from factory</div>
+            </div>
+          </div>
+
+          <!-- QUICK SHORTCUT HERO BANNER FOR BEGINNERS -->
+          <div class="info-guide-banner">
+            <div class="guide-text">
+              <h3>👋 Wholesale Stock Made Easy (No Accounting Knowledge Needed!)</h3>
+              <p>You have <strong>3 Sizes (Small, Medium, Large)</strong> and <strong>5 Cup Shapes</strong>. When your factory delivers cups, click <strong>"Stock In"</strong>. When you get an order on IndiaMART, click <strong>"Stock Out"</strong>. The app updates everything automatically!</p>
+            </div>
+            <div class="guide-actions">
+              <button class="btn btn-outline" id="btnDownloadSamplePdf">🖨️ Print Stock Summary</button>
+              <button class="btn btn-primary" id="btnExportExcelQuick">📊 Download Excel Sheet</button>
+            </div>
+          </div>
+
+          <!-- LOW STOCK WARNINGS CONTAINER -->
+          <div id="lowStockWarningSection" class="alert-box-container hidden">
+            <!-- Dynamically populated if items are low -->
+          </div>
+
+          <!-- LIVE STOCK OVERVIEW BY SHAPE (CARDS) -->
+          <div class="section-header-row">
+            <div>
+              <h2 class="section-title">Stock Overview By Shape</h2>
+              <p class="section-desc">Current inventory breakdown across all 5 shapes and 3 sizes</p>
+            </div>
+            <button class="btn btn-ghost" id="btnGoToMatrix">View Detailed 15-SKU Matrix →</button>
+          </div>
+
+          <div class="shapes-overview-grid" id="shapesOverviewGrid">
+            <!-- Dynamically rendered -->
+          </div>
+
+          <!-- RECENT ACTIVITY ROW -->
+          <div class="dashboard-split-row">
+            <!-- Recent Transactions -->
+            <div class="panel-box flex-2">
+              <div class="panel-box-header">
+                <h3 class="panel-box-title">Recent Transactions</h3>
+                <button class="btn-link" id="btnSeeAllLedger">View All Logs →</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Date</th>
+                      <th>Shape & Size</th>
+                      <th>Qty (Pcs)</th>
+                      <th>Party / Buyer</th>
+                      <th>Ref/Challan</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentTransactionsTbody">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Top Selling Shapes & Fast Moving Sizes -->
+            <div class="panel-box flex-1">
+              <div class="panel-box-header">
+                <h3 class="panel-box-title">Fast Moving Sizes</h3>
+              </div>
+              <div class="fast-moving-list" id="fastMovingSizesList">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ================= STOCK MATRIX TAB (15 SKUs) ================= -->
+        <section id="tab-matrix" class="tab-pane">
+          <div class="section-header-row">
+            <div>
+              <h2 class="section-title">15-SKU Stock Matrix Grid</h2>
+              <p class="section-desc">Live inventory table: 5 Shapes (Rows) × 3 Sizes (Columns). Click "+" or "−" to quickly adjust stock.</p>
+            </div>
+            <div class="action-btn-group">
+              <button class="btn btn-secondary" id="btnRefreshMatrix">🔄 Refresh</button>
+              <button class="btn btn-primary" id="btnExportMatrixCsv">📥 Export Matrix CSV</button>
+            </div>
+          </div>
+
+          <!-- MATRIX TABLE -->
+          <div class="matrix-card">
+            <div class="table-responsive">
+              <table class="matrix-table" id="stockMatrixTable">
+                <thead>
+                  <tr>
+                    <th class="matrix-th-shape">Cup Shape / Design</th>
+                    <th class="matrix-th-size" data-size="S">Size S (Small)</th>
+                    <th class="matrix-th-size" data-size="M">Size M (Medium)</th>
+                    <th class="matrix-th-size" data-size="L">Size L (Large)</th>
+                    <th class="matrix-th-total">Total by Shape</th>
+                    <th class="matrix-th-status">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="stockMatrixTbody">
+                  <!-- Generated by JS -->
+                </tbody>
+                <tfoot>
+                  <tr class="matrix-total-row">
+                    <td><strong>TOTAL BY SIZE</strong></td>
+                    <td id="matrixTotalSizeS">0</td>
+                    <td id="matrixTotalSizeM">0</td>
+                    <td id="matrixTotalSizeL">0</td>
+                    <td id="matrixGrandTotal">0</td>
+                    <td>-</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <!-- SKU DETAIL TILES -->
+          <div class="sku-cards-section">
+            <h3 class="subsection-title">All 15 SKU Cards (Click to see transaction history)</h3>
+            <div class="sku-cards-grid" id="skuCardsGrid">
+              <!-- Dynamically filled -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= FACTORY INWARD TAB ================= -->
+        <section id="tab-inward" class="tab-pane">
+          <div class="section-header-row">
+            <div>
+              <h2 class="section-title">Factory Stock Receipt (Inward Entry)</h2>
+              <p class="section-desc">Record stock received from your manufacturing party</p>
+            </div>
+          </div>
+
+          <div class="form-container-card">
+            <form id="formStockIn" class="stock-form">
+              <div class="form-grid">
+                
+                <div class="form-group">
+                  <label for="inShape">Select Cup Shape <span class="req">*</span></label>
+                  <select id="inShape" required class="form-control">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="inSize">Select Size <span class="req">*</span></label>
+                  <select id="inSize" required class="form-control">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="inQuantity">Quantity Received (Pieces) <span class="req">*</span></label>
+                  <input type="number" id="inQuantity" min="1" step="1" required class="form-control" placeholder="e.g. 500">
+                </div>
+
+                <div class="form-group">
+                  <label for="inCostPrice">Purchase Cost Per Cup (₹)</label>
+                  <input type="number" id="inCostPrice" min="0" step="0.5" class="form-control" placeholder="e.g. 45">
+                </div>
+
+                <div class="form-group">
+                  <label for="inDate">Date Received <span class="req">*</span></label>
+                  <input type="date" id="inDate" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                  <label for="inBatchNumber">Factory Batch / Lot No.</label>
+                  <input type="text" id="inBatchNumber" class="form-control" placeholder="e.g. BATCH-2026-04">
+                </div>
+
+                <div class="form-group">
+                  <label for="inSupplierName">Manufacturer / Supplier Party</label>
+                  <input type="text" id="inSupplierName" class="form-control" value="Primary Manufacturer" placeholder="Manufacturer Name">
+                </div>
+
+                <div class="form-group">
+                  <label for="inChallanNo">Invoice / Delivery Challan No.</label>
+                  <input type="text" id="inChallanNo" class="form-control" placeholder="e.g. DC-9842">
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="inNotes">Remarks / Quality Check Notes</label>
+                  <input type="text" id="inNotes" class="form-control" placeholder="e.g. Received in 5 carton boxes of 100 pcs each, verified clean">
+                </div>
+
+              </div>
+
+              <div class="form-actions">
+                <button type="reset" class="btn btn-secondary">Clear Form</button>
+                <button type="submit" class="btn btn-in-submit">📥 Add To Stock (+)</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- RECENT INWARD RECEIPTS -->
+          <div class="panel-box mt-4">
+            <h3 class="panel-box-title">Recent Factory Receipts</h3>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Shape & Size</th>
+                    <th>Quantity</th>
+                    <th>Cost/Pc</th>
+                    <th>Total Cost</th>
+                    <th>Batch #</th>
+                    <th>Challan / Inv</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="inwardHistoryTbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= WHOLESALE OUTWARD TAB ================= -->
+        <section id="tab-outward" class="tab-pane">
+          <div class="section-header-row">
+            <div>
+              <h2 class="section-title">Wholesale Sale / IndiaMART Dispatch (Outward)</h2>
+              <p class="section-desc">Record wholesale orders dispatched to IndiaMART buyers or retail distributors</p>
+            </div>
+          </div>
+
+          <div class="form-container-card">
+            <form id="formStockOut" class="stock-form">
+              <div class="form-grid">
+                
+                <div class="form-group">
+                  <label for="outShape">Select Cup Shape <span class="req">*</span></label>
+                  <select id="outShape" required class="form-control">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="outSize">Select Size <span class="req">*</span></label>
+                  <select id="outSize" required class="form-control">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="outQuantity">Quantity Dispatched (Pieces) <span class="req">*</span></label>
+                  <input type="number" id="outQuantity" min="1" step="1" required class="form-control" placeholder="e.g. 100">
+                  <small class="form-hint" id="outStockAvailableHint">Current Available: 0 pcs</small>
+                </div>
+
+                <div class="form-group">
+                  <label for="outSellPrice">Wholesale Selling Price Per Cup (₹)</label>
+                  <input type="number" id="outSellPrice" min="0" step="0.5" class="form-control" placeholder="e.g. 95">
+                </div>
+
+                <div class="form-group">
+                  <label for="outDate">Dispatch Date <span class="req">*</span></label>
+                  <input type="date" id="outDate" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                  <label for="outBuyerName">Buyer / Customer Name (IndiaMART) <span class="req">*</span></label>
+                  <input type="text" id="outBuyerName" required class="form-control" placeholder="e.g. Priya Healthcare, Jaipur">
+                </div>
+
+                <div class="form-group">
+                  <label for="outBuyerPhone">Buyer Phone / Contact</label>
+                  <input type="text" id="outBuyerPhone" class="form-control" placeholder="e.g. +91 98765 43210">
+                </div>
+
+                <div class="form-group">
+                  <label for="outBuyerCity">Buyer City / State</label>
+                  <input type="text" id="outBuyerCity" class="form-control" placeholder="e.g. Mumbai, Maharashtra">
+                </div>
+
+                <div class="form-group">
+                  <label for="outPaymentStatus">Payment Status</label>
+                  <select id="outPaymentStatus" class="form-control">
+                    <option value="Paid">Paid in Full</option>
+                    <option value="Partial">Partial Advance</option>
+                    <option value="Pending">Payment Pending (Credit)</option>
+                    <option value="COD">Cash on Delivery (COD)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="outOrderRef">IndiaMART Lead / Order Ref</label>
+                  <input type="text" id="outOrderRef" class="form-control" placeholder="e.g. IM-LEAD-8831">
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="outNotes">Courier / Transport Details & Remarks</label>
+                  <input type="text" id="outNotes" class="form-control" placeholder="e.g. Sent via DTDC Courier tracking #123456">
+                </div>
+
+              </div>
+
+              <div class="form-actions">
+                <button type="reset" class="btn btn-secondary">Clear Form</button>
+                <button type="submit" class="btn btn-out-submit">📤 Deduct From Stock (−)</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- RECENT DISPATCHES -->
+          <div class="panel-box mt-4">
+            <h3 class="panel-box-title">Recent IndiaMART Dispatches</h3>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Buyer (IndiaMART)</th>
+                    <th>Shape & Size</th>
+                    <th>Quantity</th>
+                    <th>Rate/Pc</th>
+                    <th>Order Total</th>
+                    <th>Payment</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="outwardHistoryTbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= STOCK LEDGER & TRANSACTION LOGS ================= -->
+        <section id="tab-ledger" class="tab-pane">
+          <div class="section-header-row">
+            <div>
+              <h2 class="section-title">Complete Stock Ledger & History</h2>
+              <p class="section-desc">Audit trail of every cup that came in and went out</p>
+            </div>
+            <div class="action-btn-group">
+              <button class="btn btn-secondary" id="btnExportFullLedgerCsv">📊 Export CSV</button>
+              <button class="btn btn-primary" id="btnPrintLedger">🖨️ Print Ledger</button>
+            </div>
+          </div>
+
+          <!-- FILTER BAR -->
+          <div class="filter-bar">
+            <div class="filter-item">
+              <label>Filter Type</label>
+              <select id="filterLedgerType" class="form-control">
+                <option value="ALL">All Transactions (IN & OUT)</option>
+                <option value="IN">Inward (Factory Receipts)</option>
+                <option value="OUT">Outward (Wholesale Dispatches)</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label>Filter Shape</label>
+              <select id="filterLedgerShape" class="form-control">
+                <option value="ALL">All Shapes</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label>Filter Size</label>
+              <select id="filterLedgerSize" class="form-control">
+                <option value="ALL">All Sizes</option>
+              </select>
+            </div>
+
+            <div class="filter-item search-box">
+              <label>Search Party / Note / Ref</label>
+              <input type="text" id="filterLedgerSearch" class="form-control" placeholder="Search by name, ref, batch...">
+            </div>
+          </div>
+
+          <div class="panel-box">
+            <div class="table-responsive">
+              <table class="data-table" id="fullLedgerTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Shape</th>
+                    <th>Size</th>
+                    <th>Qty (Pcs)</th>
+                    <th>Rate (₹)</th>
+                    <th>Total (₹)</th>
+                    <th>Party / Buyer</th>
+                    <th>Reference / Batch</th>
+                    <th>Notes</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="fullLedgerTbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= WHOLESALE BUYERS DIRECTORY ================= -->
+        <section id="tab-buyers" class="tab-pane">
+          <div class="section-header-row">
+            <div>
+              <h2 class="section-title">Wholesale Buyers Directory (IndiaMART)</h2>
+              <p class="section-desc">Client list automatically built from your wholesale dispatch history</p>
+            </div>
+          </div>
+
+          <div class="buyers-grid" id="buyersGridContainer">
+            <!-- Dynamically populated -->
+          </div>
+        </section>
+
+        <!-- ================= SETTINGS & BACKUP ================= -->
+        <section id="tab-settings" class="tab-pane">
+          <div class="section-header-row">
+            <div>
+              <h2 class="section-title">Settings & Data Management</h2>
+              <p class="section-desc">Customize your cup shapes, sizes, warning levels, and safeguard your data</p>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            
+            <!-- PRODUCT VARIATION SETTINGS -->
+            <div class="settings-card">
+              <h3 class="settings-card-title">Cup Shapes & Sizes Configuration</h3>
+              <p class="settings-card-desc">Rename your 5 shapes or 3 sizes to match your factory's exact names</p>
+
+              <div class="settings-block">
+                <h4>5 Cup Shapes:</h4>
+                <div id="shapeRenameInputs" class="rename-list">
+                  <!-- Rendered by JS -->
+                </div>
+              </div>
+
+              <div class="settings-block mt-3">
+                <h4>3 Cup Sizes:</h4>
+                <div id="sizeRenameInputs" class="rename-list">
+                  <!-- Rendered by JS -->
+                </div>
+              </div>
+
+              <button class="btn btn-primary mt-3" id="btnSaveNames">💾 Save Custom Names</button>
+            </div>
+
+            <!-- STOCK THRESHOLDS & PREFERENCES -->
+            <div class="settings-card">
+              <h3 class="settings-card-title">Stock Alert Preferences</h3>
+              <p class="settings-card-desc">Get notified when stock drops below minimum threshold</p>
+
+              <div class="form-group">
+                <label for="settingLowStockThreshold">Low Stock Alert Limit (Pcs)</label>
+                <input type="number" id="settingLowStockThreshold" min="1" class="form-control" value="50">
+                <small class="form-hint">Any shape/size below this number will show in red with a warning.</small>
+              </div>
+
+              <div class="form-group">
+                <label for="settingDefaultCost">Default Factory Cost Price Per Cup (₹)</label>
+                <input type="number" id="settingDefaultCost" min="0" step="1" class="form-control" value="45">
+              </div>
+
+              <div class="form-group">
+                <label for="settingDefaultSellPrice">Default Wholesale Selling Price Per Cup (₹)</label>
+                <input type="number" id="settingDefaultSellPrice" min="0" step="1" class="form-control" value="95">
+              </div>
+
+              <button class="btn btn-primary mt-3" id="btnSavePreferences">💾 Save Preferences</button>
+            </div>
+
+            <!-- BACKUP & EXPORT DATA -->
+            <div class="settings-card">
+              <h3 class="settings-card-title">Backup & Restore</h3>
+              <p class="settings-card-desc">Never lose your data! Export backup files to your computer or phone anytime.</p>
+
+              <div class="backup-actions">
+                <button class="btn btn-secondary w-100 mb-2" id="btnDownloadJsonBackup">
+                  💾 Download Complete Backup (.json)
+                </button>
+                <button class="btn btn-secondary w-100 mb-2" id="btnDownloadExcelSummary">
+                  📊 Download Stock Sheet (.csv)
+                </button>
+                
+                <div class="restore-box mt-3">
+                  <label class="btn btn-outline w-100">
+                    📂 Restore Data from Backup File
+                    <input type="file" id="fileRestoreInput" accept=".json" style="display:none;">
+                  </label>
+                </div>
+              </div>
+
+              <div class="danger-zone mt-4">
+                <h4>Sample Data & Reset</h4>
+                <div class="danger-buttons">
+                  <button class="btn btn-ghost" id="btnLoadSampleData">Load Demo Samples</button>
+                  <button class="btn btn-danger" id="btnResetAllData">⚠️ Clear All Stock Data</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- HOW TO INSTALL AS APP ON MOBILE (APK / PWA) -->
+            <div class="settings-card">
+              <h3 class="settings-card-title">📱 How to Use as Mobile App (Android / Phone)</h3>
+              <p class="settings-card-desc">How to turn this application into an Android mobile icon:</p>
+
+              <ol class="app-install-steps">
+                <li><strong>Method 1 (Instant Home Screen App):</strong> Copy this folder to your phone or host it on free GitHub Pages / local network. Open in Chrome on your phone, tap the <strong>3 dots (⋮)</strong> menu in Chrome, and choose <strong>"Add to Home screen" / "Install App"</strong>. It installs just like an APK with its own icon!</li>
+                <li><strong>Method 2 (On your PC / Laptop):</strong> Simply double click <code>Launch-App.bat</code> anytime on your computer. It runs completely offline without internet!</li>
+                <li><strong>Offline Working:</strong> Your stock data is stored safely in your browser storage. You can check stock and add entries even without internet.</li>
+              </ol>
+            </div>
+
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- QUICK MODALS -->
+    <!-- QUICK ADJUST STOCK MODAL -->
+    <div id="quickAdjustModal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 id="adjustModalTitle">Adjust Stock</h3>
+          <button class="modal-close-btn" id="btnAdjustClose">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p id="adjustModalSubtitle" class="text-muted"></p>
+          <div class="adjust-control-group">
+            <button class="btn btn-step" id="btnAdjustMinusTen">-10</button>
+            <button class="btn btn-step" id="btnAdjustMinusOne">-1</button>
+            <input type="number" id="adjustModalQtyInput" class="form-control text-center" style="font-size:1.5rem; font-weight:700;">
+            <button class="btn btn-step" id="btnAdjustPlusOne">+1</button>
+            <button class="btn btn-step" id="btnAdjustPlusTen">+10</button>
+          </div>
+          <div class="form-group mt-3">
+            <label for="adjustReason">Reason for adjustment</label>
+            <input type="text" id="adjustReason" class="form-control" placeholder="e.g. Physical inventory recount / sample dispatch">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="btnAdjustCancel">Cancel</button>
+          <button class="btn btn-primary" id="btnAdjustSave">Update Stock</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div id="toastContainer" class="toast-container"></div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
