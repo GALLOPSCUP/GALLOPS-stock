@@ -923,20 +923,27 @@
           navigator.serviceWorker.ready.then(reg => {
             reg.showNotification(title, {
               body: body,
-              icon: 'logo.png',
-              badge: 'logo.png',
+              icon: 'icon-192.png',
+              badge: 'icon-192.png',
+              vibrate: [200, 100, 200, 100, 200],
               tag: 'gallops-daily-alert',
               renotify: true
             });
           }).catch(() => {
-            new Notification(title, { body: body, icon: 'logo.png' });
+            new Notification(title, { body: body, icon: 'icon-192.png' });
           });
         } else {
-          new Notification(title, { body: body, icon: 'logo.png' });
+          new Notification(title, { body: body, icon: 'icon-192.png' });
         }
       } catch (e) {
         console.warn('System notification display issue', e);
       }
+    } else if (Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          showSystemNotification(title, body);
+        }
+      });
     }
   }
 

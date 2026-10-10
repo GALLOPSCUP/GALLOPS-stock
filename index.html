@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=42">
+  <link rel="stylesheet" href="styles.css?v=43">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -91,28 +91,6 @@
         <!-- ================= DASHBOARD TAB ================= -->
         <section id="tab-dashboard" class="tab-pane active">
           
-          <!-- DASHBOARD 9:00 PM NOTIFICATION & ALERTS ACTION BAR -->
-          <div class="dashboard-alert-bar" id="dashboardAlertBar" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem; margin-bottom:1rem; gap:0.75rem; flex-wrap:wrap; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
-            <div style="display:flex; align-items:center; gap:0.65rem;">
-              <div style="width:36px; height:36px; border-radius:10px; background:rgba(236,72,153,0.12); display:flex; align-items:center; justify-content:center; font-size:1.3rem;">🔔</div>
-              <div>
-                <strong style="font-size:0.9rem; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-                  <span>Daily 9:00 PM Alerts & Notifications</span>
-                  <span class="tag-badge" style="background:rgba(16,185,129,0.12); color:#059669; border:1px solid rgba(16,185,129,0.25); font-size:0.7rem; padding:1px 6px;">⏰ Active at 21:00</span>
-                </strong>
-                <div id="dashAlertBarSubtitle" style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">
-                  Monitoring Low Stock levels & Pending Payment collections
-                </div>
-              </div>
-            </div>
-            <div style="display:flex; gap:0.5rem; align-items:center;">
-              <button type="button" class="btn btn-sm btn-primary" id="btnDashboardNotification" style="background:#8b5cf6; border-color:#8b5cf6; font-size:0.8rem; font-weight:700; padding:0.35rem 0.85rem; display:inline-flex; align-items:center; gap:0.45rem;">
-                <span>🔔 Check Alerts</span>
-                <span id="badgeDashNotifCount" style="background:#fff; color:#8b5cf6; font-weight:800; border-radius:10px; padding:1px 7px; font-size:0.75rem; display:none;">0</span>
-              </button>
-            </div>
-          </div>
-
           <!-- CHATGPT STYLE TOP SUMMARY CARDS (TOTAL STOCK & LOW STOCK) -->
           <div class="cg-summary-grid">
             <div class="cg-summary-card">
@@ -152,7 +130,6 @@
           <!-- CHATGPT STYLE PRODUCT INVENTORY HEADER -->
           <div class="cg-section-intro">
             <h2 class="cg-section-title">Product Inventory</h2>
-            <p class="cg-section-subtitle">Shape પ્રમાણે તમારો stock દાખલ કરો.</p>
           </div>
 
           <!-- CHATGPT STYLE SHAPE CARDS CONTAINER -->
@@ -1469,6 +1446,6 @@
   </div>
 
   <script src="html2pdf.bundle.min.js"></script>
-  <script src="app.js?v=42"></script>
+  <script src="app.js?v=43"></script>
 </body>
 </html>
