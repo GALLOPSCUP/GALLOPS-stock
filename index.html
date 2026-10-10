@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=30">
+  <link rel="stylesheet" href="styles.css?v=31">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -790,11 +790,108 @@
       </div>
     </div>
 
+    <!-- ADD NEW CUP SHAPE / PRODUCT MODAL -->
+    <div id="addShapeModal" class="modal-overlay hidden">
+      <div class="modal-box" style="max-width: 620px; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:0.65rem;">
+            <span style="font-size:1.6rem; line-height:1;">➕</span>
+            <div>
+              <h3 style="font-size:1.2rem; font-weight:800; color:var(--text-primary); margin:0;">Add New Cup Shape / Product</h3>
+              <p class="text-muted" style="font-size:0.8rem; margin:2px 0 0 0;">Create a new product variation with custom size pricing & alert limits</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="btnAddShapeClose">&times;</button>
+        </div>
+        <form id="formAddNewShape">
+          <div class="modal-body">
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap:1rem;">
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="newShapeName">Cup Shape / Product Name <span class="req">*</span></label>
+                <input type="text" id="newShapeName" required class="form-control" placeholder="e.g. Menstrual Disc, Teen Cup, Soft Cup">
+              </div>
+
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="newShapeIcon">Shape Icon / Emoji</label>
+                <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                  <input type="text" id="newShapeIcon" maxlength="4" value="🏆" class="form-control" style="width:60px; text-align:center; font-size:1.4rem;">
+                  <div class="emoji-quick-picks" style="display:flex; gap:4px; flex-wrap:wrap;">
+                    <button type="button" class="btn-emoji" onclick="document.getElementById('newShapeIcon').value='🏆'">🏆</button>
+                    <button type="button" class="btn-emoji" onclick="document.getElementById('newShapeIcon').value='🌸'">🌸</button>
+                    <button type="button" class="btn-emoji" onclick="document.getElementById('newShapeIcon').value='🔔'">🔔</button>
+                    <button type="button" class="btn-emoji" onclick="document.getElementById('newShapeIcon').value='💎'">💎</button>
+                    <button type="button" class="btn-emoji" onclick="document.getElementById('newShapeIcon').value='📐'">📐</button>
+                    <button type="button" class="btn-emoji" onclick="document.getElementById('newShapeIcon').value='🥏'">🥏</button>
+                    <button type="button" class="btn-emoji" onclick="document.getElementById('newShapeIcon').value='📦'">📦</button>
+                    <button type="button" class="btn-emoji" onclick="document.getElementById('newShapeIcon').value='🍷'">🍷</button>
+                    <button type="button" class="btn-emoji" onclick="document.getElementById('newShapeIcon').value='✨'">✨</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Available Colors for this Shape <span class="req">*</span></label>
+                <div id="newShapeColorCheckboxes" style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.25rem;">
+                  <!-- Dynamically rendered -->
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:1.25rem; border-top:1px solid var(--border-color); padding-top:1rem;">
+              <h4 style="font-size:0.95rem; font-weight:800; margin-bottom:0.25rem; color:var(--text-primary);">Size-Wise Pricing & Low Stock Alert Limits</h4>
+              <p class="text-muted" style="font-size:0.78rem; margin-bottom:0.75rem;">Set cost price, selling price, and alert limit for each size:</p>
+              
+              <div id="newShapeSizesInputsContainer" class="table-responsive">
+                <!-- Dynamically rendered rows for each size -->
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="btnAddShapeCancel">Cancel</button>
+            <button type="submit" class="btn btn-primary">➕ Create & Add to Stock Inventory</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ADD NEW CUP SIZE MODAL -->
+    <div id="addSizeModal" class="modal-overlay hidden">
+      <div class="modal-box" style="max-width: 480px;">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:0.65rem;">
+            <span style="font-size:1.6rem; line-height:1;">📏</span>
+            <div>
+              <h3 style="font-size:1.2rem; font-weight:800; color:var(--text-primary); margin:0;">Add New Cup Size</h3>
+              <p class="text-muted" style="font-size:0.8rem; margin:2px 0 0 0;">Add an additional size variation (e.g. XS, XL, Free Size)</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="btnAddSizeClose">&times;</button>
+        </div>
+        <form id="formAddNewSize">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="newSizeCode">Size Short Code / Key <span class="req">*</span></label>
+              <input type="text" id="newSizeCode" required maxlength="8" class="form-control" placeholder="e.g. XS, XL, FS, PLUS">
+              <small class="form-hint">Unique short uppercase code</small>
+            </div>
+            <div class="form-group mt-3">
+              <label for="newSizeName">Full Display Name <span class="req">*</span></label>
+              <input type="text" id="newSizeName" required class="form-control" placeholder="e.g. Extra Small (XS), Extra Large (XL)">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="btnAddSizeCancel">Cancel</button>
+            <button type="submit" class="btn btn-primary">➕ Add Cup Size</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- TOAST NOTIFICATIONS -->
     <div id="toastContainer" class="toast-container"></div>
 
   </div>
 
-  <script src="app.js?v=30"></script>
+  <script src="app.js?v=31"></script>
 </body>
 </html>

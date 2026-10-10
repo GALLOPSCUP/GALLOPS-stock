@@ -234,47 +234,61 @@
 
   function loadSettings() {
     let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    let parsed = null;
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       if (stored) {
-        settings = Object.assign({}, DEFAULT_SETTINGS, JSON.parse(stored));
+        parsed = JSON.parse(stored);
+        settings = Object.assign({}, DEFAULT_SETTINGS, parsed);
       }
     } catch (e) {
       console.warn('Error loading settings', e);
     }
-    // Enforce business rules for shapes and allowed colors
-    settings.shapes = DEFAULT_SHAPES;
+
+    // Merge shapes: keep 7 standard DEFAULT_SHAPES, plus any custom user-added shapes
+    const savedShapes = Array.isArray(parsed?.shapes) ? parsed.shapes : [];
+    const customShapes = savedShapes.filter(s => !DEFAULT_SHAPES.some(d => d.id === s.id));
+    settings.shapes = [...DEFAULT_SHAPES, ...customShapes];
+
+    // Merge sizes: keep standard DEFAULT_SIZES (S, M, L), plus any custom user-added sizes
+    const savedSizes = Array.isArray(parsed?.sizes) ? parsed.sizes : [];
+    const customSizes = savedSizes.filter(s => !DEFAULT_SIZES.some(d => d.id === s.id));
+    settings.sizes = [...DEFAULT_SIZES, ...customSizes];
+
     settings.colors = DEFAULT_COLORS;
 
-    // Ensure shapePreferences has entries for all 7 shapes and each size (S, M, L)
+    // Ensure shapePreferences has entries for all shapes and each size
     if (!settings.shapePreferences || typeof settings.shapePreferences !== 'object') {
       settings.shapePreferences = JSON.parse(JSON.stringify(DEFAULT_SHAPE_PREFERENCES));
-    } else {
-      Object.keys(DEFAULT_SHAPE_PREFERENCES).forEach(shapeId => {
-        if (!settings.shapePreferences[shapeId]) {
+    }
+
+    settings.shapes.forEach(shape => {
+      const shapeId = shape.id;
+      if (!settings.shapePreferences[shapeId]) {
+        if (DEFAULT_SHAPE_PREFERENCES[shapeId]) {
           settings.shapePreferences[shapeId] = JSON.parse(JSON.stringify(DEFAULT_SHAPE_PREFERENCES[shapeId]));
         } else {
-          const pref = settings.shapePreferences[shapeId];
-          // If stored with old flat format { lowLimit, cost, sell }, migrate to sizes { S, M, L }
-          if (!pref.sizes || typeof pref.sizes !== 'object') {
-            const fallbackLow = (pref.lowLimit !== undefined && pref.lowLimit !== '') ? Number(pref.lowLimit) : (DEFAULT_SHAPE_PREFERENCES[shapeId]?.sizes?.M?.lowLimit ?? 50);
-            const fallbackCost = (pref.cost !== undefined && pref.cost !== '') ? Number(pref.cost) : (DEFAULT_SHAPE_PREFERENCES[shapeId]?.sizes?.M?.cost ?? 45);
-            const fallbackSell = (pref.sell !== undefined && pref.sell !== '') ? Number(pref.sell) : (DEFAULT_SHAPE_PREFERENCES[shapeId]?.sizes?.M?.sell ?? 95);
-            pref.sizes = {
-              'S': { lowLimit: fallbackLow, cost: fallbackCost, sell: fallbackSell },
-              'M': { lowLimit: fallbackLow, cost: fallbackCost, sell: fallbackSell },
-              'L': { lowLimit: fallbackLow, cost: fallbackCost, sell: fallbackSell }
-            };
-          } else {
-            ['S', 'M', 'L'].forEach(sz => {
-              if (!pref.sizes[sz]) {
-                pref.sizes[sz] = { ...(DEFAULT_SHAPE_PREFERENCES[shapeId]?.sizes?.[sz] || { lowLimit: 50, cost: 45, sell: 95 }) };
-              }
-            });
-          }
+          settings.shapePreferences[shapeId] = { sizes: {} };
         }
-      });
-    }
+      }
+      const pref = settings.shapePreferences[shapeId];
+      if (!pref.sizes || typeof pref.sizes !== 'object') {
+        const fallbackLow = (pref.lowLimit !== undefined && pref.lowLimit !== '') ? Number(pref.lowLimit) : 50;
+        const fallbackCost = (pref.cost !== undefined && pref.cost !== '') ? Number(pref.cost) : 45;
+        const fallbackSell = (pref.sell !== undefined && pref.sell !== '') ? Number(pref.sell) : 95;
+        pref.sizes = {};
+        settings.sizes.forEach(sz => {
+          pref.sizes[sz.id] = { lowLimit: fallbackLow, cost: fallbackCost, sell: fallbackSell };
+        });
+      } else {
+        settings.sizes.forEach(sz => {
+          if (!pref.sizes[sz.id]) {
+            const defSz = DEFAULT_SHAPE_PREFERENCES[shapeId]?.sizes?.[sz.id] || { lowLimit: 50, cost: 45, sell: 95 };
+            pref.sizes[sz.id] = { ...defSz };
+          }
+        });
+      }
+    });
 
     return settings;
   }
@@ -972,7 +986,8 @@
     const tbody = document.getElementById('stockMatrixTbody');
     if (!tbody) return;
 
-    let sizeTotals = { S: 0, M: 0, L: 0 };
+    let sizeTotals = {};
+    appState.settings.sizes.forEach(sz => { sizeTotals[sz.id] = 0; });
     let grandTotal = 0;
     let rowsHtml = '';
 
@@ -1046,16 +1061,31 @@
 
     tbody.innerHTML = rowsHtml;
 
-    // Update Totals row in footer
-    const totalS = document.getElementById('matrixTotalSizeS');
-    const totalM = document.getElementById('matrixTotalSizeM');
-    const totalL = document.getElementById('matrixTotalSizeL');
-    const matrixGrand = document.getElementById('matrixGrandTotal');
-
-    if (totalS) totalS.textContent = sizeTotals['S'] || 0;
-    if (totalM) totalM.textContent = sizeTotals['M'] || 0;
-    if (totalL) totalL.textContent = sizeTotals['L'] || 0;
-    if (matrixGrand) matrixGrand.textContent = grandTotal;
+    // Dynamically update thead and tfoot to match active sizes
+    const table = document.getElementById('stockMatrixTable');
+    if (table) {
+      const theadTr = table.querySelector('thead tr');
+      if (theadTr) {
+        const sizeThs = appState.settings.sizes.map(sz => `<th class="matrix-th-size" data-size="${sz.id}">${sz.name}</th>`).join('');
+        theadTr.innerHTML = `
+          <th class="matrix-th-shape">Cup Shape</th>
+          <th class="matrix-th-color">Color</th>
+          ${sizeThs}
+          <th class="matrix-th-total">Total by Color</th>
+          <th class="matrix-th-status">Status</th>
+        `;
+      }
+      const tfootTr = table.querySelector('tfoot tr');
+      if (tfootTr) {
+        const sizeTds = appState.settings.sizes.map(sz => `<td><strong>${sizeTotals[sz.id] || 0}</strong></td>`).join('');
+        tfootTr.innerHTML = `
+          <td colspan="2"><strong>TOTAL BY SIZE</strong></td>
+          ${sizeTds}
+          <td id="matrixGrandTotal" style="font-weight:800; font-size:1.15rem;">${grandTotal}</td>
+          <td>-</td>
+        `;
+      }
+    }
 
     attachMatrixEventListeners();
     renderSkuCards();
@@ -1257,6 +1287,7 @@
     renderStockMatrix();
     renderHistoryTables();
     renderShapePreferences();
+    renderProductConfigCard();
   }
 
   // ================= TRANSACTION ACTIONS =================
@@ -1576,8 +1607,10 @@
 
     let rowsHtml = '';
     const sizes = appState.settings.sizes;
+    const firstSizeId = sizes[0]?.id || 'S';
 
     appState.settings.shapes.forEach((shape, shapeIdx) => {
+      const isStandardShape = DEFAULT_SHAPES.some(d => d.id === shape.id);
       sizes.forEach((sz, szIdx) => {
         const isFirst = szIdx === 0;
         const lowLimit = getShapeSizeLowLimit(shape.id, sz.id);
@@ -1585,21 +1618,31 @@
         const sell = getShapeSizeSellPrice(shape.id, sz.id);
 
         const groupBorder = isFirst ? 'border-top: 2px solid var(--border-color);' : '';
-        const sizeTagClass = sz.id === 'S' ? 'size-s' : sz.id === 'M' ? 'size-m' : 'size-l';
+        const sizeTagClass = sz.id === 'S' ? 'size-s' : sz.id === 'M' ? 'size-m' : sz.id === 'L' ? 'size-l' : 'size-m';
 
         const shapeCell = isFirst ? `
-          <td rowspan="3" class="shape-pref-shape-cell" style="${groupBorder}">
+          <td rowspan="${sizes.length}" class="shape-pref-shape-cell" style="${groupBorder}">
             <div class="shape-pref-shape-card">
               <div style="display:flex; align-items:center; gap:0.5rem;">
-                <span style="font-size:1.4rem; line-height:1;">${shape.icon}</span>
+                <span style="font-size:1.4rem; line-height:1;">${shape.icon || '🏆'}</span>
                 <div>
-                  <strong style="color:var(--text-primary); font-size:0.95rem;">${shapeIdx + 1}. ${shape.name}</strong>
+                  <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                    <strong style="color:var(--text-primary); font-size:0.95rem;">${shapeIdx + 1}. ${shape.name}</strong>
+                    ${!isStandardShape ? '<span class="badge-tag-custom">Custom</span>' : ''}
+                  </div>
                   <div style="font-size:0.75rem; color:var(--text-muted);">${shape.colors ? shape.colors.join(', ') : ''}</div>
                 </div>
               </div>
-              <button type="button" class="btn-copy-sizes" onclick="window.gallopsCopySizeToAll('${shape.id}', 'S')" title="Copy Small (S) price & limit to Medium & Large for this shape">
-                ⚡ Copy S to All Sizes
-              </button>
+              <div style="display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap; margin-top:0.4rem;">
+                <button type="button" class="btn-copy-sizes" onclick="window.gallopsCopySizeToAll('${shape.id}', '${firstSizeId}')" title="Copy ${firstSizeId} price & limit to all sizes for this shape">
+                  ⚡ Copy ${firstSizeId} to All Sizes
+                </button>
+                ${!isStandardShape ? `
+                  <button type="button" onclick="window.gallopsDeleteShape('${shape.id}')" style="background:transparent; border:none; color:#ef4444; font-size:0.75rem; cursor:pointer; padding:2px 4px;" title="Delete custom shape">
+                    🗑️ Remove
+                  </button>
+                ` : ''}
+              </div>
             </div>
           </td>
         ` : '';
@@ -1632,7 +1675,8 @@
     const sCost = document.querySelector(`input[data-shape="${shapeId}"][data-size="${sourceSizeId}"][data-field="cost"]`)?.value;
     const sSell = document.querySelector(`input[data-shape="${shapeId}"][data-size="${sourceSizeId}"][data-field="sell"]`)?.value;
 
-    ['M', 'L'].forEach(targetSize => {
+    appState.settings.sizes.filter(sz => sz.id !== sourceSizeId).forEach(target => {
+      const targetSize = target.id;
       const lowInput = document.querySelector(`input[data-shape="${shapeId}"][data-size="${targetSize}"][data-field="lowLimit"]`);
       const costInput = document.querySelector(`input[data-shape="${shapeId}"][data-size="${targetSize}"][data-field="cost"]`);
       const sellInput = document.querySelector(`input[data-shape="${shapeId}"][data-size="${targetSize}"][data-field="sell"]`);
@@ -1643,7 +1687,7 @@
     });
 
     const shape = getShapeById(shapeId);
-    showToast(`Copied ${sourceSizeId} values to M & L for ${shape.name}. Click 'Save' to apply.`, 'info');
+    showToast(`Copied ${sourceSizeId} values to all sizes for ${shape.name}. Click 'Save' to apply.`, 'info');
   };
 
   function setupShapePreferencesHandlers() {
@@ -1700,6 +1744,392 @@
       renderAll();
       showToast('Size-wise cost, selling prices & limits saved successfully!', 'success');
     });
+  }
+
+  // ================= CUP SHAPES & SIZES CONFIGURATION & ADDITION =================
+  function renderProductConfigCard() {
+    const shapeContainer = document.getElementById('shapeRenameInputs');
+    const sizeContainer = document.getElementById('sizeRenameInputs');
+
+    if (shapeContainer) {
+      shapeContainer.innerHTML = appState.settings.shapes.map((shape, idx) => {
+        const isStandard = DEFAULT_SHAPES.some(d => d.id === shape.id);
+        const colorBadges = (shape.colors || []).map(cid => {
+          const col = DEFAULT_COLORS.find(c => c.id === cid);
+          return `<span style="font-size:0.75rem; color:var(--text-secondary); background:var(--bg-card); padding:2px 7px; border-radius:4px; border:1px solid var(--border-color);">${col?.dot || ''} ${col?.name || cid}</span>`;
+        }).join(' ');
+
+        return `
+          <div class="product-config-item" style="margin-bottom:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.65rem; min-width:0;">
+              <span style="font-size:1.35rem; line-height:1;">${shape.icon || '🏆'}</span>
+              <div>
+                <div style="display:flex; align-items:center; gap:0.45rem; flex-wrap:wrap;">
+                  <strong style="font-size:0.92rem; color:var(--text-primary);">${idx + 1}. ${shape.name}</strong>
+                  ${isStandard ? '<span class="badge-tag-standard">Standard Shape</span>' : '<span class="badge-tag-custom">Custom Product</span>'}
+                </div>
+                <div style="display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap; margin-top:3px;">
+                  ${colorBadges}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              ${!isStandard ? `
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="window.gallopsDeleteShape('${shape.id}')" title="Delete custom product" style="font-size:0.78rem; padding:0.25rem 0.55rem; color:#ef4444; border:1px solid rgba(239,68,68,0.3); background:transparent; border-radius:4px; cursor:pointer;">
+                  🗑️ Delete
+                </button>
+              ` : `
+                <span style="font-size:0.78rem; color:var(--text-muted);">Standard</span>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    if (sizeContainer) {
+      sizeContainer.innerHTML = appState.settings.sizes.map(sz => {
+        const isStandard = DEFAULT_SIZES.some(d => d.id === sz.id);
+        return `
+          <div class="product-config-item" style="margin-bottom:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.65rem;">
+              <span style="font-size:1.15rem; line-height:1;">📏</span>
+              <div style="display:flex; align-items:center; gap:0.45rem; flex-wrap:wrap;">
+                <strong style="font-size:0.92rem; color:var(--text-primary);">${sz.name}</strong>
+                <code style="font-size:0.75rem; background:var(--bg-tertiary); padding:2px 5px; border-radius:4px; color:var(--text-secondary);">${sz.id}</code>
+                ${isStandard ? '<span class="badge-tag-standard">Standard Size</span>' : '<span class="badge-tag-custom">Custom Size</span>'}
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              ${!isStandard ? `
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="window.gallopsDeleteSize('${sz.id}')" title="Delete custom size" style="font-size:0.78rem; padding:0.25rem 0.55rem; color:#ef4444; border:1px solid rgba(239,68,68,0.3); background:transparent; border-radius:4px; cursor:pointer;">
+                  🗑️ Delete
+                </button>
+              ` : `
+                <span style="font-size:0.78rem; color:var(--text-muted);">Standard</span>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  function openAddShapeModal() {
+    const modal = document.getElementById('addShapeModal');
+    if (!modal) return;
+    const form = document.getElementById('formAddNewShape');
+    if (form) form.reset();
+
+    const nameInput = document.getElementById('newShapeName');
+    if (nameInput) nameInput.value = '';
+
+    const iconInput = document.getElementById('newShapeIcon');
+    if (iconInput) iconInput.value = '🏆';
+
+    // Populate colors checkboxes
+    const colorsContainer = document.getElementById('newShapeColorCheckboxes');
+    if (colorsContainer) {
+      colorsContainer.innerHTML = DEFAULT_COLORS.map((c, i) => `
+        <label class="color-checkbox-label" style="display:flex; align-items:center; gap:0.4rem; padding:0.4rem 0.75rem; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:6px; cursor:pointer; font-size:0.85rem; user-select:none;">
+          <input type="checkbox" name="shapeColors" value="${c.id}" ${i === 0 ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px;">
+          <span>${c.dot || '🎨'} <strong>${c.name}</strong></span>
+        </label>
+      `).join('');
+    }
+
+    // Populate size rows
+    const sizesContainer = document.getElementById('newShapeSizesInputsContainer');
+    if (sizesContainer) {
+      let rowsHtml = '';
+      appState.settings.sizes.forEach(sz => {
+        rowsHtml += `
+          <tr>
+            <td style="font-weight:700; color:var(--text-primary);">${sz.name}</td>
+            <td style="text-align:right;">
+              <input type="number" min="0" step="1" class="form-control form-control-sm new-shape-size-low" data-size="${sz.id}" value="50" style="text-align:right; width:110px; display:inline-block;" required>
+            </td>
+            <td style="text-align:right;">
+              <input type="number" min="0" step="0.5" class="form-control form-control-sm new-shape-size-cost" data-size="${sz.id}" value="45" style="text-align:right; width:110px; display:inline-block;" required>
+            </td>
+            <td style="text-align:right;">
+              <input type="number" min="0" step="0.5" class="form-control form-control-sm new-shape-size-sell" data-size="${sz.id}" value="95" style="text-align:right; width:110px; display:inline-block;" required>
+            </td>
+          </tr>
+        `;
+      });
+      sizesContainer.innerHTML = `
+        <table class="data-table" style="width:100%; font-size:0.85rem;">
+          <thead>
+            <tr>
+              <th>Cup Size</th>
+              <th style="text-align:right;">⚠️ Low Alert Limit (Pcs)</th>
+              <th style="text-align:right;">🏭 Factory Cost Price (₹)</th>
+              <th style="text-align:right;">🛒 Wholesale Sell Price (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+      `;
+    }
+
+    modal.classList.remove('hidden');
+    if (nameInput) nameInput.focus();
+  }
+
+  function closeAddShapeModal() {
+    const modal = document.getElementById('addShapeModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function openAddSizeModal() {
+    const modal = document.getElementById('addSizeModal');
+    if (!modal) return;
+    const form = document.getElementById('formAddNewSize');
+    if (form) form.reset();
+    const codeInput = document.getElementById('newSizeCode');
+    if (codeInput) {
+      codeInput.value = '';
+      codeInput.focus();
+    }
+    const nameInput = document.getElementById('newSizeName');
+    if (nameInput) nameInput.value = '';
+    modal.classList.remove('hidden');
+  }
+
+  function closeAddSizeModal() {
+    const modal = document.getElementById('addSizeModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function handleAddNewShapeSubmit(e) {
+    e.preventDefault();
+    const nameInput = document.getElementById('newShapeName');
+    const iconInput = document.getElementById('newShapeIcon');
+    const shapeName = nameInput ? nameInput.value.trim() : '';
+    const icon = iconInput && iconInput.value.trim() ? iconInput.value.trim() : '🏆';
+
+    if (!shapeName) {
+      showToast('Please enter a cup shape or product name', 'error');
+      return;
+    }
+
+    // Selected colors
+    const checkedColors = Array.from(document.querySelectorAll('input[name="shapeColors"]:checked')).map(cb => cb.value);
+    if (checkedColors.length === 0) {
+      showToast('Please select at least one available color for this shape', 'error');
+      return;
+    }
+
+    // Check duplicate name
+    if (appState.settings.shapes.some(s => s.name.toLowerCase() === shapeName.toLowerCase())) {
+      showToast(`A shape named "${shapeName}" already exists!`, 'error');
+      return;
+    }
+
+    // Generate unique ID
+    const slug = shapeName.toUpperCase().replace(/[^A-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 14);
+    const shapeId = 'SHAPE_' + (slug || 'CUSTOM') + '_' + Date.now().toString(36).toUpperCase();
+
+    // Read size preferences from modal inputs
+    const sizesPrefs = {};
+    appState.settings.sizes.forEach(sz => {
+      const lowEl = document.querySelector(`.new-shape-size-low[data-size="${sz.id}"]`);
+      const costEl = document.querySelector(`.new-shape-size-cost[data-size="${sz.id}"]`);
+      const sellEl = document.querySelector(`.new-shape-size-sell[data-size="${sz.id}"]`);
+
+      const lowLimit = parseInt(lowEl?.value, 10);
+      const cost = parseFloat(costEl?.value);
+      const sell = parseFloat(sellEl?.value);
+
+      sizesPrefs[sz.id] = {
+        lowLimit: isNaN(lowLimit) ? 50 : lowLimit,
+        cost: isNaN(cost) ? 45 : cost,
+        sell: isNaN(sell) ? 95 : sell
+      };
+    });
+
+    const newShape = {
+      id: shapeId,
+      name: shapeName,
+      icon: icon,
+      colors: checkedColors,
+      isCustom: true
+    };
+
+    appState.settings.shapes.push(newShape);
+
+    if (!appState.settings.shapePreferences) {
+      appState.settings.shapePreferences = {};
+    }
+    appState.settings.shapePreferences[shapeId] = {
+      sizes: sizesPrefs,
+      lowLimit: sizesPrefs['M']?.lowLimit ?? sizesPrefs['S']?.lowLimit ?? 50,
+      cost: sizesPrefs['M']?.cost ?? sizesPrefs['S']?.cost ?? 45,
+      sell: sizesPrefs['M']?.sell ?? sizesPrefs['S']?.sell ?? 95
+    };
+
+    // Initialize stock for this shape to 0
+    checkedColors.forEach(c => {
+      appState.settings.sizes.forEach(sz => {
+        const key = getSkuKey(shapeId, c, sz.id);
+        if (appState.stock[key] === undefined) {
+          appState.stock[key] = 0;
+        }
+      });
+    });
+
+    saveSettings();
+    saveStock();
+    renderAll();
+    closeAddShapeModal();
+    showToast(`✅ "${shapeName}" added to inventory with custom limits & prices!`, 'success');
+  }
+
+  function handleAddNewSizeSubmit(e) {
+    e.preventDefault();
+    const codeInput = document.getElementById('newSizeCode');
+    const nameInput = document.getElementById('newSizeName');
+
+    const rawCode = codeInput ? codeInput.value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '') : '';
+    const name = nameInput ? nameInput.value.trim() : '';
+
+    if (!rawCode || !name) {
+      showToast('Please enter both size code and display name', 'error');
+      return;
+    }
+
+    if (appState.settings.sizes.some(s => s.id === rawCode)) {
+      showToast(`Size code "${rawCode}" already exists!`, 'error');
+      return;
+    }
+
+    const newSize = {
+      id: rawCode,
+      name: name,
+      label: name,
+      isCustom: true
+    };
+
+    appState.settings.sizes.push(newSize);
+
+    // Initialize preference for all shapes for this new size
+    if (!appState.settings.shapePreferences) {
+      appState.settings.shapePreferences = {};
+    }
+    appState.settings.shapes.forEach(shape => {
+      if (!appState.settings.shapePreferences[shape.id]) {
+        appState.settings.shapePreferences[shape.id] = { sizes: {} };
+      }
+      if (!appState.settings.shapePreferences[shape.id].sizes) {
+        appState.settings.shapePreferences[shape.id].sizes = {};
+      }
+      if (!appState.settings.shapePreferences[shape.id].sizes[rawCode]) {
+        appState.settings.shapePreferences[shape.id].sizes[rawCode] = {
+          lowLimit: 50,
+          cost: 45,
+          sell: 95
+        };
+      }
+
+      // Initialize stock for all allowed colors for this shape
+      const allowedColors = shape.colors || ['PINK'];
+      allowedColors.forEach(c => {
+        const key = getSkuKey(shape.id, c, rawCode);
+        if (appState.stock[key] === undefined) {
+          appState.stock[key] = 0;
+        }
+      });
+    });
+
+    saveSettings();
+    saveStock();
+    renderAll();
+    closeAddSizeModal();
+    showToast(`✅ Size "${name}" (${rawCode}) added to all shapes!`, 'success');
+  }
+
+  window.gallopsDeleteShape = function (shapeId) {
+    const shape = appState.settings.shapes.find(s => s.id === shapeId);
+    if (!shape) return;
+    if (DEFAULT_SHAPES.some(d => d.id === shapeId)) {
+      showToast('Standard built-in shapes cannot be deleted.', 'error');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to remove "${shape.name}"?\nExisting transaction history will be preserved.`)) {
+      return;
+    }
+
+    appState.settings.shapes = appState.settings.shapes.filter(s => s.id !== shapeId);
+    if (appState.settings.shapePreferences && appState.settings.shapePreferences[shapeId]) {
+      delete appState.settings.shapePreferences[shapeId];
+    }
+
+    saveSettings();
+    renderAll();
+    showToast(`Removed "${shape.name}".`, 'info');
+  };
+
+  window.gallopsDeleteSize = function (sizeId) {
+    const sz = appState.settings.sizes.find(s => s.id === sizeId);
+    if (!sz) return;
+    if (DEFAULT_SIZES.some(d => d.id === sizeId)) {
+      showToast('Standard built-in sizes (S, M, L) cannot be deleted.', 'error');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to remove size "${sz.name}" (${sizeId})?`)) {
+      return;
+    }
+
+    appState.settings.sizes = appState.settings.sizes.filter(s => s.id !== sizeId);
+    if (appState.settings.shapePreferences) {
+      Object.keys(appState.settings.shapePreferences).forEach(sId => {
+        const pref = appState.settings.shapePreferences[sId];
+        if (pref && pref.sizes && pref.sizes[sizeId]) {
+          delete pref.sizes[sizeId];
+        }
+      });
+    }
+
+    saveSettings();
+    renderAll();
+    showToast(`Removed size "${sz.name}".`, 'info');
+  };
+
+  function setupProductConfigControls() {
+    // Open Shape Modal
+    document.getElementById('btnOpenAddShapeModal')?.addEventListener('click', openAddShapeModal);
+    document.getElementById('btnOpenAddShapeModalFromTable')?.addEventListener('click', openAddShapeModal);
+    document.getElementById('btnAddShapeClose')?.addEventListener('click', closeAddShapeModal);
+    document.getElementById('btnAddShapeCancel')?.addEventListener('click', closeAddShapeModal);
+
+    // Open Size Modal
+    document.getElementById('btnOpenAddSizeModal')?.addEventListener('click', openAddSizeModal);
+    document.getElementById('btnAddSizeClose')?.addEventListener('click', closeAddSizeModal);
+    document.getElementById('btnAddSizeCancel')?.addEventListener('click', closeAddSizeModal);
+
+    // Outside clicks
+    const addShapeModal = document.getElementById('addShapeModal');
+    if (addShapeModal) {
+      addShapeModal.addEventListener('click', (e) => {
+        if (e.target === addShapeModal) closeAddShapeModal();
+      });
+    }
+
+    const addSizeModal = document.getElementById('addSizeModal');
+    if (addSizeModal) {
+      addSizeModal.addEventListener('click', (e) => {
+        if (e.target === addSizeModal) closeAddSizeModal();
+      });
+    }
+
+    // Forms submit
+    document.getElementById('formAddNewShape')?.addEventListener('submit', handleAddNewShapeSubmit);
+    document.getElementById('formAddNewSize')?.addEventListener('submit', handleAddNewSizeSubmit);
   }
 
   // ================= 5 USER-FRIENDLY THEMES & COLOR PICKER =================
@@ -1830,6 +2260,7 @@
     setupAdjustModalControls();
     setupLowStockModalControls();
     setupShapePreferencesHandlers();
+    setupProductConfigControls();
 
     // Nav Click handlers
     document.querySelectorAll('.side-nav .nav-item').forEach(btn => {
