@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=38">
+  <link rel="stylesheet" href="styles.css?v=39">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -62,26 +62,32 @@
       
       <!-- NAVIGATION TABS -->
       <nav class="side-nav">
+        <!-- 1. Dashboard -->
         <button class="nav-item active" data-tab="dashboard">
           <span class="nav-icon">📊</span>
           <span class="nav-text">Dashboard</span>
         </button>
-        <button class="nav-item" data-tab="matrix">
-          <span class="nav-icon">📦</span>
-          <span class="nav-text">Stock Matrix</span>
-        </button>
-        <button class="nav-item" data-tab="inward">
-          <span class="nav-icon">🏭</span>
-          <span class="nav-text">Factory Purchase (In)</span>
-        </button>
+        <!-- 2. Wholesale Sales (Out) -->
         <button class="nav-item" data-tab="outward">
           <span class="nav-icon">🛒</span>
           <span class="nav-text">Wholesale Sales (Out)</span>
         </button>
+        <!-- 3. Factory Stock Receipt (Inward Entry) -->
+        <button class="nav-item" data-tab="inward">
+          <span class="nav-icon">🏭</span>
+          <span class="nav-text">Factory Stock Receipt (In)</span>
+        </button>
+        <!-- 4. Stock Matrix -->
+        <button class="nav-item" data-tab="matrix">
+          <span class="nav-icon">📦</span>
+          <span class="nav-text">Stock Matrix</span>
+        </button>
+        <!-- 5. Complete Stock Ledger & History -->
         <button class="nav-item" data-tab="ledger">
           <span class="nav-icon">📋</span>
           <span class="nav-text">Stock Ledger & Logs</span>
         </button>
+        <!-- 6. Settings & Data Management -->
         <button class="nav-item" data-tab="settings">
           <span class="nav-icon">⚙️</span>
           <span class="nav-text">Settings & Backup</span>
@@ -1396,6 +1402,6 @@
   </div>
 
   <script src="html2pdf.bundle.min.js"></script>
-  <script src="app.js?v=38"></script>
+  <script src="app.js?v=39"></script>
 </body>
 </html>

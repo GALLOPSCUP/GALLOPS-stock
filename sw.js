@@ -1,5 +1,5 @@
 // Offline Service Worker for Gallops Wholesale Stock Application
-const CACHE_NAME = 'gallops-stock-v38';
+const CACHE_NAME = 'gallops-stock-v39';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
