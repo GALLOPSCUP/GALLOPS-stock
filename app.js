@@ -121,54 +121,54 @@
     shapePreferences: DEFAULT_SHAPE_PREFERENCES
   };
 
-  // Sample stock covering user's actual wholesale product matrix
+  // Stock covering user's actual wholesale product matrix (All initialized to 0 for manual entry)
   const INITIAL_STOCK_SAMPLE = {
     // 1. GALLOPS CUP (Pink Only)
-    'GALLOPS_CUP_PINK_S': 150,
-    'GALLOPS_CUP_PINK_M': 250,
-    'GALLOPS_CUP_PINK_L': 110,
+    'GALLOPS_CUP_PINK_S': 0,
+    'GALLOPS_CUP_PINK_M': 0,
+    'GALLOPS_CUP_PINK_L': 0,
 
     // 2. REGULAR SHAPE
-    'REGULAR_PINK_S': 160,
-    'REGULAR_PINK_M': 280,
-    'REGULAR_PINK_L': 120,
-    'REGULAR_BLUE_S': 90,
-    'REGULAR_BLUE_M': 180,
-    'REGULAR_BLUE_L': 70,
-    'REGULAR_PURPLE_S': 80,
-    'REGULAR_PURPLE_M': 150,
-    'REGULAR_PURPLE_L': 65,
+    'REGULAR_PINK_S': 0,
+    'REGULAR_PINK_M': 0,
+    'REGULAR_PINK_L': 0,
+    'REGULAR_BLUE_S': 0,
+    'REGULAR_BLUE_M': 0,
+    'REGULAR_BLUE_L': 0,
+    'REGULAR_PURPLE_S': 0,
+    'REGULAR_PURPLE_M': 0,
+    'REGULAR_PURPLE_L': 0,
 
     // 3. BELL SHAPE
-    'BELL_PINK_S': 210,
-    'BELL_PINK_M': 350,
-    'BELL_PINK_L': 140,
-    'BELL_BLUE_S': 110,
-    'BELL_BLUE_M': 200,
-    'BELL_BLUE_L': 75,
-    'BELL_PURPLE_S': 95,
-    'BELL_PURPLE_M': 160,
-    'BELL_PURPLE_L': 45, // Low stock alert (< 50)
+    'BELL_PINK_S': 0,
+    'BELL_PINK_M': 0,
+    'BELL_PINK_L': 0,
+    'BELL_BLUE_S': 0,
+    'BELL_BLUE_M': 0,
+    'BELL_BLUE_L': 0,
+    'BELL_PURPLE_S': 0,
+    'BELL_PURPLE_M': 0,
+    'BELL_PURPLE_L': 0,
 
     // 4. LSR (Only White Available)
-    'LSR_WHITE_S': 110,
-    'LSR_WHITE_M': 190,
-    'LSR_WHITE_L': 85,
+    'LSR_WHITE_S': 0,
+    'LSR_WHITE_M': 0,
+    'LSR_WHITE_L': 0,
 
     // 5. SINGLE FOLD (Pink Only)
-    'SINGLE_FOLD_PINK_S': 130,
-    'SINGLE_FOLD_PINK_M': 220,
-    'SINGLE_FOLD_PINK_L': 90,
+    'SINGLE_FOLD_PINK_S': 0,
+    'SINGLE_FOLD_PINK_M': 0,
+    'SINGLE_FOLD_PINK_L': 0,
 
     // 6. MULTI FOLD (Pink Only)
-    'MULTI_FOLD_PINK_S': 140,
-    'MULTI_FOLD_PINK_M': 240,
-    'MULTI_FOLD_PINK_L': 105,
+    'MULTI_FOLD_PINK_S': 0,
+    'MULTI_FOLD_PINK_M': 0,
+    'MULTI_FOLD_PINK_L': 0,
 
     // 7. BOX (Packaging Box: Small, Medium, Large)
-    'BOX_PRINTED_S': 400,
-    'BOX_PRINTED_M': 650,
-    'BOX_PRINTED_L': 300
+    'BOX_PRINTED_S': 0,
+    'BOX_PRINTED_M': 0,
+    'BOX_PRINTED_L': 0
   };
 
   const INITIAL_TRANSACTIONS_SAMPLE = [];
@@ -350,16 +350,16 @@
     delete stock['LSR_PURPLE_M'];
     delete stock['LSR_PURPLE_L'];
 
-    // Ensure new shapes exist in stock
+    // Ensure new shapes exist in stock with 0 initial inventory
     if (stock['GALLOPS_CUP_PINK_S'] === undefined) {
-      stock['GALLOPS_CUP_PINK_S'] = 150;
-      stock['GALLOPS_CUP_PINK_M'] = 250;
-      stock['GALLOPS_CUP_PINK_L'] = 110;
+      stock['GALLOPS_CUP_PINK_S'] = 0;
+      stock['GALLOPS_CUP_PINK_M'] = 0;
+      stock['GALLOPS_CUP_PINK_L'] = 0;
     }
     if (stock['BOX_PRINTED_S'] === undefined) {
-      stock['BOX_PRINTED_S'] = 400;
-      stock['BOX_PRINTED_M'] = 650;
-      stock['BOX_PRINTED_L'] = 300;
+      stock['BOX_PRINTED_S'] = 0;
+      stock['BOX_PRINTED_M'] = 0;
+      stock['BOX_PRINTED_L'] = 0;
     }
     return stock;
   }
@@ -3562,6 +3562,27 @@
       );
       saveTransactions();
       localStorage.setItem(DEMO_CLEARED_FLAG, 'true');
+    }
+
+    // Reset all stock counts to 0 so user can manually enter real inventory
+    const STOCK_ZERO_RESET_FLAG = 'gallops_stock_zero_reset_v44';
+    if (!localStorage.getItem(STOCK_ZERO_RESET_FLAG)) {
+      if (appState.stock) {
+        Object.keys(appState.stock).forEach(key => {
+          appState.stock[key] = 0;
+        });
+      }
+      appState.settings.shapes.forEach(shape => {
+        const colors = shape.colors || ['PINK'];
+        colors.forEach(c => {
+          appState.settings.sizes.forEach(sz => {
+            const key = getSkuKey(shape.id, c, sz.id);
+            appState.stock[key] = 0;
+          });
+        });
+      });
+      saveStock();
+      localStorage.setItem(STOCK_ZERO_RESET_FLAG, 'true');
     }
 
     populateDropdowns();
