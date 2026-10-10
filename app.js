@@ -677,7 +677,6 @@
 
     // Update KPI elements
     const kpiTotalUnits = document.getElementById('kpiTotalUnits');
-    const kpiTotalBoxes = document.getElementById('kpiTotalBoxes');
     const kpiStockValuation = document.getElementById('kpiStockValuation');
     const kpiStockPotential = document.getElementById('kpiStockPotential');
     const kpiTotalSold = document.getElementById('kpiTotalSold');
@@ -686,7 +685,6 @@
     const kpiLowStockBadge = document.getElementById('kpiLowStockBadge');
 
     if (kpiTotalUnits) kpiTotalUnits.textContent = grandTotalUnits.toLocaleString('en-IN');
-    if (kpiTotalBoxes) kpiTotalBoxes.textContent = `≈ ${Math.floor(grandTotalUnits / 100)} master cartons (100 pcs/box)`;
     if (kpiStockValuation) kpiStockValuation.textContent = formatCurrency(stockValuationCost);
     if (kpiStockPotential) kpiStockPotential.textContent = `Selling Realization: ${formatCurrency(stockPotentialRevenue)}`;
     if (kpiTotalSold) kpiTotalSold.textContent = totalUnitsSold.toLocaleString('en-IN') + ' pcs';
