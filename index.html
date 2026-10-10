@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=39">
+  <link rel="stylesheet" href="styles.css?v=40">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -1396,12 +1396,61 @@
       </div>
     </div>
 
+    <!-- INDIA MART STYLE BOTTOM NAVIGATION BAR (Exact Match to Photos 2 & 3) -->
+    <nav class="indiamart-bottom-nav" id="indiamartBottomNav" aria-label="IndiaMART Bottom Navigation">
+      <div class="im-nav-items-row">
+        <!-- 1. Home (Dashboard) -->
+        <button type="button" class="im-nav-item active" data-tab="dashboard" id="imNavHome" title="Home (Dashboard)">
+          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="24" height="24">
+            <path d="M3 10.5L12 3.2l9 7.3V20.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="9.5" y="13.5" width="5" height="8" rx="0.5" fill="currentColor"/>
+          </svg>
+          <span class="im-nav-label">Home</span>
+        </button>
+
+        <!-- 2. Buy Leads (Wholesale Sales Outward) -->
+        <button type="button" class="im-nav-item" data-tab="outward" id="imNavBuyLeads" title="Buy Leads (Wholesale Sales)">
+          <svg class="im-icon im-icon-buyleads" viewBox="0 0 24 24" fill="none" width="24" height="24">
+            <polyline points="4,18 10,9 16,14 21,7" class="im-trend-line" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="4" cy="18" r="2.3" class="im-node-dot" fill="currentColor"/>
+            <circle cx="10" cy="9" r="2.3" class="im-node-dot" fill="currentColor"/>
+            <circle cx="16" cy="14" r="2.3" class="im-node-dot" fill="currentColor"/>
+            <circle cx="21" cy="7" r="2.3" class="im-node-dot" fill="currentColor"/>
+          </svg>
+          <span class="im-nav-label">Buy Leads</span>
+        </button>
+
+        <!-- 3. Lead Manager (Stock Ledger & Invoices) -->
+        <button type="button" class="im-nav-item" data-tab="ledger" id="imNavLeadManager" title="Lead Manager (Stock Ledger & Saved Bills)">
+          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="24" height="24">
+            <path d="M4 4h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8.5L5 17.5V14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M10 10.5h8a2 2 0 0 1 2 2V16a2 2 0 0 1-2 2h-1.5L14 21.5V18h-4a2 2 0 0 1-2-2v-3.5a2 2 0 0 1 2-2z" fill="currentColor"/>
+          </svg>
+          <span class="im-nav-label">Lead Manager</span>
+        </button>
+
+        <!-- 4. Add Products (Factory Inward Stock Receipt) -->
+        <button type="button" class="im-nav-item" data-tab="inward" id="imNavAddProducts" title="Add Products (Factory Stock Receipt)">
+          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="24" height="24">
+            <path d="M3 4.5h2.2l2.3 10.2a1 1 0 0 0 1 .8h9.8a1 1 0 0 0 1-.8L21 7.5H6.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7.8 8h12.2l-1.3 5.8H8.8z" fill="currentColor"/>
+            <circle cx="9.5" cy="19.5" r="1.8" stroke="currentColor" stroke-width="1.6" fill="none"/>
+            <circle cx="17.5" cy="19.5" r="1.8" stroke="currentColor" stroke-width="1.6" fill="none"/>
+          </svg>
+          <span class="im-nav-label">Add Products</span>
+        </button>
+      </div>
+
+      <!-- Centered bottom indicator pill matching Photo 2 & 3 -->
+      <div class="im-home-indicator" aria-hidden="true"></div>
+    </nav>
+
     <!-- TOAST NOTIFICATIONS -->
     <div id="toastContainer" class="toast-container"></div>
 
   </div>
 
   <script src="html2pdf.bundle.min.js"></script>
-  <script src="app.js?v=39"></script>
+  <script src="app.js?v=40"></script>
 </body>
 </html>

@@ -1885,12 +1885,15 @@
   function switchTab(tabId) {
     document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.side-nav .nav-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.indiamart-bottom-nav .im-nav-item').forEach(el => el.classList.remove('active'));
 
     const targetTab = document.getElementById(`tab-${tabId}`);
     const targetNav = document.querySelector(`.side-nav .nav-item[data-tab="${tabId}"]`);
+    const targetBottomNav = document.querySelector(`.indiamart-bottom-nav .im-nav-item[data-tab="${tabId}"]`);
 
     if (targetTab) targetTab.classList.add('active');
     if (targetNav) targetNav.classList.add('active');
+    if (targetBottomNav) targetBottomNav.classList.add('active');
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -3567,6 +3570,11 @@
 
     // Nav Click handlers
     document.querySelectorAll('.side-nav .nav-item').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // IndiaMART Bottom Nav Click handlers (Matching Attached Photos 2 & 3)
+    document.querySelectorAll('.indiamart-bottom-nav .im-nav-item').forEach(btn => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 

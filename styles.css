@@ -2701,6 +2701,178 @@ body.theme-dark .cg-btn-step:hover {
   font-size: 11px;
 }
 
+/* ====================================================================
+   INDIAMART STYLE BOTTOM NAVIGATION BAR (Exact Match to Photos 2 & 3)
+   ==================================================================== */
+.indiamart-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 0 3px 0;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.theme-dark .indiamart-bottom-nav {
+  background: #161926;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.im-nav-items-row {
+  display: flex;
+  width: 100%;
+  max-width: 650px;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.im-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 4px 6px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+}
+
+.im-nav-item:hover {
+  color: #1e293b;
+}
+
+body.theme-dark .im-nav-item {
+  color: #94a3b8;
+}
+
+.im-icon {
+  width: 25px;
+  height: 25px;
+  display: block;
+  color: #64748b;
+  transition: color 0.15s ease-in-out;
+}
+
+body.theme-dark .im-icon {
+  color: #94a3b8;
+}
+
+.im-nav-label {
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #64748b;
+  white-space: nowrap;
+  transition: color 0.15s ease-in-out;
+}
+
+body.theme-dark .im-nav-label {
+  color: #94a3b8;
+}
+
+/* --- ACTIVE TAB STYLES (Matching Attached Photos 2 & 3) --- */
+.im-nav-item.active .im-nav-label {
+  color: #2b3990; /* IndiaMART signature active blue/indigo text */
+  font-weight: 600;
+}
+
+body.theme-dark .im-nav-item.active .im-nav-label {
+  color: #38bdf8;
+}
+
+/* Active Icon Color */
+.im-nav-item.active .im-icon {
+  color: #00a699; /* IndiaMART teal icon accent */
+}
+
+/* Inactive / Default Buy Leads Trend Line & Nodes */
+.im-nav-item .im-trend-line {
+  stroke: #64748b;
+}
+
+.im-nav-item .im-node-dot {
+  fill: #64748b;
+}
+
+/* Active Buy Leads (Exactly matching Photo 2 & 3: slate line with teal nodes) */
+.im-nav-item.active .im-trend-line {
+  stroke: #334155;
+}
+
+.im-nav-item.active .im-node-dot {
+  fill: #00a699; /* IndiaMART vibrant teal dot */
+}
+
+body.theme-dark .im-nav-item.active .im-trend-line {
+  stroke: #cbd5e1;
+}
+
+body.theme-dark .im-nav-item.active .im-node-dot {
+  fill: #38bdf8;
+}
+
+/* Centered Home Indicator Pill (Matching Photo 2 & 3) */
+.im-home-indicator {
+  width: 132px;
+  height: 4.5px;
+  background: #3f3f46;
+  border-radius: 99px;
+  margin: 5px auto 2px auto;
+  opacity: 0.85;
+}
+
+body.theme-dark .im-home-indicator {
+  background: #64748b;
+}
+
+/* Ensure content is not hidden behind the fixed bottom bar */
+.content-panel {
+  padding-bottom: 85px !important;
+}
+
+/* Responsive Layout for Mobile Devices (IndiaMART App Experience) */
+@media (max-width: 768px) {
+  .main-body {
+    flex-direction: column;
+  }
+  .side-nav {
+    display: none; /* Mobile uses IndiaMART bottom navigation */
+  }
+  .content-panel {
+    padding: 1rem 1rem 85px 1rem !important;
+  }
+  .top-header {
+    padding: 0 0.85rem;
+    height: 62px;
+  }
+  .brand-title {
+    font-size: 1.05rem;
+  }
+  .brand-tag {
+    font-size: 0.65rem;
+  }
+  .header-actions .btn-label {
+    display: none;
+  }
+}
+
 /* ================= PRINT STYLESHEET ================= */
 @media print {
   @page {
@@ -2713,7 +2885,7 @@ body.theme-dark .cg-btn-step:hover {
     margin: 0 !important;
     padding: 0 !important;
   }
-  .app-container, .top-header, .side-nav, .header-actions, .filter-bar, .action-btn-group, .guide-actions, .btn-mini-adjust, .no-print, .toast-container, .modal-overlay:not(#gstInvoiceModal) {
+  .app-container, .top-header, .side-nav, .indiamart-bottom-nav, .header-actions, .filter-bar, .action-btn-group, .guide-actions, .btn-mini-adjust, .no-print, .toast-container, .modal-overlay:not(#gstInvoiceModal) {
     display: none !important;
   }
   #gstInvoiceModal {
