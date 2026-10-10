@@ -2336,10 +2336,19 @@
       `;
     });
 
-    // Filler row to expand vertical lines exactly like the uploaded image
+    // Dynamic filler row height to expand table so GST No & Sub Total are positioned DOWN near the bottom of single A4 page (matching Photo 2)
+    const itemCount = items.length;
+    const fillerHeight = Math.max(200, 420 - (itemCount - 1) * 26);
+
     itemsHtml += `
       <tr class="filler-row">
-        <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td style="height: ${fillerHeight}px;"></td>
+        <td style="height: ${fillerHeight}px;"></td>
+        <td style="height: ${fillerHeight}px;"></td>
+        <td style="height: ${fillerHeight}px;"></td>
+        <td style="height: ${fillerHeight}px;"></td>
+        <td style="height: ${fillerHeight}px;"></td>
+        <td style="height: ${fillerHeight}px;"></td>
       </tr>
     `;
 

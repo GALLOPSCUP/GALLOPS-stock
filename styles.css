@@ -2501,7 +2501,7 @@ body.theme-dark .cg-btn-step:hover {
 }
 
 .gst-table tr.filler-row td {
-  height: 180px; /* Expands table height just like the Word/PDF document */
+  height: 420px; /* Expands table height so GSTIN No. & Sub Total sit down at the lower page, exactly matching official bill (Photo 2) */
   border-bottom: none;
 }
 
@@ -2509,14 +2509,32 @@ body.theme-dark .cg-btn-step:hover {
 .gst-bottom-row {
   display: flex;
   border-bottom: 1px solid #000000;
-  flex: 1;
 }
 
 .gst-bank-col {
   width: 62%;
   border-right: 1px solid #000000;
-  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
   font-size: 11px;
+}
+
+.gst-bank-header-line {
+  padding: 4px 8px;
+  border-bottom: 1px solid #000000;
+  font-size: 11.5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+}
+
+.gst-bank-body {
+  padding: 5px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
 }
 
 .gst-totals-col {
@@ -2529,25 +2547,45 @@ body.theme-dark .cg-btn-step:hover {
 .gst-total-line {
   display: flex;
   justify-content: space-between;
-  padding: 3px 8px;
+  padding: 3.5px 8px;
   border-bottom: 1px solid #000000;
   font-size: 11px;
 }
 
 .gst-tax-breakdown-box {
+  background: #ffffff;
+}
+
+.gst-tax-breakdown-box .gst-total-line:last-child {
+  border-bottom: none;
+}
+
+/* Note & Grand Total Bar (Matching Photo 2) */
+.gst-note-total-row {
+  display: flex;
   border-bottom: 1px solid #000000;
   background: #ffffff;
 }
 
-.gst-grand-total-row {
+.gst-note-col {
+  width: 62%;
+  border-right: 1px solid #000000;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.gst-grand-total-col {
+  width: 38%;
+  padding: 5px 8px;
   display: flex;
   justify-content: space-between;
-  padding: 5px 8px;
-  font-size: 13px;
+  align-items: center;
+  font-size: 12.5px;
   font-weight: 800;
-  border-top: 1px solid #000000;
   background: #ffffff;
-  margin-top: auto;
 }
 
 /* Footer Terms & Sign */

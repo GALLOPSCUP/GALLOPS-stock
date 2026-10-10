@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=33">
+  <link rel="stylesheet" href="styles.css?v=34">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -1168,53 +1168,51 @@
             </table>
 
             <!-- 5. BANK & TOTALS SECTION -->
+            <!-- 5. BANK & TOTALS SECTION -->
             <div class="gst-bottom-row">
               <div class="gst-bank-col">
-                <div class="gst-field-line">
+                <div class="gst-bank-header-line">
                   <span class="gst-label" style="font-weight:700;">GSTIN No .:</span>
                   <span class="gst-val" style="font-weight:700;" id="invCompanyGstin">24BIOPB7033F1ZJ</span>
                 </div>
-                <div class="gst-field-line">
-                  <span class="gst-label">Bank Name :</span>
-                  <span class="gst-val" id="invBankName">BANK OF MAHARASHTRA</span>
-                </div>
-                <div class="gst-field-line">
-                  <span class="gst-label">Bank A/c. No. :</span>
-                  <span class="gst-val" id="invBankAcNo">60413462290</span>
-                </div>
-                <div class="gst-field-line">
-                  <span class="gst-label">RTGS/IFSC Code :</span>
-                  <span class="gst-val" id="invBankIfsc">MAHB0001539</span>
-                </div>
-                <div class="gst-field-line" style="margin-top:6px;">
-                  <span class="gst-label">Total GST:</span>
-                  <span class="gst-val" id="invTotalGstDisplay">360.00</span>
-                </div>
-                <div class="gst-field-line" style="margin-top:6px;">
-                  <span class="gst-label">Bill Amount:</span>
-                  <span class="gst-val" id="invBillAmountWords">Seven Thousand Five Hundred Sixty Rupees Only</span>
-                </div>
-                <div class="gst-field-line" style="margin-top:4px;">
-                  <span class="gst-label">Note:</span>
-                  <span class="gst-val" id="invNote">Wholesale Order</span>
+                <div class="gst-bank-body">
+                  <div class="gst-field-line">
+                    <span class="gst-label">Bank Name :</span>
+                    <span class="gst-val" id="invBankName">BANK OF MAHARASHTRA</span>
+                  </div>
+                  <div class="gst-field-line">
+                    <span class="gst-label">Bank A/c. No. :</span>
+                    <span class="gst-val" id="invBankAcNo">60413462290</span>
+                  </div>
+                  <div class="gst-field-line">
+                    <span class="gst-label">RTGS/IFSC Code :</span>
+                    <span class="gst-val" id="invBankIfsc">MAHB0001539</span>
+                  </div>
+                  <div class="gst-field-line" style="margin-top:4px;">
+                    <span class="gst-label">Total GST:</span>
+                    <span class="gst-val" id="invTotalGstDisplay">360.00</span>
+                  </div>
+                  <div class="gst-field-line" style="margin-top:4px;">
+                    <span class="gst-label">Bill Amount:</span>
+                    <span class="gst-val" id="invBillAmountWords">Seven Thousand Five Hundred Sixty Rupees Only</span>
+                  </div>
                 </div>
               </div>
 
               <div class="gst-totals-col">
-                <div class="gst-total-line">
+                <div class="gst-total-line" style="font-weight:700;">
                   <span>Sub Total</span>
                   <span id="invSubTotal">7200.00</span>
                 </div>
                 <div class="gst-total-line">
                   <span>Courier Services</span>
-                  <span id="invCourierCharges">0</span>
+                  <span id="invCourierCharges">0.00</span>
                 </div>
-                <div class="gst-total-line">
+                <div class="gst-total-line" style="font-weight:700;">
                   <span>Taxable Amount</span>
                   <span id="invTaxableAmount">7200.00</span>
                 </div>
                 <div class="gst-tax-breakdown-box" id="invTaxBreakdownBox">
-                  <div style="font-size:0.75rem; color:#444; font-weight:600; padding:2px 8px 0 8px;">Integrated Tax</div>
                   <div class="gst-total-line" id="invCgstLine">
                     <span>CGST (2.5%)</span>
                     <span id="invCgst">180.00</span>
@@ -1224,14 +1222,22 @@
                     <span id="invSgst">180.00</span>
                   </div>
                   <div class="gst-total-line hidden" id="invIgstLine">
-                    <span>IGST (5%)</span>
+                    <span>Integrated Tax 5.00%</span>
                     <span id="invIgst">360.00</span>
                   </div>
                 </div>
-                <div class="gst-grand-total-row">
-                  <span>Grand Total</span>
-                  <span id="invGrandTotal">7560.00</span>
-                </div>
+              </div>
+            </div>
+
+            <!-- NOTE & GRAND TOTAL ROW (Exactly matching Photo 2) -->
+            <div class="gst-note-total-row">
+              <div class="gst-note-col">
+                <span class="gst-label">Note:</span>
+                <span class="gst-val" id="invNote">Wholesale Order</span>
+              </div>
+              <div class="gst-grand-total-col">
+                <span style="font-size:12px; font-weight:800;">Grand Total</span>
+                <span style="font-size:13.5px; font-weight:900;" id="invGrandTotal">7560.00</span>
               </div>
             </div>
 
@@ -1264,6 +1270,6 @@
   </div>
 
   <script src="html2pdf.bundle.min.js"></script>
-  <script src="app.js?v=33"></script>
+  <script src="app.js?v=34"></script>
 </body>
 </html>
