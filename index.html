@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="styles.css?v=32">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -389,7 +389,12 @@
           <div class="section-header-row">
             <div>
               <h2 class="section-title">Wholesale Sale / Dispatch (Outward)</h2>
-              <p class="section-desc">Record wholesale orders dispatched to buyers or retail distributors</p>
+              <p class="section-desc">Record wholesale orders dispatched to buyers & generate official GST Tax Invoices</p>
+            </div>
+            <div class="action-btn-group">
+              <button type="button" class="btn btn-primary" id="btnOpenNewGstInvoiceModal" style="background:#8b5cf6; border-color:#8b5cf6; font-weight:700;">
+                🧾 Create Multi-Item GST Bill
+              </button>
             </div>
           </div>
 
@@ -436,7 +441,7 @@
 
                 <div class="form-group">
                   <label for="outBuyerName">Buyer / Customer Name <span class="req">*</span></label>
-                  <input type="text" id="outBuyerName" required class="form-control" placeholder="e.g. Priya Healthcare, Jaipur">
+                  <input type="text" id="outBuyerName" required class="form-control" placeholder="e.g. SHRENIK AGENCY">
                 </div>
 
                 <div class="form-group">
@@ -446,7 +451,22 @@
 
                 <div class="form-group">
                   <label for="outBuyerCity">Buyer City / State</label>
-                  <input type="text" id="outBuyerCity" class="form-control" placeholder="e.g. Mumbai, Maharashtra">
+                  <input type="text" id="outBuyerCity" class="form-control" placeholder="e.g. Rajkot, Gujarat">
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="outBuyerAddress">Buyer Full Address (Printed on GST Bill)</label>
+                  <input type="text" id="outBuyerAddress" class="form-control" placeholder="e.g. 315 G B COMPLEX, MOTI TANKI CHOWK, RAJKOT 36001">
+                </div>
+
+                <div class="form-group">
+                  <label for="outBuyerGstin">Buyer GSTIN (15 Digits)</label>
+                  <input type="text" id="outBuyerGstin" maxlength="15" class="form-control" placeholder="e.g. 24AFQPM8443J1ZX" style="text-transform:uppercase;">
+                </div>
+
+                <div class="form-group">
+                  <label for="outCourierCharges">Courier / Freight Charges (₹)</label>
+                  <input type="number" id="outCourierCharges" min="0" step="1" value="0" class="form-control" placeholder="0">
                 </div>
 
                 <div class="form-group">
@@ -460,8 +480,8 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="outOrderRef">Order / Invoice Ref No</label>
-                  <input type="text" id="outOrderRef" class="form-control" placeholder="e.g. ORD-8831">
+                  <label for="outOrderRef">Invoice No. / Ref No</label>
+                  <input type="text" id="outOrderRef" class="form-control" placeholder="e.g. SR-1015">
                 </div>
 
                 <div class="form-group full-width">
@@ -471,9 +491,14 @@
 
               </div>
 
-              <div class="form-actions">
+              <div class="form-actions" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
                 <button type="reset" class="btn btn-secondary">Clear Form</button>
-                <button type="submit" class="btn btn-out-submit">📤 Deduct From Stock (−)</button>
+                <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+                  <button type="submit" class="btn btn-out-submit">📤 Deduct Stock Only (−)</button>
+                  <button type="button" class="btn btn-primary" id="btnDeductAndPrintGstBill" style="background:#8b5cf6; border-color:#8b5cf6; font-weight:700;">
+                    🧾 Deduct & Generate GST Bill
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -691,6 +716,52 @@
               </div>
             </div>
 
+            <!-- GST BILLING & COMPANY PROFILE SETTINGS -->
+            <div class="settings-card full-width-card">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem; margin-bottom:0.75rem;">
+                <div>
+                  <h3 class="settings-card-title">🧾 GST Invoice Company & Bank Profile (EARTH ENTERPRISE)</h3>
+                  <p class="settings-card-desc">Your official business, GSTIN, and Bank details printed on all wholesale GST Tax Invoices</p>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" id="btnSaveCompanyProfile">💾 Save Company Profile</button>
+              </div>
+
+              <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:0.85rem;">
+                <div class="form-group">
+                  <label for="cfgCompName">Company / Firm Name</label>
+                  <input type="text" id="cfgCompName" class="form-control" value="EARTH ENTERPRISE">
+                </div>
+                <div class="form-group">
+                  <label for="cfgCompGstin">Seller GSTIN No.</label>
+                  <input type="text" id="cfgCompGstin" class="form-control" value="24BIOPB7033F1ZJ" maxlength="15">
+                </div>
+                <div class="form-group">
+                  <label for="cfgCompMobile">Mobile No.</label>
+                  <input type="text" id="cfgCompMobile" class="form-control" value="8905013069">
+                </div>
+                <div class="form-group full-width">
+                  <label for="cfgCompAddress">Business Address</label>
+                  <input type="text" id="cfgCompAddress" class="form-control" value="421, NILKANTH PLAZA, NR.KIRAN CHOWK, PUNA SIMADA ROAD, SURAT-395010">
+                </div>
+                <div class="form-group">
+                  <label for="cfgBankName">Bank Name</label>
+                  <input type="text" id="cfgBankName" class="form-control" value="BANK OF MAHARASHTRA">
+                </div>
+                <div class="form-group">
+                  <label for="cfgBankAcNo">Bank Account No.</label>
+                  <input type="text" id="cfgBankAcNo" class="form-control" value="60413462290">
+                </div>
+                <div class="form-group">
+                  <label for="cfgBankIfsc">RTGS / IFSC Code</label>
+                  <input type="text" id="cfgBankIfsc" class="form-control" value="MAHB0001539">
+                </div>
+                <div class="form-group">
+                  <label for="cfgInvoicePrefix">Invoice Number Prefix</label>
+                  <input type="text" id="cfgInvoicePrefix" class="form-control" value="SR-">
+                </div>
+              </div>
+            </div>
+
             <!-- HOW TO INSTALL AS APP ON MOBILE (APK / PWA) -->
             <div class="settings-card">
               <h3 class="settings-card-title">📱 How to Use as Mobile App (Android / Phone)</h3>
@@ -887,11 +958,281 @@
       </div>
     </div>
 
+    <!-- ================= GST TAX INVOICE MODAL (EXACT WORD/PDF FORMAT) ================= -->
+    <div id="gstInvoiceModal" class="modal-overlay hidden">
+      <div class="gst-modal-box">
+        <!-- TOP ACTIONS BAR (Not printed) -->
+        <div class="gst-modal-actions no-print">
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <span style="font-size:1.5rem; line-height:1;">🧾</span>
+            <div>
+              <strong style="color:var(--text-primary); font-size:1.05rem;">GST Tax Invoice (EARTH ENTERPRISE)</strong>
+              <div style="font-size:0.75rem; color:var(--text-muted);">Exact match to your official paper / PDF bill format</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+            <select id="selInvoiceCopyType" class="form-control form-control-sm" style="width:110px; font-weight:600; padding:3px 6px;">
+              <option value="Original">Original</option>
+              <option value="Duplicate">Duplicate</option>
+              <option value="Triplicate">Triplicate</option>
+            </select>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnToggleInvoiceEditor">
+              ✏️ Edit / Add Items
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" id="btnPrintGstInvoice" style="background:#8b5cf6; border-color:#8b5cf6; font-weight:700;">
+              🖨️ Print / Save as PDF
+            </button>
+            <button type="button" class="modal-close-btn" id="btnCloseGstInvoiceModal">&times;</button>
+          </div>
+        </div>
+
+        <!-- COLLAPSIBLE INVOICE BUILDER / EDITOR DRAWER (Not printed) -->
+        <div id="gstInvoiceEditorDrawer" class="gst-editor-drawer no-print hidden">
+          <div style="padding:1rem; background:var(--bg-card); border-bottom:2px solid var(--border-color);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <h4 style="margin:0; font-size:0.95rem; font-weight:800; color:var(--text-primary);">✏️ Invoice Details & Multi-Item Editor</h4>
+              <button type="button" class="btn btn-sm btn-secondary" id="btnHideInvoiceEditor">Hide Editor ▲</button>
+            </div>
+
+            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:0.65rem;">
+              <div class="form-group">
+                <label>Invoice No.</label>
+                <input type="text" id="editInvNo" class="form-control form-control-sm" value="SR-1015">
+              </div>
+              <div class="form-group">
+                <label>Date (DD/MM/YYYY)</label>
+                <input type="text" id="editInvDate" class="form-control form-control-sm" placeholder="27/07/2026">
+              </div>
+              <div class="form-group">
+                <label>Buyer / Customer Name</label>
+                <input type="text" id="editInvBuyerName" class="form-control form-control-sm" placeholder="SHRENIK AGENCY">
+              </div>
+              <div class="form-group">
+                <label>Buyer GSTIN</label>
+                <input type="text" id="editInvBuyerGstin" maxlength="15" class="form-control form-control-sm" placeholder="24AFQPM8443J1ZX" style="text-transform:uppercase;">
+              </div>
+              <div class="form-group full-width">
+                <label>Buyer Address</label>
+                <input type="text" id="editInvBuyerAddress" class="form-control form-control-sm" placeholder="315 G B COMPLEX, MOTI TANKI CHOWK, RAJKOT 36001">
+              </div>
+            </div>
+
+            <!-- Items Table in Editor -->
+            <div style="margin-top:0.85rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                <label style="font-weight:700; font-size:0.85rem; margin:0;">Invoice Items (Cups / Products):</label>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddEditorItemRow" style="padding:2px 8px; font-size:0.8rem;">➕ Add Item Row</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table" style="font-size:0.82rem; width:100%;" id="tableEditorItems">
+                  <thead>
+                    <tr>
+                      <th style="width:38%;">Product Name Description</th>
+                      <th style="width:14%;">HSN/SAC</th>
+                      <th style="width:12%; text-align:right;">Qty</th>
+                      <th style="width:14%; text-align:right;">Rate (₹)</th>
+                      <th style="width:14%; text-align:right;">Amount (₹)</th>
+                      <th style="width:8%; text-align:center;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="editorItemsTbody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:0.65rem; margin-top:0.85rem;">
+              <div class="form-group">
+                <label>Courier Services (₹)</label>
+                <input type="number" id="editInvCourier" min="0" step="1" value="0" class="form-control form-control-sm">
+              </div>
+              <div class="form-group">
+                <label>GST Tax Calculation Mode</label>
+                <select id="editInvTaxMode" class="form-control form-control-sm">
+                  <option value="AUTO">Auto Detect (by Buyer GSTIN/State)</option>
+                  <option value="INTRA">Intra-State Gujarat (CGST 2.5% + SGST 2.5%)</option>
+                  <option value="INTER">Inter-State (IGST 5%)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Note / Remarks</label>
+                <input type="text" id="editInvNote" class="form-control form-control-sm" placeholder="e.g. Wholesale Order Dispatched">
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; flex-wrap:wrap; gap:0.5rem;">
+              <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer; font-size:0.85rem;">
+                <input type="checkbox" id="chkDeductStockOnSave" style="cursor:pointer; width:15px; height:15px;">
+                <span>Also deduct these quantities from Stock Matrix if not already deducted</span>
+              </label>
+              <button type="button" class="btn btn-primary btn-sm" id="btnApplyEditorChanges">
+                💾 Update Bill Preview
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRINTABLE INVOICE PAPER (EXACT LAYOUT OF UPLOADED DOCUMENT) -->
+        <div class="gst-invoice-paper-wrapper">
+          <div id="gstInvoicePrintArea" class="gst-invoice-paper">
+            
+            <!-- 1. HEADER BOX -->
+            <div class="gst-header-center">
+              <div class="gst-company-title" id="invCompanyTitle">EARTH ENTERPRISE</div>
+              <div class="gst-company-address" id="invCompanyAddress">421, NILKANTH PLAZA, NR.KIRAN CHOWK, PUNA SIMADA ROAD, SURAT-395010</div>
+              <div class="gst-company-phone" id="invCompanyMobile">Mobile No. 8905013069</div>
+            </div>
+
+            <!-- 2. SUB-BAR -->
+            <div class="gst-sub-bar">
+              <div class="gst-sub-left">Debit Memo</div>
+              <div class="gst-sub-center">TAXINVOICE</div>
+              <div class="gst-sub-right" id="invCopyType">Original</div>
+            </div>
+
+            <!-- 3. BUYER & INVOICE DETAILS -->
+            <div class="gst-details-row">
+              <div class="gst-buyer-col">
+                <div class="gst-field-line">
+                  <span class="gst-label">M/s.:</span>
+                  <span class="gst-val-red" id="invBuyerName">SHRENIK AGENCY</span>
+                </div>
+                <div class="gst-field-line">
+                  <span class="gst-label">ADDRESS:</span>
+                  <span class="gst-val" id="invBuyerAddress">315 G B COMPLEX, MOTI TANKI CHOWK, RAJKOT 36001</span>
+                </div>
+                <div class="gst-field-line" style="margin-top:4px;">
+                  <span class="gst-label">GSTIN No. :</span>
+                  <span class="gst-val" id="invBuyerGstin">24AFQPM8443J1ZX</span>
+                </div>
+              </div>
+              <div class="gst-invoice-col">
+                <div class="gst-field-line">
+                  <span class="gst-label">Invoice No. :</span>
+                  <span class="gst-val" id="invInvoiceNo">SR-1015</span>
+                </div>
+                <div class="gst-field-line">
+                  <span class="gst-label">Date :</span>
+                  <span class="gst-val" id="invInvoiceDate">27/07/2026</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. PRODUCT ITEMS TABLE -->
+            <table class="gst-table">
+              <thead>
+                <tr>
+                  <th style="width: 5%;">Sr No</th>
+                  <th style="width: 48%; text-align:left;">Product Name</th>
+                  <th style="width: 9%;">HSN/SAC</th>
+                  <th style="width: 8%;">Qty</th>
+                  <th style="width: 10%; text-align:right;">Rate</th>
+                  <th style="width: 8%;">IGST%</th>
+                  <th style="width: 12%; text-align:right;">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="invItemsTbody">
+                <!-- Dynamically rendered rows -->
+              </tbody>
+            </table>
+
+            <!-- 5. BANK & TOTALS SECTION -->
+            <div class="gst-bottom-row">
+              <div class="gst-bank-col">
+                <div class="gst-field-line">
+                  <span class="gst-label" style="font-weight:700;">GSTIN No .:</span>
+                  <span class="gst-val" style="font-weight:700;" id="invCompanyGstin">24BIOPB7033F1ZJ</span>
+                </div>
+                <div class="gst-field-line">
+                  <span class="gst-label">Bank Name :</span>
+                  <span class="gst-val" id="invBankName">BANK OF MAHARASHTRA</span>
+                </div>
+                <div class="gst-field-line">
+                  <span class="gst-label">Bank A/c. No. :</span>
+                  <span class="gst-val" id="invBankAcNo">60413462290</span>
+                </div>
+                <div class="gst-field-line">
+                  <span class="gst-label">RTGS/IFSC Code :</span>
+                  <span class="gst-val" id="invBankIfsc">MAHB0001539</span>
+                </div>
+                <div class="gst-field-line" style="margin-top:6px;">
+                  <span class="gst-label">Total GST:</span>
+                  <span class="gst-val" id="invTotalGstDisplay">360.00</span>
+                </div>
+                <div class="gst-field-line" style="margin-top:6px;">
+                  <span class="gst-label">Bill Amount:</span>
+                  <span class="gst-val" id="invBillAmountWords">Seven Thousand Five Hundred Sixty Rupees Only</span>
+                </div>
+                <div class="gst-field-line" style="margin-top:4px;">
+                  <span class="gst-label">Note:</span>
+                  <span class="gst-val" id="invNote">Wholesale Order</span>
+                </div>
+              </div>
+
+              <div class="gst-totals-col">
+                <div class="gst-total-line">
+                  <span>Sub Total</span>
+                  <span id="invSubTotal">7200.00</span>
+                </div>
+                <div class="gst-total-line">
+                  <span>Courier Services</span>
+                  <span id="invCourierCharges">0</span>
+                </div>
+                <div class="gst-total-line">
+                  <span>Taxable Amount</span>
+                  <span id="invTaxableAmount">7200.00</span>
+                </div>
+                <div class="gst-tax-breakdown-box" id="invTaxBreakdownBox">
+                  <div style="font-size:0.75rem; color:#444; font-weight:600; padding:2px 8px 0 8px;">Integrated Tax</div>
+                  <div class="gst-total-line" id="invCgstLine">
+                    <span>CGST (2.5%)</span>
+                    <span id="invCgst">180.00</span>
+                  </div>
+                  <div class="gst-total-line" id="invSgstLine">
+                    <span>SGST (2.5%)</span>
+                    <span id="invSgst">180.00</span>
+                  </div>
+                  <div class="gst-total-line hidden" id="invIgstLine">
+                    <span>IGST (5%)</span>
+                    <span id="invIgst">360.00</span>
+                  </div>
+                </div>
+                <div class="gst-grand-total-row">
+                  <span>Grand Total</span>
+                  <span id="invGrandTotal">7560.00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. FOOTER TERMS & SIGNATURE -->
+            <div class="gst-footer-row">
+              <div class="gst-terms-col">
+                <div style="font-weight:700; text-decoration:underline; margin-bottom:2px;">Terms & Condition:</div>
+                <ol style="margin:0; padding-left:14px; font-size:9.5px; line-height:1.35;">
+                  <li>Goods once sold will not be taken back.</li>
+                  <li>Interest@18%p.a.willbechargedifpaymentisnotmadewithinduedate.</li>
+                  <li>Ourriskandresponsibilityceasesassoonasthegoodsleaveourpremises.</li>
+                  <li>"Subjectto'SURAT'Jurisdictiononly.E.&.O.E"</li>
+                </ol>
+              </div>
+              <div class="gst-sign-col">
+                <div style="font-weight:700;">For, EARTH ENTERPRISE</div>
+                <div style="height:48px;"></div>
+                <div style="font-size:10px;">(Authorized Signatory)</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- TOAST NOTIFICATIONS -->
     <div id="toastContainer" class="toast-container"></div>
 
   </div>
 
-  <script src="app.js?v=31"></script>
+  <script src="app.js?v=32"></script>
 </body>
 </html>

@@ -94,11 +94,25 @@
     }
   };
 
+  const DEFAULT_COMPANY = {
+    name: 'EARTH ENTERPRISE',
+    address: '421, NILKANTH PLAZA, NR.KIRAN CHOWK, PUNA SIMADA ROAD, SURAT-395010',
+    mobile: '8905013069',
+    gstin: '24BIOPB7033F1ZJ',
+    bankName: 'BANK OF MAHARASHTRA',
+    accountNo: '60413462290',
+    ifsc: 'MAHB0001539',
+    defaultHsn: '9619',
+    defaultGstRate: 5,
+    invoicePrefix: 'SR-'
+  };
+
   const DEFAULT_SETTINGS = {
     lowStockThreshold: 50,
     defaultCostPrice: 45,
     defaultSellPrice: 95,
     factorySupplierName: 'Supreme Silicone Molds Ltd',
+    company: DEFAULT_COMPANY,
     shapes: DEFAULT_SHAPES,
     colors: DEFAULT_COLORS,
     sizes: DEFAULT_SIZES,
@@ -256,6 +270,7 @@
     settings.sizes = [...DEFAULT_SIZES, ...customSizes];
 
     settings.colors = DEFAULT_COLORS;
+    settings.company = Object.assign({}, DEFAULT_COMPANY, parsed?.company || {});
 
     // Ensure shapePreferences has entries for all shapes and each size
     if (!settings.shapePreferences || typeof settings.shapePreferences !== 'object') {
@@ -1214,7 +1229,10 @@
           <td><strong>${formatCurrency(t.total)}</strong></td>
           <td><span class="tag-badge ${payBadgeClass}">${t.paymentStatus || 'PENDING'}</span></td>
           <td>
-            <button class="btn-link" style="color:var(--accent-rose);" onclick="window.gallopsDeleteTxn('${t.id}')">Delete</button>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button type="button" class="btn btn-sm btn-primary" style="font-size:0.75rem; padding:3px 7px; background:#8b5cf6; border-color:#8b5cf6;" onclick="window.gallopsOpenGstBillForTxn('${t.id}')">🧾 GST Bill</button>
+              <button type="button" class="btn-link" style="color:var(--accent-rose); font-size:0.75rem;" onclick="window.gallopsDeleteTxn('${t.id}')">Delete</button>
+            </div>
           </td>
         </tr>
       `;
@@ -1273,7 +1291,10 @@
           <td>₹${t.rate || 0}</td>
           <td><strong>${formatCurrency(t.total)}</strong></td>
           <td>${t.partyName || '-'}</td>
-          <td>${t.reference || t.challanNo || '-'}</td>
+          <td>
+            ${t.reference || t.challanNo || '-'}
+            ${isOut ? `<br><button type="button" class="btn btn-sm btn-link" style="color:#8b5cf6; font-size:0.72rem; padding:0; text-decoration:none;" onclick="window.gallopsOpenGstBillForTxn('${t.id}')">🧾 GST Bill</button>` : ''}
+          </td>
           <td>${t.notes || '-'}</td>
         </tr>
       `;
@@ -1345,8 +1366,8 @@
   }
 
   // Handle Form Stock Out (Wholesale Sale / Dispatch)
-  function handleStockOutSubmit(e) {
-    e.preventDefault();
+  function handleStockOutSubmit(e, shouldOpenGstBill = false) {
+    if (e && e.preventDefault) e.preventDefault();
 
     const shapeId = document.getElementById('outShape').value;
     const colorId = document.getElementById('outColor').value;
@@ -1357,6 +1378,9 @@
     const buyerName = document.getElementById('outBuyerName').value.trim();
     const phone = document.getElementById('outBuyerPhone').value.trim();
     const city = document.getElementById('outBuyerCity').value.trim();
+    const buyerAddress = document.getElementById('outBuyerAddress')?.value.trim() || '';
+    const buyerGstin = document.getElementById('outBuyerGstin')?.value.trim().toUpperCase() || '';
+    const courierCharges = parseFloat(document.getElementById('outCourierCharges')?.value) || 0;
     const paymentStatus = document.getElementById('outPaymentStatus').value;
     const orderRef = document.getElementById('outOrderRef').value.trim();
     const notes = document.getElementById('outNotes').value.trim();
@@ -1389,8 +1413,11 @@
       partyName: buyerName,
       phone: phone,
       city: city,
+      buyerAddress: buyerAddress,
+      buyerGstin: buyerGstin,
+      courierCharges: courierCharges,
       paymentStatus: paymentStatus,
-      reference: orderRef || 'ORD-' + Date.now().toString().slice(-4),
+      reference: orderRef || (appState.settings.company?.invoicePrefix || 'SR-') + Date.now().toString().slice(-4),
       notes: notes,
       timestamp: Date.now()
     };
@@ -1403,6 +1430,10 @@
     renderAll();
 
     showToast(`Dispatched ${quantity} cups to ${buyerName}!`, 'success');
+
+    if (shouldOpenGstBill) {
+      window.gallopsOpenGstBillForTxn(newTxn.id);
+    }
   }
 
   // Delete Transaction with rollback option
@@ -2132,6 +2163,548 @@
     document.getElementById('formAddNewSize')?.addEventListener('submit', handleAddNewSizeSubmit);
   }
 
+  // ================= GST TAX INVOICE ENGINE (EARTH ENTERPRISE FORMAT) =================
+  let currentInvoiceData = {
+    invoiceNo: 'SR-1015',
+    date: '27/07/2026',
+    copyType: 'Original',
+    buyerName: 'SHRENIK AGENCY',
+    buyerAddress: '315 G B COMPLEX, MOTI TANKI CHOWK, RAJKOT 36001',
+    buyerGstin: '24AFQPM8443J1ZX',
+    courier: 0,
+    taxMode: 'AUTO',
+    note: 'Wholesale Order',
+    items: [
+      { name: 'MENSTRUAL CUP REGULAR SHAP SMALL', hsn: '9619', qty: 20, rate: 60, gstRate: 5 },
+      { name: 'MENSTRUAL CUP REGULAR SHAP MEDIUM', hsn: '9619', qty: 60, rate: 60, gstRate: 5 },
+      { name: 'MENSTRUAL CUP REGULAR SHAP LARGE', hsn: '9619', qty: 40, rate: 60, gstRate: 5 }
+    ]
+  };
+
+  function numberToIndianWords(num) {
+    if (!num || isNaN(num) || num <= 0) return 'Zero Rupees Only';
+    num = Math.round(num);
+    const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+    const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    const strNum = ('000000000' + num).slice(-9);
+    const crore = parseInt(strNum.substring(0, 2), 10);
+    const lakh = parseInt(strNum.substring(2, 4), 10);
+    const thousand = parseInt(strNum.substring(4, 6), 10);
+    const hundred = parseInt(strNum.substring(6, 7), 10);
+    const rest = parseInt(strNum.substring(7, 9), 10);
+
+    let res = '';
+    function twoDigits(val) {
+      if (val === 0) return '';
+      if (val < 20) return a[val];
+      return b[Math.floor(val / 10)] + (val % 10 ? ' ' + a[val % 10] : ' ');
+    }
+
+    if (crore > 0) res += twoDigits(crore) + 'Crore ';
+    if (lakh > 0) res += twoDigits(lakh) + 'Lakh ';
+    if (thousand > 0) res += twoDigits(thousand) + 'Thousand ';
+    if (hundred > 0) res += a[hundred] + 'Hundred ';
+    if (rest > 0) res += twoDigits(rest);
+
+    return (res.trim() + ' Rupees Only').replace(/\s+/g, ' ');
+  }
+
+  function formatGstDate(isoOrDateStr) {
+    if (!isoOrDateStr) return new Date().toLocaleDateString('en-GB');
+    if (/^\d{4}-\d{2}-\d{2}$/.test(isoOrDateStr)) {
+      const parts = isoOrDateStr.split('-');
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return isoOrDateStr;
+  }
+
+  function renderGstInvoicePaper(data) {
+    if (!data) data = currentInvoiceData;
+    const comp = appState.settings.company || DEFAULT_COMPANY;
+
+    // Header company details
+    const compTitle = document.getElementById('invCompanyTitle');
+    const compAddr = document.getElementById('invCompanyAddress');
+    const compMobile = document.getElementById('invCompanyMobile');
+    const compGstin = document.getElementById('invCompanyGstin');
+    const bankName = document.getElementById('invBankName');
+    const bankAc = document.getElementById('invBankAcNo');
+    const bankIfsc = document.getElementById('invBankIfsc');
+
+    if (compTitle) compTitle.textContent = comp.name || 'EARTH ENTERPRISE';
+    if (compAddr) compAddr.textContent = comp.address || '421, NILKANTH PLAZA, NR.KIRAN CHOWK, PUNA SIMADA ROAD, SURAT-395010';
+    if (compMobile) compMobile.textContent = 'Mobile No. ' + (comp.mobile || '8905013069');
+    if (compGstin) compGstin.textContent = comp.gstin || '24BIOPB7033F1ZJ';
+    if (bankName) bankName.textContent = comp.bankName || 'BANK OF MAHARASHTRA';
+    if (bankAc) bankAc.textContent = comp.accountNo || '60413462290';
+    if (bankIfsc) bankIfsc.textContent = comp.ifsc || 'MAHB0001539';
+
+    // Buyer & Invoice details
+    const buyerName = document.getElementById('invBuyerName');
+    const buyerAddr = document.getElementById('invBuyerAddress');
+    const buyerGstin = document.getElementById('invBuyerGstin');
+    const invNo = document.getElementById('invInvoiceNo');
+    const invDate = document.getElementById('invInvoiceDate');
+    const copyType = document.getElementById('invCopyType');
+
+    if (buyerName) buyerName.textContent = (data.buyerName || 'CASH SALE').toUpperCase();
+    if (buyerAddr) buyerAddr.textContent = data.buyerAddress || 'LOCAL';
+    if (buyerGstin) buyerGstin.textContent = data.buyerGstin || '-';
+    if (invNo) invNo.textContent = data.invoiceNo || 'SR-1015';
+    if (invDate) invDate.textContent = formatGstDate(data.date);
+    if (copyType) copyType.textContent = data.copyType || 'Original';
+
+    // Items Table
+    const tbody = document.getElementById('invItemsTbody');
+    let subTotal = 0;
+    let itemsHtml = '';
+
+    const items = (data.items && data.items.length > 0) ? data.items : [
+      { name: 'MENSTRUAL CUP REGULAR SHAP MEDIUM', hsn: '9619', qty: 50, rate: 60, gstRate: 5 }
+    ];
+
+    items.forEach((item, idx) => {
+      const qty = Number(item.qty) || 0;
+      const rate = Number(item.rate) || 0;
+      const amount = qty * rate;
+      subTotal += amount;
+      const gstRate = item.gstRate !== undefined ? item.gstRate : 5;
+
+      itemsHtml += `
+        <tr class="item-row">
+          <td style="text-align:center;">${idx + 1}</td>
+          <td style="text-align:left; font-weight:700;">${item.name.toUpperCase()}</td>
+          <td style="text-align:center;">${item.hsn || '9619'}</td>
+          <td style="text-align:center;">${qty}</td>
+          <td style="text-align:right;">${rate.toFixed(2)}</td>
+          <td style="text-align:center;">${gstRate}%</td>
+          <td style="text-align:right;">${amount.toFixed(2)}</td>
+        </tr>
+      `;
+    });
+
+    // Filler row to expand vertical lines exactly like the uploaded image
+    itemsHtml += `
+      <tr class="filler-row">
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+    `;
+
+    if (tbody) tbody.innerHTML = itemsHtml;
+
+    // Calculations
+    const courier = Number(data.courier) || 0;
+    const taxable = subTotal + courier;
+
+    // Tax Determination
+    const buyerGstStr = (data.buyerGstin || '').trim();
+    let isIntraState = true;
+    if (data.taxMode === 'INTER') {
+      isIntraState = false;
+    } else if (data.taxMode === 'INTRA') {
+      isIntraState = true;
+    } else {
+      // Auto detect
+      if (buyerGstStr.length >= 2 && !buyerGstStr.startsWith('24')) {
+        isIntraState = false;
+      } else {
+        isIntraState = true;
+      }
+    }
+
+    let cgst = 0;
+    let sgst = 0;
+    let igst = 0;
+    let totalTax = 0;
+
+    if (isIntraState) {
+      cgst = taxable * 0.025; // 2.5%
+      sgst = taxable * 0.025; // 2.5%
+      totalTax = cgst + sgst;
+    } else {
+      igst = taxable * 0.05; // 5%
+      totalTax = igst;
+    }
+
+    const grandTotal = taxable + totalTax;
+
+    // Update bottom boxes
+    const elSub = document.getElementById('invSubTotal');
+    const elCour = document.getElementById('invCourierCharges');
+    const elTaxable = document.getElementById('invTaxableAmount');
+    const elGrand = document.getElementById('invGrandTotal');
+    const elTotalGst = document.getElementById('invTotalGstDisplay');
+    const elWords = document.getElementById('invBillAmountWords');
+    const elNote = document.getElementById('invNote');
+
+    if (elSub) elSub.textContent = subTotal.toFixed(2);
+    if (elCour) elCour.textContent = courier.toFixed(2);
+    if (elTaxable) elTaxable.textContent = taxable.toFixed(2);
+    if (elGrand) elGrand.textContent = grandTotal.toFixed(2);
+    if (elTotalGst) elTotalGst.textContent = totalTax.toFixed(2);
+    if (elWords) elWords.textContent = numberToIndianWords(grandTotal);
+    if (elNote) elNote.textContent = data.note || 'Wholesale Order';
+
+    // Show/hide tax breakdown
+    const cgstLine = document.getElementById('invCgstLine');
+    const sgstLine = document.getElementById('invSgstLine');
+    const igstLine = document.getElementById('invIgstLine');
+    const elCgst = document.getElementById('invCgst');
+    const elSgst = document.getElementById('invSgst');
+    const elIgst = document.getElementById('invIgst');
+
+    if (isIntraState) {
+      if (cgstLine) cgstLine.classList.remove('hidden');
+      if (sgstLine) sgstLine.classList.remove('hidden');
+      if (igstLine) igstLine.classList.add('hidden');
+      if (elCgst) elCgst.textContent = cgst.toFixed(2);
+      if (elSgst) elSgst.textContent = sgst.toFixed(2);
+    } else {
+      if (cgstLine) cgstLine.classList.add('hidden');
+      if (sgstLine) sgstLine.classList.add('hidden');
+      if (igstLine) igstLine.classList.remove('hidden');
+      if (elIgst) elIgst.textContent = igst.toFixed(2);
+    }
+  }
+
+  function populateInvoiceEditorDrawer(data) {
+    if (!data) data = currentInvoiceData;
+    const elNo = document.getElementById('editInvNo');
+    const elDate = document.getElementById('editInvDate');
+    const elBuyer = document.getElementById('editInvBuyerName');
+    const elGstin = document.getElementById('editInvBuyerGstin');
+    const elAddr = document.getElementById('editInvBuyerAddress');
+    const elCour = document.getElementById('editInvCourier');
+    const elTaxMode = document.getElementById('editInvTaxMode');
+    const elNote = document.getElementById('editInvNote');
+
+    if (elNo) elNo.value = data.invoiceNo || 'SR-1015';
+    if (elDate) elDate.value = formatGstDate(data.date);
+    if (elBuyer) elBuyer.value = data.buyerName || '';
+    if (elGstin) elGstin.value = data.buyerGstin || '';
+    if (elAddr) elAddr.value = data.buyerAddress || '';
+    if (elCour) elCour.value = data.courier || 0;
+    if (elTaxMode) elTaxMode.value = data.taxMode || 'AUTO';
+    if (elNote) elNote.value = data.note || '';
+
+    renderEditorItemsTable(data.items);
+  }
+
+  function renderEditorItemsTable(items) {
+    const tbody = document.getElementById('editorItemsTbody');
+    if (!tbody) return;
+
+    if (!items || items.length === 0) {
+      items = [
+        { name: 'MENSTRUAL CUP REGULAR SHAP SMALL', hsn: '9619', qty: 20, rate: 60, gstRate: 5 },
+        { name: 'MENSTRUAL CUP REGULAR SHAP MEDIUM', hsn: '9619', qty: 60, rate: 60, gstRate: 5 },
+        { name: 'MENSTRUAL CUP REGULAR SHAP LARGE', hsn: '9619', qty: 40, rate: 60, gstRate: 5 }
+      ];
+      currentInvoiceData.items = items;
+    }
+
+    tbody.innerHTML = items.map((item, idx) => `
+      <tr data-idx="${idx}">
+        <td>
+          <input type="text" class="form-control form-control-sm ed-item-name" value="${item.name}">
+        </td>
+        <td>
+          <input type="text" class="form-control form-control-sm ed-item-hsn" value="${item.hsn || '9619'}">
+        </td>
+        <td>
+          <input type="number" min="1" step="1" class="form-control form-control-sm ed-item-qty" value="${item.qty}" style="text-align:right;" oninput="window.gallopsRecalcEditorRow(${idx})">
+        </td>
+        <td>
+          <input type="number" min="0" step="0.5" class="form-control form-control-sm ed-item-rate" value="${item.rate}" style="text-align:right;" oninput="window.gallopsRecalcEditorRow(${idx})">
+        </td>
+        <td style="text-align:right; font-weight:700;" class="ed-item-amount" id="edItemAmount_${idx}">
+          ${(Number(item.qty || 0) * Number(item.rate || 0)).toFixed(2)}
+        </td>
+        <td style="text-align:center;">
+          <button type="button" class="btn btn-sm btn-link text-danger" style="font-size:0.9rem; padding:0; color:#ef4444;" onclick="window.gallopsRemoveEditorItem(${idx})">✖</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  window.gallopsRecalcEditorRow = function(idx) {
+    const row = document.querySelector(`#editorItemsTbody tr[data-idx="${idx}"]`);
+    if (!row) return;
+    const qty = Number(row.querySelector('.ed-item-qty')?.value) || 0;
+    const rate = Number(row.querySelector('.ed-item-rate')?.value) || 0;
+    const elAmount = document.getElementById(`edItemAmount_${idx}`);
+    if (elAmount) elAmount.textContent = (qty * rate).toFixed(2);
+  };
+
+  window.gallopsRemoveEditorItem = function(idx) {
+    if (!currentInvoiceData.items || currentInvoiceData.items.length <= 1) {
+      showToast('Invoice must contain at least one product item', 'error');
+      return;
+    }
+    currentInvoiceData.items.splice(idx, 1);
+    renderEditorItemsTable(currentInvoiceData.items);
+    renderGstInvoicePaper(currentInvoiceData);
+  };
+
+  function openGstInvoiceModal(data) {
+    if (data) {
+      currentInvoiceData = JSON.parse(JSON.stringify(data));
+    }
+    const modal = document.getElementById('gstInvoiceModal');
+    if (!modal) return;
+
+    renderGstInvoicePaper(currentInvoiceData);
+    populateInvoiceEditorDrawer(currentInvoiceData);
+
+    // Hide editor by default so paper is immediately visible
+    const drawer = document.getElementById('gstInvoiceEditorDrawer');
+    if (drawer) drawer.classList.add('hidden');
+
+    modal.classList.remove('hidden');
+  }
+
+  function closeGstInvoiceModal() {
+    const modal = document.getElementById('gstInvoiceModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  window.gallopsOpenGstBillForTxn = function (txnId) {
+    const txn = appState.transactions.find(t => t.id === txnId);
+    if (!txn) {
+      showToast('Transaction not found', 'error');
+      return;
+    }
+
+    const shape = getShapeById(txn.shapeId);
+    const size = getSizeById(txn.sizeId);
+
+    // Format item description matching official Indian wholesale invoice
+    const itemDesc = `MENSTRUAL CUP ${shape.name.toUpperCase()} ${size.name.toUpperCase()}`.replace(/\s+/g, ' ');
+
+    currentInvoiceData = {
+      invoiceNo: txn.reference && txn.reference.startsWith('SR-') ? txn.reference : (txn.reference || 'SR-' + Date.now().toString().slice(-4)),
+      date: txn.date || new Date().toISOString().split('T')[0],
+      copyType: 'Original',
+      buyerName: txn.partyName || 'WHOLESALE BUYER',
+      buyerAddress: txn.buyerAddress || txn.city || 'LOCAL SURAT',
+      buyerGstin: txn.buyerGstin || '',
+      courier: txn.courierCharges || 0,
+      taxMode: 'AUTO',
+      note: txn.notes || 'Wholesale Order',
+      items: [
+        {
+          name: itemDesc,
+          hsn: '9619',
+          qty: txn.quantity,
+          rate: txn.rate,
+          gstRate: 5
+        }
+      ]
+    };
+
+    openGstInvoiceModal(currentInvoiceData);
+  };
+
+  function setupGstInvoiceControls() {
+    // Open from Outward header button
+    document.getElementById('btnOpenNewGstInvoiceModal')?.addEventListener('click', () => {
+      // Build sample multi-item invoice like uploaded Shrenik Agency bill
+      const today = new Date();
+      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const yyyy = today.getFullYear();
+      const dateStr = `${dd}/${mm}/${yyyy}`;
+
+      currentInvoiceData = {
+        invoiceNo: (appState.settings.company?.invoicePrefix || 'SR-') + Math.floor(1000 + Math.random() * 9000),
+        date: dateStr,
+        copyType: 'Original',
+        buyerName: 'SHRENIK AGENCY',
+        buyerAddress: '315 G B COMPLEX, MOTI TANKI CHOWK, RAJKOT 36001',
+        buyerGstin: '24AFQPM8443J1ZX',
+        courier: 0,
+        taxMode: 'AUTO',
+        note: 'Wholesale Order',
+        items: [
+          { name: 'MENSTRUAL CUP REGULAR SHAP SMALL', hsn: '9619', qty: 20, rate: 60, gstRate: 5 },
+          { name: 'MENSTRUAL CUP REGULAR SHAP MEDIUM', hsn: '9619', qty: 60, rate: 60, gstRate: 5 },
+          { name: 'MENSTRUAL CUP REGULAR SHAP LARGE', hsn: '9619', qty: 40, rate: 60, gstRate: 5 }
+        ]
+      };
+      openGstInvoiceModal(currentInvoiceData);
+    });
+
+    // Close Modal
+    document.getElementById('btnCloseGstInvoiceModal')?.addEventListener('click', closeGstInvoiceModal);
+
+    // Outside click
+    const modal = document.getElementById('gstInvoiceModal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeGstInvoiceModal();
+      });
+    }
+
+    // Toggle Editor Drawer
+    document.getElementById('btnToggleInvoiceEditor')?.addEventListener('click', () => {
+      const drawer = document.getElementById('gstInvoiceEditorDrawer');
+      if (drawer) drawer.classList.toggle('hidden');
+    });
+
+    document.getElementById('btnHideInvoiceEditor')?.addEventListener('click', () => {
+      const drawer = document.getElementById('gstInvoiceEditorDrawer');
+      if (drawer) drawer.classList.add('hidden');
+    });
+
+    // Copy Type Change
+    document.getElementById('selInvoiceCopyType')?.addEventListener('change', (e) => {
+      currentInvoiceData.copyType = e.target.value;
+      const copyTypeEl = document.getElementById('invCopyType');
+      if (copyTypeEl) copyTypeEl.textContent = e.target.value;
+    });
+
+    // Print
+    document.getElementById('btnPrintGstInvoice')?.addEventListener('click', () => {
+      window.print();
+    });
+
+    // Add Item Row in Editor
+    document.getElementById('btnAddEditorItemRow')?.addEventListener('click', () => {
+      if (!currentInvoiceData.items) currentInvoiceData.items = [];
+      currentInvoiceData.items.push({
+        name: 'MENSTRUAL CUP REGULAR SHAP MEDIUM',
+        hsn: '9619',
+        qty: 50,
+        rate: 60,
+        gstRate: 5
+      });
+      renderEditorItemsTable(currentInvoiceData.items);
+      renderGstInvoicePaper(currentInvoiceData);
+    });
+
+    // Apply Editor Changes
+    document.getElementById('btnApplyEditorChanges')?.addEventListener('click', () => {
+      // Read header fields
+      currentInvoiceData.invoiceNo = document.getElementById('editInvNo')?.value.trim() || 'SR-1015';
+      currentInvoiceData.date = document.getElementById('editInvDate')?.value.trim() || new Date().toLocaleDateString('en-GB');
+      currentInvoiceData.buyerName = document.getElementById('editInvBuyerName')?.value.trim() || 'CASH SALE';
+      currentInvoiceData.buyerGstin = document.getElementById('editInvBuyerGstin')?.value.trim().toUpperCase() || '';
+      currentInvoiceData.buyerAddress = document.getElementById('editInvBuyerAddress')?.value.trim() || '';
+      currentInvoiceData.courier = parseFloat(document.getElementById('editInvCourier')?.value) || 0;
+      currentInvoiceData.taxMode = document.getElementById('editInvTaxMode')?.value || 'AUTO';
+      currentInvoiceData.note = document.getElementById('editInvNote')?.value.trim() || '';
+
+      // Read item rows
+      const rows = document.querySelectorAll('#editorItemsTbody tr');
+      const newItems = [];
+      rows.forEach(r => {
+        const name = r.querySelector('.ed-item-name')?.value.trim() || 'MENSTRUAL CUP';
+        const hsn = r.querySelector('.ed-item-hsn')?.value.trim() || '9619';
+        const qty = parseInt(r.querySelector('.ed-item-qty')?.value, 10) || 0;
+        const rate = parseFloat(r.querySelector('.ed-item-rate')?.value) || 0;
+        newItems.push({ name, hsn, qty, rate, gstRate: 5 });
+      });
+
+      currentInvoiceData.items = newItems;
+
+      // Optional Stock Deduction from multi-item bill
+      const chkDeduct = document.getElementById('chkDeductStockOnSave');
+      if (chkDeduct && chkDeduct.checked) {
+        let totalDeducted = 0;
+        newItems.forEach(it => {
+          let matchedShape = appState.settings.shapes[0];
+          let matchedSize = appState.settings.sizes[0];
+          
+          appState.settings.shapes.forEach(s => {
+            if (it.name.toUpperCase().includes(s.name.toUpperCase())) matchedShape = s;
+          });
+          appState.settings.sizes.forEach(sz => {
+            if (it.name.toUpperCase().includes(sz.name.toUpperCase()) || it.name.toUpperCase().includes(sz.id)) matchedSize = sz;
+          });
+
+          const colorId = (matchedShape.colors && matchedShape.colors[0]) || 'PINK';
+          const current = getStockQty(matchedShape.id, colorId, matchedSize.id);
+          setStockQty(matchedShape.id, colorId, matchedSize.id, Math.max(0, current - it.qty));
+
+          appState.transactions.unshift({
+            id: 'TXN-' + Math.floor(100000 + Math.random() * 900000),
+            type: 'OUT',
+            date: new Date().toISOString().split('T')[0],
+            shapeId: matchedShape.id,
+            colorId: colorId,
+            sizeId: matchedSize.id,
+            quantity: it.qty,
+            rate: it.rate,
+            total: it.qty * it.rate,
+            partyName: currentInvoiceData.buyerName,
+            buyerAddress: currentInvoiceData.buyerAddress,
+            buyerGstin: currentInvoiceData.buyerGstin,
+            paymentStatus: 'ACCOUNT',
+            reference: currentInvoiceData.invoiceNo,
+            notes: currentInvoiceData.note,
+            timestamp: Date.now()
+          });
+          totalDeducted += it.qty;
+        });
+
+        saveStock();
+        saveTransactions();
+        renderAll();
+        chkDeduct.checked = false;
+        showToast(`Deducted ${totalDeducted} pcs from stock for invoice ${currentInvoiceData.invoiceNo}!`, 'success');
+      }
+
+      renderGstInvoicePaper(currentInvoiceData);
+      showToast('GST Bill preview updated!', 'success');
+    });
+
+    // Form Stock Out: Deduct & Generate GST Bill button
+    document.getElementById('btnDeductAndPrintGstBill')?.addEventListener('click', (e) => {
+      handleStockOutSubmit(e, true);
+    });
+  }
+
+  function setupCompanyProfileControls() {
+    const comp = appState.settings.company || DEFAULT_COMPANY;
+    const elName = document.getElementById('cfgCompName');
+    const elGstin = document.getElementById('cfgCompGstin');
+    const elMobile = document.getElementById('cfgCompMobile');
+    const elAddr = document.getElementById('cfgCompAddress');
+    const elBank = document.getElementById('cfgBankName');
+    const elAc = document.getElementById('cfgBankAcNo');
+    const elIfsc = document.getElementById('cfgBankIfsc');
+    const elPrefix = document.getElementById('cfgInvoicePrefix');
+
+    if (elName) elName.value = comp.name || 'EARTH ENTERPRISE';
+    if (elGstin) elGstin.value = comp.gstin || '24BIOPB7033F1ZJ';
+    if (elMobile) elMobile.value = comp.mobile || '8905013069';
+    if (elAddr) elAddr.value = comp.address || '421, NILKANTH PLAZA, NR.KIRAN CHOWK, PUNA SIMADA ROAD, SURAT-395010';
+    if (elBank) elBank.value = comp.bankName || 'BANK OF MAHARASHTRA';
+    if (elAc) elAc.value = comp.accountNo || '60413462290';
+    if (elIfsc) elIfsc.value = comp.ifsc || 'MAHB0001539';
+    if (elPrefix) elPrefix.value = comp.invoicePrefix || 'SR-';
+
+    document.getElementById('btnSaveCompanyProfile')?.addEventListener('click', () => {
+      appState.settings.company = {
+        name: elName ? elName.value.trim() : 'EARTH ENTERPRISE',
+        gstin: elGstin ? elGstin.value.trim().toUpperCase() : '24BIOPB7033F1ZJ',
+        mobile: elMobile ? elMobile.value.trim() : '8905013069',
+        address: elAddr ? elAddr.value.trim() : '421, NILKANTH PLAZA, NR.KIRAN CHOWK, PUNA SIMADA ROAD, SURAT-395010',
+        bankName: elBank ? elBank.value.trim() : 'BANK OF MAHARASHTRA',
+        accountNo: elAc ? elAc.value.trim() : '60413462290',
+        ifsc: elIfsc ? elIfsc.value.trim() : 'MAHB0001539',
+        invoicePrefix: elPrefix ? elPrefix.value.trim() : 'SR-',
+        defaultHsn: '9619',
+        defaultGstRate: 5
+      };
+
+      saveSettings();
+      renderGstInvoicePaper(currentInvoiceData);
+      showToast('EARTH ENTERPRISE GST & Bank profile saved successfully!', 'success');
+    });
+  }
+
   // ================= 5 USER-FRIENDLY THEMES & COLOR PICKER =================
   const THEME_OPTIONS = [
     {
@@ -2261,6 +2834,8 @@
     setupLowStockModalControls();
     setupShapePreferencesHandlers();
     setupProductConfigControls();
+    setupGstInvoiceControls();
+    setupCompanyProfileControls();
 
     // Nav Click handlers
     document.querySelectorAll('.side-nav .nav-item').forEach(btn => {
