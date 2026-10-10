@@ -594,34 +594,43 @@
             
             <!-- PRODUCT VARIATION SETTINGS -->
             <div class="settings-card">
-              <h3 class="settings-card-title">Cup Shapes & Sizes Configuration</h3>
-              <p class="settings-card-desc">Rename your 5 shapes or 3 sizes to match your factory's exact names</p>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem; margin-bottom:0.75rem;">
+                <div>
+                  <h3 class="settings-card-title">Cup Shapes & Sizes Configuration</h3>
+                  <p class="settings-card-desc">Add new products, cup shapes, and sizes anytime for future inventory expansion</p>
+                </div>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                  <button class="btn btn-primary btn-sm" id="btnOpenAddShapeModal">➕ Add Cup Shape</button>
+                  <button class="btn btn-secondary btn-sm" id="btnOpenAddSizeModal">➕ Add Size</button>
+                </div>
+              </div>
 
               <div class="settings-block">
-                <h4>5 Cup Shapes:</h4>
+                <h4 style="margin:0 0 0.4rem 0; font-size:0.92rem;">Active Cup Shapes / Products:</h4>
                 <div id="shapeRenameInputs" class="rename-list">
-                  <!-- Rendered by JS -->
+                  <!-- Rendered dynamically by JS -->
                 </div>
               </div>
 
               <div class="settings-block mt-3">
-                <h4>3 Cup Sizes:</h4>
+                <h4 style="margin:0 0 0.4rem 0; font-size:0.92rem;">Active Cup Sizes:</h4>
                 <div id="sizeRenameInputs" class="rename-list">
-                  <!-- Rendered by JS -->
+                  <!-- Rendered dynamically by JS -->
                 </div>
               </div>
-
-              <button class="btn btn-primary mt-3" id="btnSaveNames">💾 Save Custom Names</button>
             </div>
 
             <!-- SHAPE & SIZE-WISE STOCK ALERT LIMITS & PRICING PREFERENCES -->
             <div class="settings-card full-width-card">
               <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
                 <div>
-                  <h3 class="settings-card-title">Shape & Size-Wise Low Stock Limits & Prices (7 Products × 3 Sizes)</h3>
-                  <p class="settings-card-desc">Set custom Low Stock Alert Limit (Pcs), Factory Cost Price (₹), and Wholesale Selling Price (₹) for each shape and size (Small, Medium, Large)</p>
+                  <h3 class="settings-card-title">Shape & Size-Wise Low Stock Limits & Prices</h3>
+                  <p class="settings-card-desc">Set custom Low Stock Alert Limit (Pcs), Factory Cost Price (₹), and Wholesale Selling Price (₹) for each shape and size</p>
                 </div>
-                <button class="btn btn-primary" id="btnSaveShapePreferences">💾 Save Size-Wise Preferences</button>
+                <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                  <button class="btn btn-secondary" id="btnOpenAddShapeModalFromTable">➕ Add New Cup Shape</button>
+                  <button class="btn btn-primary" id="btnSaveShapePreferences">💾 Save Size-Wise Preferences</button>
+                </div>
               </div>
 
               <div class="table-responsive mt-3">
