@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=41">
+  <link rel="stylesheet" href="styles.css?v=42">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -36,15 +36,6 @@
       </div>
 
       <div class="header-actions">
-        <!-- Quick Action Buttons -->
-        <button id="btnQuickIn" class="btn btn-in" title="Add Factory Stock">
-          <span class="btn-icon">📥</span>
-          <span class="btn-label">Stock In</span>
-        </button>
-        <button id="btnQuickOut" class="btn btn-out" title="Sell Wholesale">
-          <span class="btn-icon">📤</span>
-          <span class="btn-label">Stock Out</span>
-        </button>
         <button id="btnOpenNotificationModal" class="btn btn-secondary" title="Alerts & Reminders (Low Stock & Pending Payments)" style="display:inline-flex; align-items:center; gap:0.4rem; position:relative;">
           <span style="font-size:1.05rem; line-height:1;">🔔</span>
           <span class="btn-label">Alerts</span>
@@ -1396,55 +1387,73 @@
       </div>
     </div>
 
-    <!-- INDIA MART STYLE BOTTOM NAVIGATION BAR -->
+    <!-- INDIA MART STYLE BOTTOM NAVIGATION BAR (Matching Photo 1 Icons & All 6 Tabs) -->
     <nav class="indiamart-bottom-nav" id="indiamartBottomNav" aria-label="Bottom Navigation">
       <div class="im-nav-items-row">
-        <!-- 1. Home (Dashboard) -->
+        <!-- 1. Home / Dashboard (Chart Icon Matching Photo 1) -->
         <button type="button" class="im-nav-item active" data-tab="dashboard" id="imNavHome" title="Home (Dashboard)">
-          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="24" height="24">
-            <path d="M3 10.5L12 3.2l9 7.3V20.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="9.5" y="13.5" width="5" height="8" rx="0.5" fill="currentColor"/>
+          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.8"/>
+            <rect x="6.5" y="11" width="2.5" height="7" rx="0.5" fill="#ef4444"/>
+            <rect x="10.8" y="7" width="2.5" height="11" rx="0.5" fill="#10b981"/>
+            <rect x="15" y="9.5" width="2.5" height="8.5" rx="0.5" fill="#3b82f6"/>
           </svg>
           <span class="im-nav-label">Home</span>
         </button>
 
-        <!-- 2. SELL (Wholesale Sales Outward) -->
+        <!-- 2. SELL (Wholesale Sales Out - Shopping Cart Icon Matching Photo 1) -->
         <button type="button" class="im-nav-item" data-tab="outward" id="imNavSell" title="SELL (Wholesale Sales Out)">
-          <svg class="im-icon im-icon-buyleads" viewBox="0 0 24 24" fill="none" width="24" height="24">
-            <polyline points="4,18 10,9 16,14 21,7" class="im-trend-line" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="4" cy="18" r="2.3" class="im-node-dot" fill="currentColor"/>
-            <circle cx="10" cy="9" r="2.3" class="im-node-dot" fill="currentColor"/>
-            <circle cx="16" cy="14" r="2.3" class="im-node-dot" fill="currentColor"/>
-            <circle cx="21" cy="7" r="2.3" class="im-node-dot" fill="currentColor"/>
+          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <circle cx="8.5" cy="19.5" r="1.8" stroke="currentColor" stroke-width="1.8"/>
+            <circle cx="18" cy="19.5" r="1.8" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M2 3.5h3.2l2.3 10.5a1.2 1.2 0 0 0 1.2.9h9.3a1.2 1.2 0 0 0 1.2-.9L21.5 6.5H5.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="9" y1="9.5" x2="19.5" y2="9.5" stroke="currentColor" stroke-width="1.2"/>
+            <line x1="9.5" y1="12.5" x2="18.5" y2="12.5" stroke="currentColor" stroke-width="1.2"/>
+            <line x1="14" y1="6.5" x2="14" y2="14.5" stroke="currentColor" stroke-width="1.2"/>
           </svg>
           <span class="im-nav-label">SELL</span>
         </button>
 
-        <!-- 3. Stock History (Complete Stock Ledger & History) -->
-        <button type="button" class="im-nav-item" data-tab="ledger" id="imNavStockHistory" title="Stock History (Ledger & Logs)">
-          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="24" height="24">
-            <path d="M4 4h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H8.5L5 17.5V14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            <path d="M10 10.5h8a2 2 0 0 1 2 2V16a2 2 0 0 1-2 2h-1.5L14 21.5V18h-4a2 2 0 0 1-2-2v-3.5a2 2 0 0 1 2-2z" fill="currentColor"/>
-          </svg>
-          <span class="im-nav-label">Stock History</span>
-        </button>
-
-        <!-- 4. STOCK IN (Factory Stock Receipt Inward Entry) -->
+        <!-- 3. STOCK IN (Factory Stock Receipt - Factory Icon Matching Photo 1) -->
         <button type="button" class="im-nav-item" data-tab="inward" id="imNavStockIn" title="STOCK IN (Factory Stock Receipt)">
-          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="24" height="24">
-            <path d="M3 4.5h2.2l2.3 10.2a1 1 0 0 0 1 .8h9.8a1 1 0 0 0 1-.8L21 7.5H6.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M7.8 8h12.2l-1.3 5.8H8.8z" fill="currentColor"/>
-            <circle cx="9.5" cy="19.5" r="1.8" stroke="currentColor" stroke-width="1.6" fill="none"/>
-            <circle cx="17.5" cy="19.5" r="1.8" stroke="currentColor" stroke-width="1.6" fill="none"/>
+          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <path d="M2 20h20V9l-5.5 3V8l-5.5 3V4L2 8.5v11.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="6.5" cy="15" r="1" fill="currentColor"/>
+            <circle cx="11.5" cy="15" r="1" fill="currentColor"/>
+            <circle cx="16.5" cy="15" r="1" fill="currentColor"/>
           </svg>
           <span class="im-nav-label">STOCK IN</span>
         </button>
 
-        <!-- 5. Settings (Settings & Data Management) -->
+        <!-- 4. Stock Matrix (Stock Matrix Grid - 3D Box Icon Matching Photo 1) -->
+        <button type="button" class="im-nav-item" data-tab="matrix" id="imNavMatrix" title="Stock Matrix Grid">
+          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <path d="M12 3.2L20.5 7.8v8.4L12 21l-8.5-4.8V7.8L12 3.2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M12 12.2l8.5-4.4" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M12 12.2L3.5 7.8" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M12 12.2V21" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M8.2 5.5l7.6 4.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span class="im-nav-label">Matrix</span>
+        </button>
+
+        <!-- 5. Stock History (Complete Stock Ledger & History - Clipboard Icon Matching Photo 1) -->
+        <button type="button" class="im-nav-item" data-tab="ledger" id="imNavStockHistory" title="Stock History (Ledger & Logs)">
+          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="8" y="2" width="8" height="4" rx="1.5" stroke="currentColor" stroke-width="1.8" fill="currentColor" fill-opacity="0.15"/>
+            <line x1="8" y1="10.5" x2="16" y2="10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <line x1="8" y1="14" x2="16" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <line x1="8" y1="17.5" x2="13" y2="17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span class="im-nav-label">History</span>
+        </button>
+
+        <!-- 6. Settings (Settings & Backup - Gear Icon Matching Photo 1) -->
         <button type="button" class="im-nav-item" data-tab="settings" id="imNavSettings" title="Settings & Data Management">
-          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="24" height="24">
-            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33 1.82H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span class="im-nav-label">Settings</span>
         </button>
@@ -1460,6 +1469,6 @@
   </div>
 
   <script src="html2pdf.bundle.min.js"></script>
-  <script src="app.js?v=41"></script>
+  <script src="app.js?v=42"></script>
 </body>
 </html>
