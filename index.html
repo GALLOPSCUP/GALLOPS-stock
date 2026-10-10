@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=32">
+  <link rel="stylesheet" href="styles.css?v=33">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -495,8 +495,8 @@
                 <button type="reset" class="btn btn-secondary">Clear Form</button>
                 <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
                   <button type="submit" class="btn btn-out-submit">📤 Deduct Stock Only (−)</button>
-                  <button type="button" class="btn btn-primary" id="btnDeductAndPrintGstBill" style="background:#8b5cf6; border-color:#8b5cf6; font-weight:700;">
-                    🧾 Deduct & Generate GST Bill
+                  <button type="button" class="btn btn-primary" id="btnDeductAndSaveGstBill" style="background:#8b5cf6; border-color:#8b5cf6; font-weight:700;">
+                    📥 Deduct & Save GST Bill
                   </button>
                 </div>
               </div>
@@ -521,6 +521,36 @@
                   </tr>
                 </thead>
                 <tbody id="outwardHistoryTbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SAVED GST INVOICES & BILLS IN APP -->
+          <div class="panel-box mt-4">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+              <div>
+                <h3 class="panel-box-title" style="margin:0;">🧾 Saved GST Bills & Invoices in App</h3>
+                <p class="text-muted" style="font-size:0.8rem; margin:2px 0 0 0;">All official GST bills saved permanently on this device</p>
+              </div>
+              <span class="badge-tag-standard" id="badgeSavedInvoicesCount">0 Invoices Saved</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Invoice No.</th>
+                    <th>Date</th>
+                    <th>Buyer / Customer</th>
+                    <th>GSTIN</th>
+                    <th>Items Summary</th>
+                    <th style="text-align:right;">Grand Total (₹)</th>
+                    <th style="text-align:center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="savedInvoicesTbody">
                   <!-- Populated by JS -->
                 </tbody>
               </table>
@@ -979,8 +1009,8 @@
             <button type="button" class="btn btn-secondary btn-sm" id="btnToggleInvoiceEditor">
               ✏️ Edit / Add Items
             </button>
-            <button type="button" class="btn btn-primary btn-sm" id="btnPrintGstInvoice" style="background:#8b5cf6; border-color:#8b5cf6; font-weight:700;">
-              🖨️ Print / Save as PDF
+            <button type="button" class="btn btn-primary btn-sm" id="btnDownloadGstPdf" style="background:#8b5cf6; border-color:#8b5cf6; font-weight:700;">
+              📥 Save as PDF
             </button>
             <button type="button" class="modal-close-btn" id="btnCloseGstInvoiceModal">&times;</button>
           </div>
@@ -1233,6 +1263,7 @@
 
   </div>
 
-  <script src="app.js?v=32"></script>
+  <script src="html2pdf.bundle.min.js"></script>
+  <script src="app.js?v=33"></script>
 </body>
 </html>

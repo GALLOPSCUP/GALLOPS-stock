@@ -14,7 +14,8 @@
     STOCK: 'gallops_cup_stock_v4',
     TRANSACTIONS: 'gallops_cup_transactions_v4',
     SETTINGS: 'gallops_cup_settings_v4',
-    THEME: 'gallops_cup_theme_v4'
+    THEME: 'gallops_cup_theme_v4',
+    INVOICES: 'gallops_cup_invoices_v4'
   };
 
   // ================= DEFAULT CONFIGURATION =================
@@ -243,6 +244,7 @@
     settings: loadSettings(),
     stock: loadStock(),
     transactions: loadTransactions(),
+    invoices: loadInvoices(),
     currentAdjustSku: null
   };
 
@@ -443,6 +445,48 @@
 
   function saveTransactions() {
     localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(appState.transactions));
+  }
+
+  function loadInvoices() {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.INVOICES);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {
+      console.warn('Error loading invoices', e);
+    }
+    return [
+      {
+        id: 'INV-SAMPLE-1015',
+        invoiceNo: 'SR-1015',
+        date: '27/07/2026',
+        copyType: 'Original',
+        buyerName: 'SHRENIK AGENCY',
+        buyerAddress: '315 G B COMPLEX, MOTI TANKI CHOWK, RAJKOT 36001',
+        buyerGstin: '24AFQPM8443J1ZX',
+        courier: 0,
+        taxMode: 'AUTO',
+        note: 'Wholesale Order',
+        items: [
+          { name: 'MENSTRUAL CUP REGULAR SHAP SMALL', hsn: '9619', qty: 20, rate: 60, gstRate: 5 },
+          { name: 'MENSTRUAL CUP REGULAR SHAP MEDIUM', hsn: '9619', qty: 60, rate: 60, gstRate: 5 },
+          { name: 'MENSTRUAL CUP REGULAR SHAP LARGE', hsn: '9619', qty: 40, rate: 60, gstRate: 5 }
+        ],
+        subTotal: 7200,
+        taxable: 7200,
+        cgst: 180,
+        sgst: 180,
+        igst: 0,
+        totalTax: 360,
+        grandTotal: 7560,
+        timestamp: Date.now() - 3 * 86400000
+      }
+    ];
+  }
+
+  function saveInvoices() {
+    localStorage.setItem(STORAGE_KEYS.INVOICES, JSON.stringify(appState.invoices));
   }
 
   // ================= HELPER FUNCTIONS =================
@@ -1309,6 +1353,7 @@
     renderHistoryTables();
     renderShapePreferences();
     renderProductConfigCard();
+    renderSavedInvoicesTable();
   }
 
   // ================= TRANSACTION ACTIONS =================
@@ -1433,6 +1478,8 @@
 
     if (shouldOpenGstBill) {
       window.gallopsOpenGstBillForTxn(newTxn.id);
+      saveInvoiceToApp(currentInvoiceData);
+      downloadInvoiceAsPdf(currentInvoiceData);
     }
   }
 
@@ -1579,7 +1626,8 @@
       exportDate: new Date().toISOString(),
       settings: appState.settings,
       stock: appState.stock,
-      transactions: appState.transactions
+      transactions: appState.transactions,
+      invoices: appState.invoices
     };
 
     downloadFile(JSON.stringify(backupData, null, 2), `gallops_stock_backup_${getDateStamp()}.json`, 'application/json');
@@ -1595,6 +1643,10 @@
           appState.stock = data.stock;
           appState.transactions = data.transactions;
           if (data.settings) appState.settings = data.settings;
+          if (data.invoices && Array.isArray(data.invoices)) {
+            appState.invoices = data.invoices;
+            saveInvoices();
+          }
 
           saveStock();
           saveTransactions();
@@ -2469,6 +2521,218 @@
     if (modal) modal.classList.add('hidden');
   }
 
+  // Save an invoice record permanently in the application
+  function saveInvoiceToApp(invData) {
+    if (!invData) return;
+    if (!appState.invoices) appState.invoices = [];
+
+    let subTotal = 0;
+    (invData.items || []).forEach(it => {
+      subTotal += (Number(it.qty) || 0) * (Number(it.rate) || 0);
+    });
+    const courier = Number(invData.courier) || 0;
+    const taxable = subTotal + courier;
+
+    const buyerGstStr = (invData.buyerGstin || '').trim();
+    let isIntraState = true;
+    if (invData.taxMode === 'INTER') {
+      isIntraState = false;
+    } else if (invData.taxMode === 'INTRA') {
+      isIntraState = true;
+    } else {
+      if (buyerGstStr.length >= 2 && !buyerGstStr.startsWith('24')) {
+        isIntraState = false;
+      } else {
+        isIntraState = true;
+      }
+    }
+
+    let cgst = 0, sgst = 0, igst = 0, totalTax = 0;
+    if (isIntraState) {
+      cgst = taxable * 0.025;
+      sgst = taxable * 0.025;
+      totalTax = cgst + sgst;
+    } else {
+      igst = taxable * 0.05;
+      totalTax = igst;
+    }
+    const grandTotal = taxable + totalTax;
+
+    const record = {
+      id: invData.id || ('INV-' + Date.now().toString(36).toUpperCase() + '-' + Math.floor(100 + Math.random() * 900)),
+      invoiceNo: invData.invoiceNo || 'SR-1015',
+      date: invData.date || new Date().toISOString().split('T')[0],
+      copyType: invData.copyType || 'Original',
+      buyerName: invData.buyerName || 'CASH SALE',
+      buyerAddress: invData.buyerAddress || '',
+      buyerGstin: invData.buyerGstin || '',
+      courier: courier,
+      taxMode: invData.taxMode || 'AUTO',
+      note: invData.note || '',
+      items: JSON.parse(JSON.stringify(invData.items || [])),
+      subTotal: subTotal,
+      taxable: taxable,
+      cgst: cgst,
+      sgst: sgst,
+      igst: igst,
+      totalTax: totalTax,
+      grandTotal: grandTotal,
+      timestamp: invData.timestamp || Date.now()
+    };
+
+    // Upsert by invoiceNo or id
+    const existingIdx = appState.invoices.findIndex(x => (x.invoiceNo && x.invoiceNo.trim().toUpperCase() === record.invoiceNo.trim().toUpperCase()) || (invData.id && x.id === invData.id));
+    if (existingIdx >= 0) {
+      record.id = appState.invoices[existingIdx].id;
+      appState.invoices[existingIdx] = record;
+    } else {
+      appState.invoices.unshift(record);
+    }
+
+    saveInvoices();
+    renderSavedInvoicesTable();
+    return record;
+  }
+
+  // Render Saved GST Invoices & Bills Table in App
+  function renderSavedInvoicesTable() {
+    const tbody = document.getElementById('savedInvoicesTbody');
+    const badge = document.getElementById('badgeSavedInvoicesCount');
+    if (!tbody) return;
+
+    const invoices = Array.isArray(appState.invoices) ? appState.invoices : [];
+    if (badge) {
+      badge.textContent = `${invoices.length} Invoice${invoices.length === 1 ? '' : 's'} Saved`;
+    }
+
+    if (invoices.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center text-muted" style="padding:1.8rem;">
+            No GST bills saved yet. Fill out the dispatch form above and click <strong>"📥 Deduct & Save GST Bill"</strong> or click <strong>"🧾 Generate GST Tax Bill"</strong>!
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = invoices.map(inv => {
+      const totalQty = (inv.items || []).reduce((sum, it) => sum + (Number(it.qty) || 0), 0);
+      const itemsCount = (inv.items || []).length;
+      const itemsSummary = `${itemsCount} item${itemsCount === 1 ? '' : 's'} (${totalQty} pcs)`;
+      const dateDisplay = formatGstDate(inv.date);
+      const invIdSafe = (inv.id || inv.invoiceNo || '').replace(/'/g, "\\'");
+
+      return `
+        <tr>
+          <td><span class="badge-tag-standard" style="font-weight:700; font-size:0.85rem;">${inv.invoiceNo}</span></td>
+          <td>${dateDisplay}</td>
+          <td>
+            <strong>${inv.buyerName || 'CASH SALE'}</strong>
+            ${inv.buyerAddress ? `<br><span style="font-size:0.75rem; color:var(--text-muted);">${inv.buyerAddress}</span>` : ''}
+          </td>
+          <td><code style="font-size:0.8rem; background:var(--bg-tertiary); padding:2px 6px; border-radius:4px;">${inv.buyerGstin || '-'}</code></td>
+          <td><span style="font-size:0.82rem;">${itemsSummary}</span></td>
+          <td style="text-align:right;">
+            <strong style="color:var(--accent-emerald); font-size:0.95rem;">₹${Number(inv.grandTotal || 0).toFixed(2)}</strong>
+          </td>
+          <td style="text-align:center;">
+            <div style="display:inline-flex; gap:0.4rem; align-items:center;">
+              <button type="button" class="btn btn-sm btn-primary" style="background:#8b5cf6; border-color:#8b5cf6; font-size:0.78rem; padding:0.25rem 0.55rem; font-weight:700;" onclick="window.gallopsDownloadInvoicePdf('${invIdSafe}')" title="Save PDF to device">
+                📥 Save PDF
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" style="font-size:0.78rem; padding:0.25rem 0.5rem;" onclick="window.gallopsViewInvoice('${invIdSafe}')" title="View details in App">
+                👁️ View
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger" style="font-size:0.78rem; padding:0.25rem 0.45rem; color:#ef4444; border:1px solid rgba(239,68,68,0.3); background:transparent;" onclick="window.gallopsDeleteSavedInvoice('${invIdSafe}')" title="Delete from App">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Direct client-side PDF download to mobile and desktop devices without print dialog
+  function downloadInvoiceAsPdf(invoiceData) {
+    if (!invoiceData) invoiceData = currentInvoiceData;
+
+    // 1. Always save/update in App details first!
+    saveInvoiceToApp(invoiceData);
+
+    const modal = document.getElementById('gstInvoiceModal');
+    const wasHidden = modal && modal.classList.contains('hidden');
+    if (wasHidden) {
+      openGstInvoiceModal(invoiceData);
+    } else {
+      renderGstInvoicePaper(invoiceData);
+    }
+
+    const printElement = document.getElementById('gstInvoicePrintArea');
+    if (!printElement) {
+      showToast('Invoice template not found', 'error');
+      return;
+    }
+
+    const safeInv = (invoiceData.invoiceNo || 'INV').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeBuyer = (invoiceData.buyerName || 'CUSTOMER').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 20);
+    const pdfFilename = `EARTH_ENTERPRISE_${safeInv}_${safeBuyer}.pdf`;
+
+    showToast('📥 Saving PDF to mobile device / Downloads folder...', 'info');
+
+    if (typeof window.html2pdf === 'function') {
+      const opt = {
+        margin: [4, 4, 4, 4],
+        filename: pdfFilename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      window.html2pdf().set(opt).from(printElement).save().then(() => {
+        showToast(`✅ Saved PDF in device & details stored in App: ${pdfFilename}`, 'success');
+      }).catch(err => {
+        console.error('html2pdf generation failed:', err);
+        showToast('PDF generator error. Retrying...', 'error');
+      });
+    } else {
+      showToast('PDF generator is initializing. Please tap Save as PDF again in a moment.', 'error');
+    }
+  }
+
+  // Window global actions for saved invoices
+  window.gallopsDownloadInvoicePdf = function (invIdOrNo) {
+    const inv = (appState.invoices || []).find(x => x.id === invIdOrNo || x.invoiceNo === invIdOrNo);
+    if (inv) {
+      currentInvoiceData = JSON.parse(JSON.stringify(inv));
+      downloadInvoiceAsPdf(currentInvoiceData);
+    } else {
+      showToast('Invoice record not found in App', 'error');
+    }
+  };
+
+  window.gallopsViewInvoice = function (invIdOrNo) {
+    const inv = (appState.invoices || []).find(x => x.id === invIdOrNo || x.invoiceNo === invIdOrNo);
+    if (inv) {
+      openGstInvoiceModal(inv);
+    } else {
+      showToast('Invoice record not found in App', 'error');
+    }
+  };
+
+  window.gallopsDeleteSavedInvoice = function (invIdOrNo) {
+    const idx = (appState.invoices || []).findIndex(x => x.id === invIdOrNo || x.invoiceNo === invIdOrNo);
+    if (idx === -1) return;
+    const inv = appState.invoices[idx];
+    if (confirm(`Delete saved invoice #${inv.invoiceNo} (${inv.buyerName}) from App?\nThis will remove the saved bill record from your device.`)) {
+      appState.invoices.splice(idx, 1);
+      saveInvoices();
+      renderSavedInvoicesTable();
+      showToast(`Invoice #${inv.invoiceNo} deleted from App.`, 'info');
+    }
+  };
+
   window.gallopsOpenGstBillForTxn = function (txnId) {
     const txn = appState.transactions.find(t => t.id === txnId);
     if (!txn) {
@@ -2503,6 +2767,7 @@
       ]
     };
 
+    saveInvoiceToApp(currentInvoiceData);
     openGstInvoiceModal(currentInvoiceData);
   };
 
@@ -2532,6 +2797,7 @@
           { name: 'MENSTRUAL CUP REGULAR SHAP LARGE', hsn: '9619', qty: 40, rate: 60, gstRate: 5 }
         ]
       };
+      saveInvoiceToApp(currentInvoiceData);
       openGstInvoiceModal(currentInvoiceData);
     });
 
@@ -2562,11 +2828,12 @@
       currentInvoiceData.copyType = e.target.value;
       const copyTypeEl = document.getElementById('invCopyType');
       if (copyTypeEl) copyTypeEl.textContent = e.target.value;
+      saveInvoiceToApp(currentInvoiceData);
     });
 
-    // Print
-    document.getElementById('btnPrintGstInvoice')?.addEventListener('click', () => {
-      window.print();
+    // Save as PDF (Mobile & Desktop direct download + Save in App) - NO PRINT DIALOG
+    document.getElementById('btnDownloadGstPdf')?.addEventListener('click', () => {
+      downloadInvoiceAsPdf(currentInvoiceData);
     });
 
     // Add Item Row in Editor
@@ -2655,12 +2922,13 @@
         showToast(`Deducted ${totalDeducted} pcs from stock for invoice ${currentInvoiceData.invoiceNo}!`, 'success');
       }
 
+      saveInvoiceToApp(currentInvoiceData);
       renderGstInvoicePaper(currentInvoiceData);
-      showToast('GST Bill preview updated!', 'success');
+      showToast('GST Bill details updated & saved in App!', 'success');
     });
 
-    // Form Stock Out: Deduct & Generate GST Bill button
-    document.getElementById('btnDeductAndPrintGstBill')?.addEventListener('click', (e) => {
+    // Form Stock Out: Deduct & Save GST Bill button
+    document.getElementById('btnDeductAndSaveGstBill')?.addEventListener('click', (e) => {
       handleStockOutSubmit(e, true);
     });
   }
