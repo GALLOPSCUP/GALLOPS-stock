@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=37">
+  <link rel="stylesheet" href="styles.css?v=38">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -44,6 +44,11 @@
         <button id="btnQuickOut" class="btn btn-out" title="Sell Wholesale">
           <span class="btn-icon">📤</span>
           <span class="btn-label">Stock Out</span>
+        </button>
+        <button id="btnOpenNotificationModal" class="btn btn-secondary" title="Alerts & Reminders (Low Stock & Pending Payments)" style="display:inline-flex; align-items:center; gap:0.4rem; position:relative;">
+          <span style="font-size:1.05rem; line-height:1;">🔔</span>
+          <span class="btn-label">Alerts</span>
+          <span id="badgeNotifCount" class="header-notif-badge" style="display:none;">0</span>
         </button>
         <button id="btnOpenThemeModal" class="btn btn-secondary" title="Choose Layout Color Scheme" style="display:inline-flex; align-items:center; gap:0.4rem;">
           <span>🎨</span>
@@ -89,6 +94,28 @@
         <!-- ================= DASHBOARD TAB ================= -->
         <section id="tab-dashboard" class="tab-pane active">
           
+          <!-- DASHBOARD 9:00 PM NOTIFICATION & ALERTS ACTION BAR -->
+          <div class="dashboard-alert-bar" id="dashboardAlertBar" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem; margin-bottom:1rem; gap:0.75rem; flex-wrap:wrap; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+            <div style="display:flex; align-items:center; gap:0.65rem;">
+              <div style="width:36px; height:36px; border-radius:10px; background:rgba(236,72,153,0.12); display:flex; align-items:center; justify-content:center; font-size:1.3rem;">🔔</div>
+              <div>
+                <strong style="font-size:0.9rem; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                  <span>Daily 9:00 PM Alerts & Notifications</span>
+                  <span class="tag-badge" style="background:rgba(16,185,129,0.12); color:#059669; border:1px solid rgba(16,185,129,0.25); font-size:0.7rem; padding:1px 6px;">⏰ Active at 21:00</span>
+                </strong>
+                <div id="dashAlertBarSubtitle" style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">
+                  Monitoring Low Stock levels & Pending Payment collections
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <button type="button" class="btn btn-sm btn-primary" id="btnDashboardNotification" style="background:#8b5cf6; border-color:#8b5cf6; font-size:0.8rem; font-weight:700; padding:0.35rem 0.85rem; display:inline-flex; align-items:center; gap:0.45rem;">
+                <span>🔔 Check Alerts</span>
+                <span id="badgeDashNotifCount" style="background:#fff; color:#8b5cf6; font-weight:800; border-radius:10px; padding:1px 7px; font-size:0.75rem; display:none;">0</span>
+              </button>
+            </div>
+          </div>
+
           <!-- CHATGPT STYLE TOP SUMMARY CARDS (TOTAL STOCK & LOW STOCK) -->
           <div class="cg-summary-grid">
             <div class="cg-summary-card">
@@ -841,6 +868,53 @@
     </div>
 
     <!-- QUICK MODALS -->
+    <!-- NOTIFICATION CENTER & 9:00 PM DAILY ALERT MODAL -->
+    <div id="notificationCenterModal" class="modal-overlay hidden">
+      <div class="modal-box" style="max-width: 650px;">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:0.65rem;">
+            <div style="width:40px; height:40px; border-radius:10px; background:rgba(236,72,153,0.12); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">🔔</div>
+            <div>
+              <h3 style="font-size:1.18rem; font-weight:800; color:var(--text-primary); margin:0;">Notifications & Daily Alerts</h3>
+              <p class="text-muted" style="font-size:0.8rem; margin:2px 0 0 0;">Low Stock Levels & Pending Payment Collections • 9:00 PM Daily Alert</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="btnNotificationClose">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:1rem; max-height:calc(85vh - 130px); overflow-y:auto;">
+          
+          <!-- 9:00 PM Notification Status & Settings Box -->
+          <div style="background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; padding:0.85rem 1rem; margin-bottom:1.15rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.65rem;">
+            <div style="display:flex; align-items:center; gap:0.65rem;">
+              <span style="font-size:1.5rem;">⏰</span>
+              <div>
+                <strong style="font-size:0.9rem; color:var(--text-primary); display:block;">Daily 9:00 PM Auto Alert: <span id="lblDailyNotifStatus" style="color:#059669;">Active</span></strong>
+                <span style="font-size:0.76rem; color:var(--text-muted);">Triggers system alert every night at 9:00 PM (21:00)</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <button type="button" class="btn btn-sm btn-outline-primary" id="btnTestNotificationNow" style="font-size:0.78rem; padding:4px 10px; font-weight:600;" title="Test the notification right now">
+                🔔 Test Alert Now
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" id="btnEnableBrowserNotif" style="font-size:0.78rem; padding:4px 10px;" title="Request browser notification permission">
+                📱 Device Alert
+              </button>
+            </div>
+          </div>
+
+          <!-- Notification Center Content (Populated dynamically) -->
+          <div id="notifCenterContent">
+            <!-- Dynamically populated with Low Stock items & Pending Payment items -->
+          </div>
+
+        </div>
+        <div class="modal-footer" style="justify-content:space-between; align-items:center;">
+          <span style="font-size:0.75rem; color:var(--text-muted);">Auto-checks every day at 21:00 (9:00 PM)</span>
+          <button class="btn btn-secondary" id="btnNotificationDismiss">Close</button>
+        </div>
+      </div>
+    </div>
+
     <!-- LOW STOCK ALERT POPUP MODAL -->
     <div id="lowStockModal" class="modal-overlay hidden">
       <div class="modal-box" style="max-width: 580px;">
@@ -1322,6 +1396,6 @@
   </div>
 
   <script src="html2pdf.bundle.min.js"></script>
-  <script src="app.js?v=37"></script>
+  <script src="app.js?v=38"></script>
 </body>
 </html>

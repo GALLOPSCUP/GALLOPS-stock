@@ -823,6 +823,7 @@
   // Quick helper to jump to inward tab with SKU pre-selected
   window.gallopsOrderSku = function (shapeId, colorId, sizeId) {
     window.gallopsCloseLowStockModal();
+    window.gallopsCloseNotificationModal?.();
     switchTab('inward');
     setTimeout(() => {
       const selShape = document.getElementById('inShape');
@@ -844,6 +845,298 @@
       if (qtyInput) qtyInput.focus();
     }, 50);
   };
+
+  // ================= NOTIFICATION CENTER & 9:00 PM DAILY ALERT SYSTEM =================
+  function getPendingPaymentSummary() {
+    const invoices = Array.isArray(appState.invoices) ? appState.invoices : [];
+    const pendingInvoices = invoices.filter(inv => {
+      const st = (inv.paymentStatus || 'PENDING').toUpperCase();
+      return st === 'PENDING';
+    });
+    const totalAmount = pendingInvoices.reduce((sum, inv) => sum + (Number(inv.grandTotal) || 0), 0);
+    return {
+      pendingInvoices,
+      count: pendingInvoices.length,
+      totalAmount
+    };
+  }
+
+  function buildAlertSummary() {
+    const lowItems = appState.lowStockItems || [];
+    const pendingSummary = getPendingPaymentSummary();
+
+    const lowCount = lowItems.length;
+    const pendCount = pendingSummary.count;
+    const pendAmount = pendingSummary.totalAmount;
+    const totalAlerts = lowCount + pendCount;
+
+    let parts = [];
+    if (lowCount > 0) {
+      parts.push(`⚠️ ${lowCount} SKU${lowCount > 1 ? 's' : ''} Low Stock`);
+    } else {
+      parts.push(`✅ Stock Healthy`);
+    }
+
+    if (pendCount > 0) {
+      parts.push(`⏳ ₹${pendAmount.toLocaleString('en-IN')} Pending (${pendCount} Bill${pendCount > 1 ? 's' : ''})`);
+    } else {
+      parts.push(`✅ All Payments Received`);
+    }
+
+    return {
+      lowItems,
+      lowCount,
+      pendCount,
+      pendAmount,
+      pendingInvoices: pendingSummary.pendingInvoices,
+      totalAlerts,
+      body: parts.join(' | ') + '. Tap to review in App.'
+    };
+  }
+
+  function playNotificationChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12); // A5
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    } catch (e) {
+      // AudioContext not supported or requires gesture
+    }
+  }
+
+  function showSystemNotification(title, body) {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+      try {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(title, {
+              body: body,
+              icon: 'logo.png',
+              badge: 'logo.png',
+              tag: 'gallops-daily-alert',
+              renotify: true
+            });
+          }).catch(() => {
+            new Notification(title, { body: body, icon: 'logo.png' });
+          });
+        } else {
+          new Notification(title, { body: body, icon: 'logo.png' });
+        }
+      } catch (e) {
+        console.warn('System notification display issue', e);
+      }
+    }
+  }
+
+  function renderNotificationCenter() {
+    const summary = buildAlertSummary();
+    const badgeHeader = document.getElementById('badgeNotifCount');
+    const badgeDash = document.getElementById('badgeDashNotifCount');
+    const subtitleDash = document.getElementById('dashAlertBarSubtitle');
+
+    if (badgeHeader) {
+      if (summary.totalAlerts > 0) {
+        badgeHeader.textContent = summary.totalAlerts;
+        badgeHeader.style.display = 'inline-flex';
+      } else {
+        badgeHeader.style.display = 'none';
+      }
+    }
+
+    if (badgeDash) {
+      if (summary.totalAlerts > 0) {
+        badgeDash.textContent = `${summary.totalAlerts} Alerts`;
+        badgeDash.style.display = 'inline-block';
+        badgeDash.style.background = '#fff';
+        badgeDash.style.color = '#8b5cf6';
+      } else {
+        badgeDash.textContent = 'All Healthy';
+        badgeDash.style.display = 'inline-block';
+        badgeDash.style.background = '#ecfdf5';
+        badgeDash.style.color = '#059669';
+      }
+    }
+
+    if (subtitleDash) {
+      subtitleDash.innerHTML = `${summary.lowCount > 0 ? `<span style="color:#ea580c; font-weight:700;">⚠️ ${summary.lowCount} Low Stock</span>` : `<span style="color:#059669;">✅ Stock Healthy</span>`} • ${summary.pendCount > 0 ? `<span style="color:#d97706; font-weight:700;">⏳ ₹${summary.pendAmount.toLocaleString('en-IN')} Pending (${summary.pendCount} bills)</span>` : `<span style="color:#059669;">✅ All Payments Received</span>`} • <span style="color:var(--text-muted);">Daily 9:00 PM alert active</span>`;
+    }
+
+    const content = document.getElementById('notifCenterContent');
+    if (!content) return;
+
+    let html = '';
+
+    // SECTION 1: LOW STOCK ALERTS
+    html += `
+      <div class="notif-section-title">
+        <span>⚠️ Low Stock Alerts (${summary.lowCount})</span>
+        <button type="button" class="btn btn-sm btn-link" style="font-size:0.75rem; padding:0; text-decoration:none;" onclick="switchTab('inward'); window.gallopsCloseNotificationModal();">Go to Stock In →</button>
+      </div>
+    `;
+
+    if (summary.lowCount === 0) {
+      html += `
+        <div class="notif-empty-state">
+          <span style="color:#059669; font-weight:700;">🎉 All products are healthy!</span><br>
+          No cup shapes or sizes are below your minimum safety limit.
+        </div>
+      `;
+    } else {
+      html += summary.lowItems.map(item => `
+        <div class="notif-card-item notif-card-low">
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <span style="font-size:1.35rem;">${item.shape.icon}</span>
+            <div>
+              <strong style="font-size:0.88rem; color:var(--text-primary);">${item.shape.name}</strong> • ${item.color.name} (${item.size.id})
+              <div style="font-size:0.76rem; color:#ea580c; font-weight:700;">
+                Current: ${item.qty} pcs • Minimum Limit: ${item.lowLimit} pcs
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-in" style="font-size:0.75rem; padding:3px 8px;" onclick="window.gallopsOrderSku('${item.shape.id}', '${item.color.id}', '${item.size.id}'); window.gallopsCloseNotificationModal();">
+            📥 Add Stock
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // SECTION 2: PENDING PAYMENT INVOICES
+    html += `
+      <div class="notif-section-title" style="margin-top:1.2rem;">
+        <span>⏳ Pending Payment Collections (${summary.pendCount} Bills • ₹${summary.pendAmount.toLocaleString('en-IN')})</span>
+        <button type="button" class="btn btn-sm btn-link" style="font-size:0.75rem; padding:0; text-decoration:none;" onclick="switchTab('outward'); window.gallopsCloseNotificationModal();">View Saved Bills →</button>
+      </div>
+    `;
+
+    if (summary.pendCount === 0) {
+      html += `
+        <div class="notif-empty-state">
+          <span style="color:#059669; font-weight:700;">🎉 All wholesale payments collected!</span><br>
+          There are currently no unpaid bills pending.
+        </div>
+      `;
+    } else {
+      html += summary.pendingInvoices.map(inv => {
+        const invIdSafe = (inv.id || inv.invoiceNo || '').replace(/'/g, "\\'");
+        return `
+          <div class="notif-card-item notif-card-pending">
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <span style="font-size:1.35rem;">🧾</span>
+              <div>
+                <strong style="font-size:0.88rem; color:var(--text-primary);">${inv.invoiceNo}</strong> • ${inv.buyerName || 'Wholesale Buyer'}
+                <div style="font-size:0.76rem; color:var(--text-muted);">
+                  Due: <strong style="color:var(--accent-pink);">₹${Number(inv.grandTotal || 0).toFixed(2)}</strong> • Mode: ${inv.paymentMode || 'CASH'} • Rec: ${inv.receivedBy || 'VAIBHAV'} • ${formatGstDate(inv.date)}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.4rem; align-items:center;">
+              <button type="button" class="btn btn-sm btn-primary" style="background:#059669; border-color:#059669; font-size:0.75rem; padding:3px 8px; font-weight:700;" onclick="window.gallopsUpdateInvoicePayment('${invIdSafe}', 'paymentStatus', 'SUCCESS'); renderNotificationCenter();" title="Mark payment as collected">
+                ✅ Mark Received
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" style="font-size:0.75rem; padding:3px 8px;" onclick="window.gallopsViewInvoice('${invIdSafe}'); window.gallopsCloseNotificationModal();">
+                👁️ View Bill
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    content.innerHTML = html;
+  }
+
+  function triggerDaily9PmAlert(isManualTest = false) {
+    const summary = buildAlertSummary();
+    playNotificationChime();
+
+    const title = isManualTest
+      ? '🔔 Gallops Test Alert (Stock & Payment)'
+      : '🔔 Gallops 9:00 PM Daily Alert';
+
+    showSystemNotification(title, summary.body);
+
+    if (isManualTest) {
+      showToast(`🔔 Test Alert Sent: ${summary.lowCount} low stock SKUs, ₹${summary.pendAmount.toLocaleString('en-IN')} pending payments!`, 'success');
+      window.gallopsOpenNotificationModal();
+    } else {
+      showToast(`🔔 9:00 PM Daily Alert: Low Stock (${summary.lowCount}) & Pending Payments (₹${summary.pendAmount.toLocaleString('en-IN')})`, 'info');
+    }
+  }
+
+  function initDailyNotificationSystem() {
+    function checkTimeAndAlert() {
+      const now = new Date();
+      const hours = now.getHours();
+      const todayStr = now.toISOString().split('T')[0];
+
+      if (hours >= 21) {
+        const lastAlertDate = localStorage.getItem('gallops_last_9pm_alert_date');
+        if (lastAlertDate !== todayStr) {
+          localStorage.setItem('gallops_last_9pm_alert_date', todayStr);
+          triggerDaily9PmAlert(false);
+        }
+      }
+    }
+
+    checkTimeAndAlert();
+    setInterval(checkTimeAndAlert, 30000);
+  }
+
+  window.gallopsOpenNotificationModal = function () {
+    renderNotificationCenter();
+    const modal = document.getElementById('notificationCenterModal');
+    if (modal) modal.classList.remove('hidden');
+  };
+
+  window.gallopsCloseNotificationModal = function () {
+    const modal = document.getElementById('notificationCenterModal');
+    if (modal) modal.classList.add('hidden');
+  };
+
+  function setupNotificationModalControls() {
+    document.getElementById('btnOpenNotificationModal')?.addEventListener('click', window.gallopsOpenNotificationModal);
+    document.getElementById('btnDashboardNotification')?.addEventListener('click', window.gallopsOpenNotificationModal);
+    document.getElementById('btnNotificationClose')?.addEventListener('click', window.gallopsCloseNotificationModal);
+    document.getElementById('btnNotificationDismiss')?.addEventListener('click', window.gallopsCloseNotificationModal);
+
+    const modal = document.getElementById('notificationCenterModal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) window.gallopsCloseNotificationModal();
+      });
+    }
+
+    document.getElementById('btnTestNotificationNow')?.addEventListener('click', () => {
+      triggerDaily9PmAlert(true);
+    });
+
+    document.getElementById('btnEnableBrowserNotif')?.addEventListener('click', () => {
+      if ('Notification' in window) {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            showToast('✅ Device notifications enabled! 9:00 PM alerts will pop up on your device.', 'success');
+            triggerDaily9PmAlert(true);
+          } else {
+            showToast('Notification permission: ' + permission, 'info');
+          }
+        });
+      } else {
+        showToast('Web notifications not supported by this browser.', 'info');
+      }
+    });
+  }
 
   // Render ChatGPT Mockup Style Product Cards
   function renderChatGptCards() {
@@ -1344,6 +1637,7 @@
     renderShapePreferences();
     renderProductConfigCard();
     renderSavedInvoicesTable();
+    renderNotificationCenter();
 
     const outRefInput = document.getElementById('outOrderRef');
     if (outRefInput && !outRefInput.value) {
@@ -3264,6 +3558,8 @@
     renderAll();
     setupAdjustModalControls();
     setupLowStockModalControls();
+    setupNotificationModalControls();
+    initDailyNotificationSystem();
     setupShapePreferencesHandlers();
     setupProductConfigControls();
     setupGstInvoiceControls();

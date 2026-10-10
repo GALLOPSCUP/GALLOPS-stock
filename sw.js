@@ -1,5 +1,5 @@
 // Offline Service Worker for Gallops Wholesale Stock Application
-const CACHE_NAME = 'gallops-stock-v37';
+const CACHE_NAME = 'gallops-stock-v38';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -56,6 +56,19 @@ self.addEventListener('fetch', (event) => {
           return cachedResponse || caches.match('./index.html');
         });
       })
+  );
+});
+
+// Handle notification click to bring app to front
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow('./');
+    })
   );
 });
 
