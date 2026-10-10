@@ -403,41 +403,54 @@
   }
 
   function loadInvoices() {
+    let invoices = null;
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.INVOICES);
       if (stored) {
-        return JSON.parse(stored);
+        invoices = JSON.parse(stored);
       }
     } catch (e) {
       console.warn('Error loading invoices', e);
     }
-    return [
-      {
-        id: 'INV-SAMPLE-1023',
-        invoiceNo: 'SR-1023',
-        date: '10/10/2026',
-        copyType: 'Original',
-        buyerName: 'SHRENIK AGENCY',
-        buyerAddress: '315 G B COMPLEX, MOTI TANKI CHOWK, RAJKOT 36001',
-        buyerGstin: '24AFQPM8443J1ZX',
-        courier: 0,
-        taxMode: 'AUTO',
-        note: 'Wholesale Order',
-        items: [
-          { name: 'MENSTRUAL CUP REGULAR SHAP SMALL', hsn: '9619', qty: 20, rate: 60, gstRate: 5 },
-          { name: 'MENSTRUAL CUP REGULAR SHAP MEDIUM', hsn: '9619', qty: 60, rate: 60, gstRate: 5 },
-          { name: 'MENSTRUAL CUP REGULAR SHAP LARGE', hsn: '9619', qty: 40, rate: 60, gstRate: 5 }
-        ],
-        subTotal: 7200,
-        taxable: 7200,
-        cgst: 180,
-        sgst: 180,
-        igst: 0,
-        totalTax: 360,
-        grandTotal: 7560,
-        timestamp: Date.now() - 3 * 86400000
-      }
-    ];
+    if (!Array.isArray(invoices)) {
+      invoices = [
+        {
+          id: 'INV-SAMPLE-1023',
+          invoiceNo: 'SR-1023',
+          date: '10/10/2026',
+          copyType: 'Original',
+          buyerName: 'SHRENIK AGENCY',
+          buyerAddress: '315 G B COMPLEX, MOTI TANKI CHOWK, RAJKOT 36001',
+          buyerGstin: '24AFQPM8443J1ZX',
+          paymentStatus: 'PENDING',
+          paymentMode: 'CASH',
+          receivedBy: 'VAIBHAV',
+          courier: 0,
+          taxMode: 'AUTO',
+          note: 'Wholesale Order',
+          items: [
+            { name: 'MENSTRUAL CUP REGULAR SHAP SMALL', hsn: '9619', qty: 20, rate: 60, gstRate: 5 },
+            { name: 'MENSTRUAL CUP REGULAR SHAP MEDIUM', hsn: '9619', qty: 60, rate: 60, gstRate: 5 },
+            { name: 'MENSTRUAL CUP REGULAR SHAP LARGE', hsn: '9619', qty: 40, rate: 60, gstRate: 5 }
+          ],
+          subTotal: 7200,
+          taxable: 7200,
+          cgst: 180,
+          sgst: 180,
+          igst: 0,
+          totalTax: 360,
+          grandTotal: 7560,
+          timestamp: Date.now() - 3 * 86400000
+        }
+      ];
+    }
+    // Ensure all existing invoices have payment attributes
+    invoices.forEach(inv => {
+      if (!inv.paymentStatus) inv.paymentStatus = 'PENDING';
+      if (!inv.paymentMode) inv.paymentMode = 'CASH';
+      if (!inv.receivedBy) inv.receivedBy = 'VAIBHAV';
+    });
+    return invoices;
   }
 
   function saveInvoices() {
@@ -1408,7 +1421,9 @@
     const buyerAddress = document.getElementById('outBuyerAddress')?.value.trim() || '';
     const buyerGstin = document.getElementById('outBuyerGstin')?.value.trim().toUpperCase() || '';
     const courierCharges = parseFloat(document.getElementById('outCourierCharges')?.value) || 0;
-    const paymentStatus = document.getElementById('outPaymentStatus').value;
+    const paymentStatus = document.getElementById('outPaymentCollection')?.value || document.getElementById('outPaymentStatus')?.value || 'PENDING';
+    const paymentMode = document.getElementById('outPaymentMode')?.value || 'CASH';
+    const receivedBy = document.getElementById('outReceivedBy')?.value || 'VAIBHAV';
     const orderRef = document.getElementById('outOrderRef').value.trim();
     const notes = document.getElementById('outNotes').value.trim();
 
@@ -1444,6 +1459,8 @@
       buyerGstin: buyerGstin,
       courierCharges: courierCharges,
       paymentStatus: paymentStatus,
+      paymentMode: paymentMode,
+      receivedBy: receivedBy,
       reference: orderRef || getNextInvoiceNumber(true),
       notes: notes,
       timestamp: Date.now()
@@ -1460,6 +1477,11 @@
 
     if (shouldOpenGstBill) {
       window.gallopsOpenGstBillForTxn(newTxn.id);
+      if (currentInvoiceData) {
+        currentInvoiceData.paymentStatus = paymentStatus;
+        currentInvoiceData.paymentMode = paymentMode;
+        currentInvoiceData.receivedBy = receivedBy;
+      }
       saveInvoiceToApp(currentInvoiceData);
       downloadInvoiceAsPdf(currentInvoiceData);
     }
@@ -2476,6 +2498,14 @@
     if (elTaxMode) elTaxMode.value = data.taxMode || 'AUTO';
     if (elNote) elNote.value = data.note || '';
 
+    const elPayStatus = document.getElementById('editInvPaymentStatus');
+    const elPayMode = document.getElementById('editInvPaymentMode');
+    const elRecBy = document.getElementById('editInvReceivedBy');
+
+    if (elPayStatus) elPayStatus.value = data.paymentStatus || 'PENDING';
+    if (elPayMode) elPayMode.value = data.paymentMode || 'CASH';
+    if (elRecBy) elRecBy.value = data.receivedBy || 'VAIBHAV';
+
     renderEditorItemsTable(data.items);
   }
 
@@ -2605,6 +2635,9 @@
       courier: courier,
       taxMode: invData.taxMode || 'AUTO',
       note: invData.note || '',
+      paymentStatus: invData.paymentStatus || 'PENDING',
+      paymentMode: invData.paymentMode || 'CASH',
+      receivedBy: invData.receivedBy || 'VAIBHAV',
       items: JSON.parse(JSON.stringify(invData.items || [])),
       subTotal: subTotal,
       taxable: taxable,
@@ -2620,6 +2653,15 @@
     const existingIdx = appState.invoices.findIndex(x => (x.invoiceNo && x.invoiceNo.trim().toUpperCase() === record.invoiceNo.trim().toUpperCase()) || (invData.id && x.id === invData.id));
     if (existingIdx >= 0) {
       record.id = appState.invoices[existingIdx].id;
+      if (!invData.paymentStatus && appState.invoices[existingIdx].paymentStatus) {
+        record.paymentStatus = appState.invoices[existingIdx].paymentStatus;
+      }
+      if (!invData.paymentMode && appState.invoices[existingIdx].paymentMode) {
+        record.paymentMode = appState.invoices[existingIdx].paymentMode;
+      }
+      if (!invData.receivedBy && appState.invoices[existingIdx].receivedBy) {
+        record.receivedBy = appState.invoices[existingIdx].receivedBy;
+      }
       appState.invoices[existingIdx] = record;
     } else {
       appState.invoices.unshift(record);
@@ -2644,7 +2686,7 @@
     if (invoices.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="7" class="text-center text-muted" style="padding:1.8rem;">
+          <td colspan="10" class="text-center text-muted" style="padding:1.8rem;">
             No GST bills saved yet. Fill out the dispatch form above and click <strong>"📥 Deduct & Save GST Bill"</strong> or click <strong>"🧾 Generate GST Tax Bill"</strong>!
           </td>
         </tr>
@@ -2659,6 +2701,15 @@
       const dateDisplay = formatGstDate(inv.date);
       const invIdSafe = (inv.id || inv.invoiceNo || '').replace(/'/g, "\\'");
 
+      const paymentStatus = (inv.paymentStatus || 'PENDING').toUpperCase();
+      const isSuccess = paymentStatus === 'SUCCESS' || paymentStatus === 'PAID';
+      const statusBg = isSuccess ? '#ecfdf5' : '#fffbeb';
+      const statusColor = isSuccess ? '#047857' : '#b45309';
+      const statusBorder = isSuccess ? '#a7f3d0' : '#fde68a';
+
+      const paymentMode = (inv.paymentMode || 'CASH').toUpperCase();
+      const receivedBy = (inv.receivedBy || 'VAIBHAV').toUpperCase();
+
       return `
         <tr>
           <td><span class="badge-tag-standard" style="font-weight:700; font-size:0.85rem;">${inv.invoiceNo}</span></td>
@@ -2671,6 +2722,33 @@
           <td><span style="font-size:0.82rem;">${itemsSummary}</span></td>
           <td style="text-align:right;">
             <strong style="color:var(--accent-emerald); font-size:0.95rem;">₹${Number(inv.grandTotal || 0).toFixed(2)}</strong>
+          </td>
+          <td style="text-align:center;">
+            <select class="form-control table-payment-select" 
+              style="font-size:0.78rem; font-weight:700; padding:4px 8px; border-radius:6px; background:${statusBg}; color:${statusColor}; border:1px solid ${statusBorder}; cursor:pointer;" 
+              onchange="window.gallopsUpdateInvoicePayment('${invIdSafe}', 'paymentStatus', this.value)" title="Change Payment Collection Status">
+              <option value="PENDING" ${!isSuccess ? 'selected' : ''}>⏳ PENDING</option>
+              <option value="SUCCESS" ${isSuccess ? 'selected' : ''}>✅ SUCCESS</option>
+            </select>
+          </td>
+          <td style="text-align:center;">
+            <select class="form-control table-payment-select" 
+              style="font-size:0.78rem; font-weight:600; padding:4px 8px; border-radius:6px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); cursor:pointer;" 
+              onchange="window.gallopsUpdateInvoicePayment('${invIdSafe}', 'paymentMode', this.value)" title="Change Payment Mode">
+              <option value="CASH" ${paymentMode === 'CASH' ? 'selected' : ''}>💵 CASH</option>
+              <option value="GPAY" ${paymentMode === 'GPAY' ? 'selected' : ''}>📱 GPAY</option>
+              <option value="ACCOUNT" ${paymentMode === 'ACCOUNT' ? 'selected' : ''}>🏦 ACCOUNT</option>
+            </select>
+          </td>
+          <td style="text-align:center;">
+            <select class="form-control table-payment-select" 
+              style="font-size:0.78rem; font-weight:700; padding:4px 8px; border-radius:6px; background:var(--bg-secondary); color:var(--accent-purple, #8b5cf6); border:1px solid var(--border-color); cursor:pointer;" 
+              onchange="window.gallopsUpdateInvoicePayment('${invIdSafe}', 'receivedBy', this.value)" title="Payment Receiver / Collector">
+              <option value="VAIBHAV" ${receivedBy === 'VAIBHAV' ? 'selected' : ''}>👤 VAIBHAV</option>
+              <option value="SANJAY" ${receivedBy === 'SANJAY' ? 'selected' : ''}>👤 SANJAY</option>
+              ${(receivedBy !== 'VAIBHAV' && receivedBy !== 'SANJAY') ? `<option value="${receivedBy}" selected>👤 ${receivedBy}</option>` : ''}
+              <option value="CUSTOM">➕ Other Name...</option>
+            </select>
           </td>
           <td style="text-align:center;">
             <div style="display:inline-flex; gap:0.4rem; align-items:center;">
@@ -2767,6 +2845,33 @@
       renderSavedInvoicesTable();
       showToast(`Invoice #${inv.invoiceNo} deleted from App.`, 'info');
     }
+  };
+
+  window.gallopsUpdateInvoicePayment = function (invIdOrNo, field, value) {
+    const inv = (appState.invoices || []).find(x => x.id === invIdOrNo || x.invoiceNo === invIdOrNo);
+    if (!inv) return;
+
+    if (field === 'receivedBy' && value === 'CUSTOM') {
+      const customName = prompt('Enter receiver / collector name:', inv.receivedBy || 'VAIBHAV');
+      if (customName && customName.trim()) {
+        inv.receivedBy = customName.trim().toUpperCase();
+      } else {
+        renderSavedInvoicesTable();
+        return;
+      }
+    } else {
+      inv[field] = value;
+    }
+
+    saveInvoices();
+    renderSavedInvoicesTable();
+
+    const label = field === 'paymentStatus' 
+      ? `Payment Collection: ${inv.paymentStatus}`
+      : field === 'paymentMode' 
+        ? `Payment Mode: ${inv.paymentMode}`
+        : `Received By: ${inv.receivedBy}`;
+    showToast(`Invoice ${inv.invoiceNo} updated (${label})`, 'success');
   };
 
   window.gallopsOpenGstBillForTxn = function (txnId) {
@@ -2897,6 +3002,9 @@
       currentInvoiceData.courier = parseFloat(document.getElementById('editInvCourier')?.value) || 0;
       currentInvoiceData.taxMode = document.getElementById('editInvTaxMode')?.value || 'AUTO';
       currentInvoiceData.note = document.getElementById('editInvNote')?.value.trim() || '';
+      currentInvoiceData.paymentStatus = document.getElementById('editInvPaymentStatus')?.value || 'PENDING';
+      currentInvoiceData.paymentMode = document.getElementById('editInvPaymentMode')?.value || 'CASH';
+      currentInvoiceData.receivedBy = document.getElementById('editInvReceivedBy')?.value || 'VAIBHAV';
 
       // Read item rows
       const rows = document.querySelectorAll('#editorItemsTbody tr');

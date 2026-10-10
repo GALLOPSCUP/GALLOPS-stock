@@ -1069,6 +1069,24 @@ body.theme-dark .tag-cash {
 body.theme-dark .tag-account {
   color: #60a5fa;
 }
+
+.table-payment-select {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 105px;
+  text-align: center;
+  appearance: auto;
+}
+
+.table-payment-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+}
 body.theme-dark .tag-gpay {
   color: #a78bfa;
 }

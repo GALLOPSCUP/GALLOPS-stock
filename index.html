@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=36">
+  <link rel="stylesheet" href="styles.css?v=37">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -476,12 +476,27 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="outPaymentStatus">Payment Status</label>
-                  <select id="outPaymentStatus" class="form-control">
-                    <option value="CASH">CASH</option>
-                    <option value="ACCOUNT">ACCOUNT</option>
-                    <option value="GPAY">GPAY</option>
-                    <option value="PENDING">PENDING</option>
+                  <label for="outPaymentCollection">Payment Collection</label>
+                  <select id="outPaymentCollection" class="form-control">
+                    <option value="PENDING">⏳ PENDING</option>
+                    <option value="SUCCESS">✅ SUCCESS</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="outPaymentMode">Payment Mode</label>
+                  <select id="outPaymentMode" class="form-control">
+                    <option value="CASH">💵 CASH</option>
+                    <option value="GPAY">📱 GPAY</option>
+                    <option value="ACCOUNT">🏦 ACCOUNT</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="outReceivedBy">Who Received</label>
+                  <select id="outReceivedBy" class="form-control">
+                    <option value="VAIBHAV">👤 VAIBHAV</option>
+                    <option value="SANJAY">👤 SANJAY</option>
                   </select>
                 </div>
 
@@ -553,6 +568,9 @@
                     <th>GSTIN</th>
                     <th>Items Summary</th>
                     <th style="text-align:right;">Grand Total (₹)</th>
+                    <th style="text-align:center;">Payment Collection</th>
+                    <th style="text-align:center;">Payment Mode</th>
+                    <th style="text-align:center;">Received By</th>
                     <th style="text-align:center;">Action</th>
                   </tr>
                 </thead>
@@ -1098,6 +1116,28 @@
                 </select>
               </div>
               <div class="form-group">
+                <label>Payment Collection</label>
+                <select id="editInvPaymentStatus" class="form-control form-control-sm">
+                  <option value="PENDING">⏳ PENDING</option>
+                  <option value="SUCCESS">✅ SUCCESS</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Payment Mode</label>
+                <select id="editInvPaymentMode" class="form-control form-control-sm">
+                  <option value="CASH">💵 CASH</option>
+                  <option value="GPAY">📱 GPAY</option>
+                  <option value="ACCOUNT">🏦 ACCOUNT</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Who Received</label>
+                <select id="editInvReceivedBy" class="form-control form-control-sm">
+                  <option value="VAIBHAV">👤 VAIBHAV</option>
+                  <option value="SANJAY">👤 SANJAY</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
                 <label>Note / Remarks</label>
                 <input type="text" id="editInvNote" class="form-control form-control-sm" placeholder="e.g. Wholesale Order Dispatched">
               </div>
@@ -1282,6 +1322,6 @@
   </div>
 
   <script src="html2pdf.bundle.min.js"></script>
-  <script src="app.js?v=36"></script>
+  <script src="app.js?v=37"></script>
 </body>
 </html>
