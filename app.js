@@ -171,74 +171,7 @@
     'BOX_PRINTED_L': 300
   };
 
-  const INITIAL_TRANSACTIONS_SAMPLE = [
-    {
-      id: 'TXN-1001',
-      type: 'IN',
-      date: '2026-10-01',
-      shapeId: 'REGULAR',
-      colorId: 'PINK',
-      sizeId: 'M',
-      quantity: 500,
-      rate: 45,
-      total: 22500,
-      partyName: 'Supreme Silicone Molds Ltd',
-      reference: 'INV-4402',
-      notes: 'Regular Pink cups initial production shipment',
-      timestamp: Date.now() - 8 * 86400000
-    },
-    {
-      id: 'TXN-1002',
-      type: 'OUT',
-      date: '2026-10-03',
-      shapeId: 'BELL',
-      colorId: 'PINK',
-      sizeId: 'M',
-      quantity: 100,
-      rate: 95,
-      total: 9500,
-      partyName: 'Aarav Surgical & Pharmacy, Delhi',
-      phone: '+91 98112 34567',
-      city: 'Delhi',
-      paymentStatus: 'CASH',
-      reference: 'ORD-9921',
-      notes: 'Wholesale buyer, Bell Pink M cups',
-      timestamp: Date.now() - 6 * 86400000
-    },
-    {
-      id: 'TXN-1003',
-      type: 'OUT',
-      date: '2026-10-05',
-      shapeId: 'SINGLE_FOLD',
-      colorId: 'PINK',
-      sizeId: 'M',
-      quantity: 80,
-      rate: 92,
-      total: 7360,
-      partyName: 'Femina Care Wholesale, Bangalore',
-      phone: '+91 94480 12345',
-      city: 'Bangalore, Karnataka',
-      paymentStatus: 'ACCOUNT',
-      reference: 'ORD-7744',
-      notes: 'Single Fold Pink M wholesale dispatch',
-      timestamp: Date.now() - 4 * 86400000
-    },
-    {
-      id: 'TXN-1004',
-      type: 'IN',
-      date: '2026-10-07',
-      shapeId: 'LSR',
-      colorId: 'WHITE',
-      sizeId: 'M',
-      quantity: 350,
-      rate: 52,
-      total: 18200,
-      partyName: 'Supreme Silicone Molds Ltd',
-      reference: 'CHALLAN-901',
-      notes: 'LSR White medical grade liquid silicone shipment',
-      timestamp: Date.now() - 2 * 86400000
-    }
-  ];
+  const INITIAL_TRANSACTIONS_SAMPLE = [];
 
   // ================= STATE MANAGEMENT =================
   let appState = {
@@ -439,12 +372,30 @@
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
       if (stored) {
-        return JSON.parse(stored);
+        let txns = JSON.parse(stored);
+        if (Array.isArray(txns)) {
+          // Filter out legacy sample/demo transactions & test demo logs
+          const demoIds = ['TXN-1001', 'TXN-1002', 'TXN-1003', 'TXN-1004'];
+          const filtered = txns.filter(t => {
+            if (demoIds.includes(t.id)) return false;
+            if (t.reference === 'LOT-5983' || t.reference === 'LOT-5743') return false;
+            if (t.reference === 'INV-4402' || t.reference === 'CHALLAN-901') return false;
+            if (t.partyName === 'Supreme Silicone Molds Ltd' && (t.reference === 'INV-4402' || t.reference === 'CHALLAN-901')) return false;
+            if (t.partyName === 'Aarav Surgical & Pharmacy, Delhi') return false;
+            if (t.partyName === 'Femina Care Wholesale, Bangalore') return false;
+            return true;
+          });
+          if (filtered.length !== txns.length) {
+            localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(filtered));
+            return filtered;
+          }
+          return txns;
+        }
       }
     } catch (e) {
       console.warn('Error loading transactions', e);
     }
-    return JSON.parse(JSON.stringify(INITIAL_TRANSACTIONS_SAMPLE));
+    return [];
   }
 
   function saveTransactions() {
@@ -528,7 +479,7 @@
       if (parts.length === 3) {
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
       }
-    } catch (_) {}
+    } catch (_) { }
     return dateStr;
   }
 
@@ -777,8 +728,8 @@
       title.textContent = items.length === 0 ? 'Stock Status: All Healthy' : `Low Stock Alert (${items.length} Item${items.length > 1 ? 's' : ''})`;
     }
     if (subtitle) {
-      subtitle.textContent = items.length === 0 
-        ? 'All products are currently well stocked above your safety limits.' 
+      subtitle.textContent = items.length === 0
+        ? 'All products are currently well stocked above your safety limits.'
         : 'The following shapes & sizes have dropped below their shape-wise reorder limits:';
     }
 
@@ -890,13 +841,13 @@
     appState.settings.shapes.forEach(shape => {
       const colors = getColorsForShape(shape.id);
       const colorCountText = `${colors.length} Colour${colors.length > 1 ? 's' : ''}`;
-      const shapeDotColor = shape.id === 'REGULAR' ? '#f472b6' 
-        : shape.id === 'BELL' ? '#ec4899' 
-        : shape.id === 'SINGLE_FOLD' ? '#8b5cf6' 
-        : shape.id === 'MULTI_FOLD' ? '#3b82f6' 
-        : shape.id === 'GALLOPS_CUP' ? '#ec4899' 
-        : shape.id === 'LSR' ? '#94a3b8' 
-        : '#f59e0b';
+      const shapeDotColor = shape.id === 'REGULAR' ? '#f472b6'
+        : shape.id === 'BELL' ? '#ec4899'
+          : shape.id === 'SINGLE_FOLD' ? '#8b5cf6'
+            : shape.id === 'MULTI_FOLD' ? '#3b82f6'
+              : shape.id === 'GALLOPS_CUP' ? '#ec4899'
+                : shape.id === 'LSR' ? '#94a3b8'
+                  : '#f59e0b';
 
       const shapeLowLimit = getShapeLowLimit(shape.id);
       let shapeHasLow = false;
@@ -913,8 +864,8 @@
 
           const sizeUpperName = size.id === 'S' ? 'SMALL' : size.id === 'M' ? 'MEDIUM' : 'LARGE';
           const lowClass = isLow ? 'is-low-stock' : '';
-          const lowBadgeHtml = isLow 
-            ? `<div class="cg-low-badge">⚠️ Low Stock (${qty}/${sizeLowLimit} pcs)</div>` 
+          const lowBadgeHtml = isLow
+            ? `<div class="cg-low-badge">⚠️ Low Stock (${qty}/${sizeLowLimit} pcs)</div>`
             : '';
 
           sizesColsHtml += `
@@ -942,8 +893,8 @@
         `;
       });
 
-      const lowHeaderBadge = shapeHasLow 
-        ? `<span class="cg-shape-low-pill">⚠️ Low Stock</span>` 
+      const lowHeaderBadge = shapeHasLow
+        ? `<span class="cg-shape-low-pill">⚠️ Low Stock</span>`
         : '';
 
       html += `
@@ -986,10 +937,14 @@
 
     const recent = [...appState.transactions]
       .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-      .slice(0, 6);
+      .slice(0, 8);
 
     if (recent.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:2rem;">No transactions yet. Add your first stock inward!</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding:2.5rem; font-size:0.95rem;">
+        <div style="font-size:2rem; margin-bottom:0.4rem;">📋</div>
+        <strong style="color:var(--text-dark); font-size:1rem;">No transactions yet</strong><br>
+        <span style="font-size:0.85rem; color:#64748b;">All demo records removed. Add your first stock inward or wholesale dispatch!</span>
+      </td></tr>`;
       return;
     }
 
@@ -1011,13 +966,16 @@
           <td><strong style="color:${isOut ? 'var(--accent-pink)' : 'var(--accent-emerald)'};">${isOut ? '-' : '+'}${t.quantity}</strong></td>
           <td>${t.partyName || '-'}</td>
           <td>${t.reference || t.challanNo || '-'}</td>
+          <td style="text-align:center;">
+            <button type="button" class="btn-link" style="color:var(--accent-rose); font-size:0.8rem; font-weight:600; text-decoration:none; padding:3px 6px; cursor:pointer;" title="Delete this transaction record" onclick="window.gallopsDeleteTxn('${t.id}')">🗑️ Delete</button>
+          </td>
         </tr>
       `;
     }).join('');
   }
 
   function renderFastMovingSizes() {
-    const container = document.getElementById('fastMovingContainer');
+    const container = document.getElementById('fastMovingSizesList') || document.getElementById('fastMovingContainer');
     if (!container) return;
 
     const sizeStats = { S: 0, M: 0, L: 0 };
@@ -1028,6 +986,18 @@
     });
 
     const sortedSizes = Object.keys(sizeStats).sort((a, b) => sizeStats[b] - sizeStats[a]);
+    const totalOut = Object.values(sizeStats).reduce((a, b) => a + b, 0);
+
+    if (totalOut === 0) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:1.5rem 0.5rem; color:#64748b; font-size:0.85rem;">
+          <div style="font-size:1.8rem; margin-bottom:0.3rem;">📦</div>
+          <strong style="color:var(--text-dark);">No sales dispatches yet</strong><br>
+          <span style="font-size:0.78rem;">Fast moving sizes will automatically rank here as you record wholesale sales.</span>
+        </div>
+      `;
+      return;
+    }
 
     container.innerHTML = sortedSizes.map((sz, idx) => {
       const sizeObj = getSizeById(sz);
@@ -1344,6 +1314,9 @@
             ${isOut ? `<br><button type="button" class="btn btn-sm btn-link" style="color:#8b5cf6; font-size:0.72rem; padding:0; text-decoration:none;" onclick="window.gallopsOpenGstBillForTxn('${t.id}')">🧾 GST Bill</button>` : ''}
           </td>
           <td>${t.notes || '-'}</td>
+          <td style="text-align:center;">
+            <button type="button" class="btn-link" style="color:var(--accent-rose); font-size:0.78rem; text-decoration:none; cursor:pointer;" onclick="window.gallopsDeleteTxn('${t.id}')">🗑️ Delete</button>
+          </td>
         </tr>
       `;
     }).join('');
@@ -1513,6 +1486,22 @@
     renderAll();
 
     showToast('Transaction removed & stock reversed.', 'info');
+  };
+
+  // Clear all transactions from dashboard & ledger
+  window.gallopsClearAllTransactions = function () {
+    if (!appState.transactions || appState.transactions.length === 0) {
+      showToast('No transaction records to clear.', 'info');
+      return;
+    }
+    const count = appState.transactions.length;
+    const confirmMsg = `Delete all ${count} transaction records?\n\nThis will clear the Recent Transactions list and Stock Ledger so you can record fresh entries.\n(Note: Current inventory counts will remain intact).`;
+    if (!confirm(confirmMsg)) return;
+
+    appState.transactions = [];
+    saveTransactions();
+    renderAll();
+    showToast('All transaction records cleared successfully. You can now add fresh records!', 'success');
   };
 
   // ================= QUICK ADJUST MODAL =================
@@ -2527,7 +2516,7 @@
     `).join('');
   }
 
-  window.gallopsRecalcEditorRow = function(idx) {
+  window.gallopsRecalcEditorRow = function (idx) {
     const row = document.querySelector(`#editorItemsTbody tr[data-idx="${idx}"]`);
     if (!row) return;
     const qty = Number(row.querySelector('.ed-item-qty')?.value) || 0;
@@ -2536,7 +2525,7 @@
     if (elAmount) elAmount.textContent = (qty * rate).toFixed(2);
   };
 
-  window.gallopsRemoveEditorItem = function(idx) {
+  window.gallopsRemoveEditorItem = function (idx) {
     if (!currentInvoiceData.items || currentInvoiceData.items.length <= 1) {
       showToast('Invoice must contain at least one product item', 'error');
       return;
@@ -2929,7 +2918,7 @@
         newItems.forEach(it => {
           let matchedShape = appState.settings.shapes[0];
           let matchedSize = appState.settings.sizes[0];
-          
+
           appState.settings.shapes.forEach(s => {
             if (it.name.toUpperCase().includes(s.name.toUpperCase())) matchedShape = s;
           });
@@ -3146,6 +3135,23 @@
   // ================= INITIALIZATION =================
   function init() {
     setupThemeSystem();
+
+    // Ensure legacy sample/demo transactions are cleared so user starts with a clean slate
+    const DEMO_CLEARED_FLAG = 'gallops_demo_txns_cleared_v36';
+    if (!localStorage.getItem(DEMO_CLEARED_FLAG)) {
+      const demoIds = ['TXN-1001', 'TXN-1002', 'TXN-1003', 'TXN-1004'];
+      appState.transactions = (appState.transactions || []).filter(t => 
+        !demoIds.includes(t.id) &&
+        t.reference !== 'LOT-5983' &&
+        t.reference !== 'LOT-5743' &&
+        !(t.partyName === 'Supreme Silicone Molds Ltd' && (t.reference === 'INV-4402' || t.reference === 'CHALLAN-901')) &&
+        !(t.partyName === 'Aarav Surgical & Pharmacy, Delhi') &&
+        !(t.partyName === 'Femina Care Wholesale, Bangalore')
+      );
+      saveTransactions();
+      localStorage.setItem(DEMO_CLEARED_FLAG, 'true');
+    }
+
     populateDropdowns();
     renderAll();
     setupAdjustModalControls();
@@ -3165,6 +3171,8 @@
     document.getElementById('btnQuickOut')?.addEventListener('click', () => switchTab('outward'));
     document.getElementById('btnGoToMatrix')?.addEventListener('click', () => switchTab('matrix'));
     document.getElementById('btnSeeAllLedger')?.addEventListener('click', () => switchTab('ledger'));
+    document.getElementById('btnClearAllTxns')?.addEventListener('click', window.gallopsClearAllTransactions);
+    document.getElementById('btnClearLedgerTxns')?.addEventListener('click', window.gallopsClearAllTransactions);
 
     // Forms
     document.getElementById('formStockIn')?.addEventListener('submit', handleStockInSubmit);
@@ -3268,11 +3276,11 @@
       });
 
       navigator.serviceWorker.register('sw.js').then((reg) => {
-        reg.update().catch(() => {});
+        reg.update().catch(() => { });
         window.addEventListener('focus', () => {
-          reg.update().catch(() => {});
+          reg.update().catch(() => { });
         });
-      }).catch(() => {});
+      }).catch(() => { });
     }
   }
 

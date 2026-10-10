@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=35">
+  <link rel="stylesheet" href="styles.css?v=36">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -191,9 +191,14 @@
           <div class="dashboard-split-row">
             <!-- Recent Transactions -->
             <div class="panel-box flex-2">
-              <div class="panel-box-header">
-                <h3 class="panel-box-title">Recent Transactions</h3>
-                <button class="btn-link" id="btnSeeAllLedger">View All Logs →</button>
+              <div class="panel-box-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <h3 class="panel-box-title" style="margin:0;">Recent Transactions</h3>
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <button type="button" class="btn btn-sm btn-outline" id="btnClearAllTxns" style="color:var(--accent-rose); border-color:#fecdd3; padding:4px 10px; font-size:0.78rem;" title="Delete all transaction records">
+                    🗑️ Clear Transactions
+                  </button>
+                  <button class="btn-link" id="btnSeeAllLedger">View All Logs →</button>
+                </div>
               </div>
               <div class="table-responsive">
                 <table class="data-table">
@@ -205,6 +210,7 @@
                       <th>Qty (Pcs)</th>
                       <th>Party / Buyer</th>
                       <th>Ref/Challan</th>
+                      <th style="text-align:center;">Action</th>
                     </tr>
                   </thead>
                   <tbody id="recentTransactionsTbody">
@@ -567,6 +573,7 @@
             </div>
             <div class="action-btn-group">
               <button class="btn btn-secondary" id="btnExportFullLedgerCsv">📊 Export CSV</button>
+              <button class="btn btn-outline" id="btnClearLedgerTxns" style="color:var(--accent-rose); border-color:#fecdd3;">🗑️ Clear All Logs</button>
               <button class="btn btn-primary" id="btnPrintLedger">🖨️ Print Ledger</button>
             </div>
           </div>
@@ -1275,6 +1282,6 @@
   </div>
 
   <script src="html2pdf.bundle.min.js"></script>
-  <script src="app.js?v=35"></script>
+  <script src="app.js?v=36"></script>
 </body>
 </html>
