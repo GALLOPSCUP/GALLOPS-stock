@@ -42,6 +42,58 @@
     { id: 'L', name: 'Large (L)', label: 'Large (L)' }
   ];
 
+  const DEFAULT_SHAPE_PREFERENCES = {
+    'GALLOPS_CUP': {
+      sizes: {
+        'S': { lowLimit: 100, cost: 30, sell: 60 },
+        'M': { lowLimit: 100, cost: 30, sell: 60 },
+        'L': { lowLimit: 100, cost: 30, sell: 60 }
+      }
+    },
+    'REGULAR': {
+      sizes: {
+        'S': { lowLimit: 300, cost: 42, sell: 90 },
+        'M': { lowLimit: 300, cost: 45, sell: 95 },
+        'L': { lowLimit: 300, cost: 48, sell: 100 }
+      }
+    },
+    'BELL': {
+      sizes: {
+        'S': { lowLimit: 50, cost: 42, sell: 90 },
+        'M': { lowLimit: 50, cost: 45, sell: 95 },
+        'L': { lowLimit: 50, cost: 48, sell: 100 }
+      }
+    },
+    'LSR': {
+      sizes: {
+        'S': { lowLimit: 200, cost: 60, sell: 130 },
+        'M': { lowLimit: 200, cost: 65, sell: 140 },
+        'L': { lowLimit: 200, cost: 70, sell: 150 }
+      }
+    },
+    'SINGLE_FOLD': {
+      sizes: {
+        'S': { lowLimit: 200, cost: 42, sell: 90 },
+        'M': { lowLimit: 200, cost: 45, sell: 95 },
+        'L': { lowLimit: 200, cost: 48, sell: 100 }
+      }
+    },
+    'MULTI_FOLD': {
+      sizes: {
+        'S': { lowLimit: 10, cost: 42, sell: 90 },
+        'M': { lowLimit: 10, cost: 45, sell: 95 },
+        'L': { lowLimit: 10, cost: 48, sell: 100 }
+      }
+    },
+    'BOX': {
+      sizes: {
+        'S': { lowLimit: 400, cost: 6, sell: 12 },
+        'M': { lowLimit: 400, cost: 8, sell: 15 },
+        'L': { lowLimit: 400, cost: 10, sell: 20 }
+      }
+    }
+  };
+
   const DEFAULT_SETTINGS = {
     lowStockThreshold: 50,
     defaultCostPrice: 45,
@@ -49,7 +101,8 @@
     factorySupplierName: 'Supreme Silicone Molds Ltd',
     shapes: DEFAULT_SHAPES,
     colors: DEFAULT_COLORS,
-    sizes: DEFAULT_SIZES
+    sizes: DEFAULT_SIZES,
+    shapePreferences: DEFAULT_SHAPE_PREFERENCES
   };
 
   // Sample stock covering user's actual wholesale product matrix
@@ -192,7 +245,104 @@
     // Enforce business rules for shapes and allowed colors
     settings.shapes = DEFAULT_SHAPES;
     settings.colors = DEFAULT_COLORS;
+
+    // Ensure shapePreferences has entries for all 7 shapes and each size (S, M, L)
+    if (!settings.shapePreferences || typeof settings.shapePreferences !== 'object') {
+      settings.shapePreferences = JSON.parse(JSON.stringify(DEFAULT_SHAPE_PREFERENCES));
+    } else {
+      Object.keys(DEFAULT_SHAPE_PREFERENCES).forEach(shapeId => {
+        if (!settings.shapePreferences[shapeId]) {
+          settings.shapePreferences[shapeId] = JSON.parse(JSON.stringify(DEFAULT_SHAPE_PREFERENCES[shapeId]));
+        } else {
+          const pref = settings.shapePreferences[shapeId];
+          // If stored with old flat format { lowLimit, cost, sell }, migrate to sizes { S, M, L }
+          if (!pref.sizes || typeof pref.sizes !== 'object') {
+            const fallbackLow = (pref.lowLimit !== undefined && pref.lowLimit !== '') ? Number(pref.lowLimit) : (DEFAULT_SHAPE_PREFERENCES[shapeId]?.sizes?.M?.lowLimit ?? 50);
+            const fallbackCost = (pref.cost !== undefined && pref.cost !== '') ? Number(pref.cost) : (DEFAULT_SHAPE_PREFERENCES[shapeId]?.sizes?.M?.cost ?? 45);
+            const fallbackSell = (pref.sell !== undefined && pref.sell !== '') ? Number(pref.sell) : (DEFAULT_SHAPE_PREFERENCES[shapeId]?.sizes?.M?.sell ?? 95);
+            pref.sizes = {
+              'S': { lowLimit: fallbackLow, cost: fallbackCost, sell: fallbackSell },
+              'M': { lowLimit: fallbackLow, cost: fallbackCost, sell: fallbackSell },
+              'L': { lowLimit: fallbackLow, cost: fallbackCost, sell: fallbackSell }
+            };
+          } else {
+            ['S', 'M', 'L'].forEach(sz => {
+              if (!pref.sizes[sz]) {
+                pref.sizes[sz] = { ...(DEFAULT_SHAPE_PREFERENCES[shapeId]?.sizes?.[sz] || { lowLimit: 50, cost: 45, sell: 95 }) };
+              }
+            });
+          }
+        }
+      });
+    }
+
     return settings;
+  }
+
+  function getShapeSizeLowLimit(shapeId, sizeId) {
+    const prefs = appState?.settings?.shapePreferences;
+    const shapePref = prefs && prefs[shapeId];
+    if (shapePref) {
+      if (shapePref.sizes && sizeId && shapePref.sizes[sizeId] && shapePref.sizes[sizeId].lowLimit !== undefined && shapePref.sizes[sizeId].lowLimit !== '') {
+        return Number(shapePref.sizes[sizeId].lowLimit);
+      }
+      if (shapePref.lowLimit !== undefined && shapePref.lowLimit !== '') {
+        return Number(shapePref.lowLimit);
+      }
+    }
+    const defShape = DEFAULT_SHAPE_PREFERENCES[shapeId];
+    if (defShape && defShape.sizes && sizeId && defShape.sizes[sizeId]?.lowLimit !== undefined) {
+      return Number(defShape.sizes[sizeId].lowLimit);
+    }
+    return 50;
+  }
+
+  function getShapeSizeCostPrice(shapeId, sizeId) {
+    const prefs = appState?.settings?.shapePreferences;
+    const shapePref = prefs && prefs[shapeId];
+    if (shapePref) {
+      if (shapePref.sizes && sizeId && shapePref.sizes[sizeId] && shapePref.sizes[sizeId].cost !== undefined && shapePref.sizes[sizeId].cost !== '') {
+        return Number(shapePref.sizes[sizeId].cost);
+      }
+      if (shapePref.cost !== undefined && shapePref.cost !== '') {
+        return Number(shapePref.cost);
+      }
+    }
+    const defShape = DEFAULT_SHAPE_PREFERENCES[shapeId];
+    if (defShape && defShape.sizes && sizeId && defShape.sizes[sizeId]?.cost !== undefined) {
+      return Number(defShape.sizes[sizeId].cost);
+    }
+    return 45;
+  }
+
+  function getShapeSizeSellPrice(shapeId, sizeId) {
+    const prefs = appState?.settings?.shapePreferences;
+    const shapePref = prefs && prefs[shapeId];
+    if (shapePref) {
+      if (shapePref.sizes && sizeId && shapePref.sizes[sizeId] && shapePref.sizes[sizeId].sell !== undefined && shapePref.sizes[sizeId].sell !== '') {
+        return Number(shapePref.sizes[sizeId].sell);
+      }
+      if (shapePref.sell !== undefined && shapePref.sell !== '') {
+        return Number(shapePref.sell);
+      }
+    }
+    const defShape = DEFAULT_SHAPE_PREFERENCES[shapeId];
+    if (defShape && defShape.sizes && sizeId && defShape.sizes[sizeId]?.sell !== undefined) {
+      return Number(defShape.sizes[sizeId].sell);
+    }
+    return 95;
+  }
+
+  function getShapeLowLimit(shapeId, sizeId = 'M') {
+    return getShapeSizeLowLimit(shapeId, sizeId);
+  }
+
+  function getShapeCostPrice(shapeId, sizeId = 'M') {
+    return getShapeSizeCostPrice(shapeId, sizeId);
+  }
+
+  function getShapeSellPrice(shapeId, sizeId = 'M') {
+    return getShapeSizeSellPrice(shapeId, sizeId);
   }
 
   function saveSettings() {
@@ -381,11 +531,11 @@
     if (inDate && !inDate.value) inDate.value = today;
     if (outDate && !outDate.value) outDate.value = today;
 
-    // Set default cost/sell prices
+    // Set default cost/sell prices based on selected shape and size
     const inCostPrice = document.getElementById('inCostPrice');
     const outSellPrice = document.getElementById('outSellPrice');
-    if (inCostPrice) inCostPrice.value = appState.settings.defaultCostPrice;
-    if (outSellPrice) outSellPrice.value = appState.settings.defaultSellPrice;
+    if (inCostPrice && inShape && inSize) inCostPrice.value = getShapeSizeCostPrice(inShape.value, inSize.value);
+    if (outSellPrice && outShape && outSize) outSellPrice.value = getShapeSizeSellPrice(outShape.value, outSize.value);
 
     // Default supplier name
     const inSupplierName = document.getElementById('inSupplierName');
@@ -426,14 +576,15 @@
     const shape = getShapeById(outShape.value);
     const color = getColorById(outColor.value);
     const size = getSizeById(outSize.value);
+    const shapeLowLimit = getShapeSizeLowLimit(outShape.value, outSize.value);
 
     hint.textContent = `Current Stock for ${shape.name} - ${color.name} (${size.name}): ${qty} pieces`;
     if (qty <= 0) {
       hint.style.color = 'var(--accent-rose)';
       hint.textContent += ' (OUT OF STOCK!)';
-    } else if (qty < appState.settings.lowStockThreshold) {
+    } else if (qty < shapeLowLimit) {
       hint.style.color = 'var(--accent-amber)';
-      hint.textContent += ' (Low Stock Alert)';
+      hint.textContent += ` (Low Stock Alert: < ${shapeLowLimit} pcs)`;
     } else {
       hint.style.color = 'var(--text-muted)';
     }
@@ -444,17 +595,27 @@
     let grandTotalUnits = 0;
     let lowStockCount = 0;
     const lowStockItems = [];
+    let stockValuationCost = 0;
+    let stockPotentialRevenue = 0;
 
-    // Calculate totals across all variations
+    // Calculate totals, shape & size-wise valuation, and size-wise alert thresholds
     appState.settings.shapes.forEach(shape => {
       const colors = getColorsForShape(shape.id);
+
       colors.forEach(color => {
         appState.settings.sizes.forEach(size => {
           const qty = getStockQty(shape.id, color.id, size.id);
+          const sizeCost = getShapeSizeCostPrice(shape.id, size.id);
+          const sizeSell = getShapeSizeSellPrice(shape.id, size.id);
+          const sizeLowLimit = getShapeSizeLowLimit(shape.id, size.id);
+
           grandTotalUnits += qty;
-          if (qty < appState.settings.lowStockThreshold) {
+          stockValuationCost += (qty * sizeCost);
+          stockPotentialRevenue += (qty * sizeSell);
+
+          if (qty < sizeLowLimit) {
             lowStockCount++;
-            lowStockItems.push({ shape, color, size, qty });
+            lowStockItems.push({ shape, color, size, qty, lowLimit: sizeLowLimit });
           }
         });
       });
@@ -472,11 +633,6 @@
         totalRevenue += (t.total || 0);
       }
     });
-
-    const costPrice = appState.settings.defaultCostPrice || 45;
-    const sellPrice = appState.settings.defaultSellPrice || 95;
-    const stockValuationCost = grandTotalUnits * costPrice;
-    const stockPotentialRevenue = grandTotalUnits * sellPrice;
 
     // Update KPI elements
     const kpiTotalUnits = document.getElementById('kpiTotalUnits');
@@ -537,8 +693,7 @@
     const subtitle = document.getElementById('lowStockModalSubtitle');
     const note = document.getElementById('lowStockModalThresholdNote');
 
-    const threshold = appState.settings.lowStockThreshold || 50;
-    if (note) note.textContent = `Alert Threshold: < ${threshold} pcs (Change in Settings)`;
+    if (note) note.textContent = 'Custom Shape-Wise Alert Limits Active (Configured in Settings)';
 
     const items = appState.lowStockItems || [];
     if (title) {
@@ -546,8 +701,8 @@
     }
     if (subtitle) {
       subtitle.textContent = items.length === 0 
-        ? 'All products are currently well stocked above your safety limit.' 
-        : `The following shapes & sizes have dropped below ${threshold} pieces:`;
+        ? 'All products are currently well stocked above your safety limits.' 
+        : 'The following shapes & sizes have dropped below their shape-wise reorder limits:';
     }
 
     if (content) {
@@ -557,7 +712,7 @@
             <div style="font-size: 2.75rem; margin-bottom: 0.5rem;">🎉</div>
             <h4 style="font-weight:800; font-size:1.15rem; color:var(--accent-emerald); margin:0 0 0.4rem 0;">All Stock Levels Are Healthy!</h4>
             <p class="text-muted" style="font-size:0.85rem; margin:0;">
-              No cup shapes or sizes are currently below the ${threshold} pcs minimum limit.
+              No cup shapes or sizes are currently below their shape-wise minimum limits.
             </p>
           </div>
         `;
@@ -578,7 +733,7 @@
                   </div>
                   <div class="low-stock-item-qty">
                     <span class="qty-warning-pill">⚠️ ${item.qty} pcs remaining</span>
-                    <span class="text-muted" style="font-size:0.75rem;">(Below reorder limit of ${threshold} pcs)</span>
+                    <span class="text-muted" style="font-size:0.75rem;">(Below shape limit of ${item.lowLimit} pcs)</span>
                   </div>
                 </div>
                 <div>
@@ -666,6 +821,7 @@
         : shape.id === 'LSR' ? '#94a3b8' 
         : '#f59e0b';
 
+      const shapeLowLimit = getShapeLowLimit(shape.id);
       let shapeHasLow = false;
       let colorSectionsHtml = '';
 
@@ -674,13 +830,14 @@
 
         appState.settings.sizes.forEach(size => {
           const qty = getStockQty(shape.id, color.id, size.id);
-          const isLow = qty < appState.settings.lowStockThreshold;
+          const sizeLowLimit = getShapeSizeLowLimit(shape.id, size.id);
+          const isLow = qty < sizeLowLimit;
           if (isLow) shapeHasLow = true;
 
           const sizeUpperName = size.id === 'S' ? 'SMALL' : size.id === 'M' ? 'MEDIUM' : 'LARGE';
           const lowClass = isLow ? 'is-low-stock' : '';
           const lowBadgeHtml = isLow 
-            ? `<div class="cg-low-badge">⚠️ Low Stock (${qty} pcs)</div>` 
+            ? `<div class="cg-low-badge">⚠️ Low Stock (${qty}/${sizeLowLimit} pcs)</div>` 
             : '';
 
           sizesColsHtml += `
@@ -825,16 +982,19 @@
       colors.forEach((color, colorIdx) => {
         let rowTotal = 0;
         let cellsHtml = '';
+        let rowLowLimitSum = 0;
 
         appState.settings.sizes.forEach(size => {
           const qty = getStockQty(shape.id, color.id, size.id);
+          const sizeLowLimit = getShapeSizeLowLimit(shape.id, size.id);
           rowTotal += qty;
+          rowLowLimitSum += sizeLowLimit;
           sizeTotals[size.id] = (sizeTotals[size.id] || 0) + qty;
           grandTotal += qty;
 
           let cellClass = '';
           if (qty === 0) cellClass = 'cell-empty';
-          else if (qty < appState.settings.lowStockThreshold) cellClass = 'cell-low';
+          else if (qty < sizeLowLimit) cellClass = 'cell-low';
 
           cellsHtml += `
             <td>
@@ -848,7 +1008,7 @@
         let statusBadge = '';
         if (rowTotal === 0) {
           statusBadge = '<span class="size-pill-status status-empty">Out of Stock</span>';
-        } else if (rowTotal < appState.settings.lowStockThreshold * 2) {
+        } else if (rowTotal < rowLowLimitSum) {
           statusBadge = '<span class="size-pill-status status-low">Low Stock</span>';
         } else {
           statusBadge = '<span class="size-pill-status status-good">Healthy</span>';
@@ -913,13 +1073,16 @@
     let html = '';
     appState.settings.shapes.forEach(shape => {
       const colors = getColorsForShape(shape.id);
+
       colors.forEach(color => {
         appState.settings.sizes.forEach(size => {
           const qty = getStockQty(shape.id, color.id, size.id);
-          const estValue = qty * (appState.settings.defaultCostPrice || 45);
+          const sizeCost = getShapeSizeCostPrice(shape.id, size.id);
+          const sizeLowLimit = getShapeSizeLowLimit(shape.id, size.id);
+          const estValue = qty * sizeCost;
 
-          let statusClass = qty === 0 ? 'status-empty' : qty < appState.settings.lowStockThreshold ? 'status-low' : 'status-good';
-          let statusText = qty === 0 ? 'Out of Stock' : qty < appState.settings.lowStockThreshold ? 'Low Stock' : 'Adequate';
+          let statusClass = qty === 0 ? 'status-empty' : qty < sizeLowLimit ? 'status-low' : 'status-good';
+          let statusText = qty === 0 ? 'Out of Stock' : qty < sizeLowLimit ? 'Low Stock' : 'Adequate';
 
           html += `
             <div class="sku-card">
@@ -1093,6 +1256,7 @@
     renderDashboard();
     renderStockMatrix();
     renderHistoryTables();
+    renderShapePreferences();
   }
 
   // ================= TRANSACTION ACTIONS =================
@@ -1105,7 +1269,7 @@
     const colorId = document.getElementById('inColor').value;
     const sizeId = document.getElementById('inSize').value;
     const quantity = parseInt(document.getElementById('inQuantity').value, 10);
-    const rate = parseFloat(document.getElementById('inCostPrice').value) || appState.settings.defaultCostPrice;
+    const rate = parseFloat(document.getElementById('inCostPrice').value) || getShapeSizeCostPrice(shapeId, sizeId);
     const date = document.getElementById('inDate').value;
     const batchNumber = document.getElementById('inBatchNumber').value.trim();
     const supplier = document.getElementById('inSupplierName').value.trim();
@@ -1157,7 +1321,7 @@
     const colorId = document.getElementById('outColor').value;
     const sizeId = document.getElementById('outSize').value;
     const quantity = parseInt(document.getElementById('outQuantity').value, 10);
-    const rate = parseFloat(document.getElementById('outSellPrice').value) || appState.settings.defaultSellPrice;
+    const rate = parseFloat(document.getElementById('outSellPrice').value) || getShapeSizeSellPrice(shapeId, sizeId);
     const date = document.getElementById('outDate').value;
     const buyerName = document.getElementById('outBuyerName').value.trim();
     const phone = document.getElementById('outBuyerPhone').value.trim();
@@ -1310,18 +1474,22 @@
 
   // ================= EXPORTS & BACKUP =================
   function exportMatrixToCsv() {
-    let csv = 'Cup Shape,Color,Small (S),Medium (M),Large (L),Total Pieces,Cost Per Cup,Estimated Value\n';
+    let csv = 'Cup Shape,Color,Small (S),Medium (M),Large (L),Total Pieces,Cost Rate (S/M/L),Estimated Value\n';
 
     appState.settings.shapes.forEach(shape => {
       const colors = getColorsForShape(shape.id);
+      const cS = getShapeSizeCostPrice(shape.id, 'S');
+      const cM = getShapeSizeCostPrice(shape.id, 'M');
+      const cL = getShapeSizeCostPrice(shape.id, 'L');
+
       colors.forEach(color => {
         const qS = getStockQty(shape.id, color.id, 'S');
         const qM = getStockQty(shape.id, color.id, 'M');
         const qL = getStockQty(shape.id, color.id, 'L');
         const total = qS + qM + qL;
-        const val = total * (appState.settings.defaultCostPrice || 45);
+        const val = (qS * cS) + (qM * cM) + (qL * cL);
 
-        csv += `"${shape.name}","${color.name}",${qS},${qM},${qL},${total},${appState.settings.defaultCostPrice},${val}\n`;
+        csv += `"${shape.name}","${color.name}",${qS},${qM},${qL},${total},"S:₹${cS} M:₹${cM} L:₹${cL}",${val}\n`;
       });
     });
 
@@ -1399,6 +1567,139 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, 100);
+  }
+
+  // ================= SHAPE & SIZE-WISE PREFERENCES (LIMITS & PRICES) =================
+  function renderShapePreferences() {
+    const tbody = document.getElementById('shapePreferencesTbody');
+    if (!tbody) return;
+
+    let rowsHtml = '';
+    const sizes = appState.settings.sizes;
+
+    appState.settings.shapes.forEach((shape, shapeIdx) => {
+      sizes.forEach((sz, szIdx) => {
+        const isFirst = szIdx === 0;
+        const lowLimit = getShapeSizeLowLimit(shape.id, sz.id);
+        const cost = getShapeSizeCostPrice(shape.id, sz.id);
+        const sell = getShapeSizeSellPrice(shape.id, sz.id);
+
+        const groupBorder = isFirst ? 'border-top: 2px solid var(--border-color);' : '';
+        const sizeTagClass = sz.id === 'S' ? 'size-s' : sz.id === 'M' ? 'size-m' : 'size-l';
+
+        const shapeCell = isFirst ? `
+          <td rowspan="3" class="shape-pref-shape-cell" style="${groupBorder}">
+            <div class="shape-pref-shape-card">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="font-size:1.4rem; line-height:1;">${shape.icon}</span>
+                <div>
+                  <strong style="color:var(--text-primary); font-size:0.95rem;">${shapeIdx + 1}. ${shape.name}</strong>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">${shape.colors ? shape.colors.join(', ') : ''}</div>
+                </div>
+              </div>
+              <button type="button" class="btn-copy-sizes" onclick="window.gallopsCopySizeToAll('${shape.id}', 'S')" title="Copy Small (S) price & limit to Medium & Large for this shape">
+                ⚡ Copy S to All Sizes
+              </button>
+            </div>
+          </td>
+        ` : '';
+
+        rowsHtml += `
+          <tr data-shape-id="${shape.id}" data-size-id="${sz.id}" style="${groupBorder}">
+            ${shapeCell}
+            <td>
+              <span class="size-pref-tag ${sizeTagClass}">${sz.name}</span>
+            </td>
+            <td style="text-align:right;">
+              <input type="number" min="0" step="1" class="shape-pref-input" data-shape="${shape.id}" data-size="${sz.id}" data-field="lowLimit" value="${lowLimit}">
+            </td>
+            <td style="text-align:right;">
+              <input type="number" min="0" step="0.5" class="shape-pref-input" data-shape="${shape.id}" data-size="${sz.id}" data-field="cost" value="${cost}">
+            </td>
+            <td style="text-align:right;">
+              <input type="number" min="0" step="0.5" class="shape-pref-input" data-shape="${shape.id}" data-size="${sz.id}" data-field="sell" value="${sell}">
+            </td>
+          </tr>
+        `;
+      });
+    });
+
+    tbody.innerHTML = rowsHtml;
+  }
+
+  window.gallopsCopySizeToAll = function (shapeId, sourceSizeId = 'S') {
+    const sLow = document.querySelector(`input[data-shape="${shapeId}"][data-size="${sourceSizeId}"][data-field="lowLimit"]`)?.value;
+    const sCost = document.querySelector(`input[data-shape="${shapeId}"][data-size="${sourceSizeId}"][data-field="cost"]`)?.value;
+    const sSell = document.querySelector(`input[data-shape="${shapeId}"][data-size="${sourceSizeId}"][data-field="sell"]`)?.value;
+
+    ['M', 'L'].forEach(targetSize => {
+      const lowInput = document.querySelector(`input[data-shape="${shapeId}"][data-size="${targetSize}"][data-field="lowLimit"]`);
+      const costInput = document.querySelector(`input[data-shape="${shapeId}"][data-size="${targetSize}"][data-field="cost"]`);
+      const sellInput = document.querySelector(`input[data-shape="${shapeId}"][data-size="${targetSize}"][data-field="sell"]`);
+
+      if (lowInput && sLow !== undefined) lowInput.value = sLow;
+      if (costInput && sCost !== undefined) costInput.value = sCost;
+      if (sellInput && sSell !== undefined) sellInput.value = sSell;
+    });
+
+    const shape = getShapeById(shapeId);
+    showToast(`Copied ${sourceSizeId} values to M & L for ${shape.name}. Click 'Save' to apply.`, 'info');
+  };
+
+  function setupShapePreferencesHandlers() {
+    const saveBtn = document.getElementById('btnSaveShapePreferences');
+    if (!saveBtn) return;
+
+    saveBtn.addEventListener('click', () => {
+      const tbody = document.getElementById('shapePreferencesTbody');
+      if (!tbody) return;
+
+      if (!appState.settings.shapePreferences) {
+        appState.settings.shapePreferences = {};
+      }
+
+      const rows = tbody.querySelectorAll('tr[data-shape-id][data-size-id]');
+      rows.forEach(row => {
+        const shapeId = row.dataset.shapeId;
+        const sizeId = row.dataset.sizeId;
+        const lowLimitInput = row.querySelector('input[data-field="lowLimit"]');
+        const costInput = row.querySelector('input[data-field="cost"]');
+        const sellInput = row.querySelector('input[data-field="sell"]');
+
+        const lowLimit = parseInt(lowLimitInput?.value, 10);
+        const cost = parseFloat(costInput?.value);
+        const sell = parseFloat(sellInput?.value);
+
+        if (!appState.settings.shapePreferences[shapeId]) {
+          appState.settings.shapePreferences[shapeId] = { sizes: {} };
+        }
+        if (!appState.settings.shapePreferences[shapeId].sizes) {
+          appState.settings.shapePreferences[shapeId].sizes = {};
+        }
+
+        const defForSize = DEFAULT_SHAPE_PREFERENCES[shapeId]?.sizes?.[sizeId] || { lowLimit: 50, cost: 45, sell: 95 };
+
+        appState.settings.shapePreferences[shapeId].sizes[sizeId] = {
+          lowLimit: isNaN(lowLimit) ? defForSize.lowLimit : lowLimit,
+          cost: isNaN(cost) ? defForSize.cost : cost,
+          sell: isNaN(sell) ? defForSize.sell : sell
+        };
+      });
+
+      // Maintain legacy top-level cost/sell/lowLimit for backward compatibility
+      Object.keys(appState.settings.shapePreferences).forEach(sId => {
+        const sPref = appState.settings.shapePreferences[sId];
+        if (sPref && sPref.sizes) {
+          sPref.lowLimit = sPref.sizes['M']?.lowLimit ?? sPref.sizes['S']?.lowLimit ?? 50;
+          sPref.cost = sPref.sizes['M']?.cost ?? sPref.sizes['S']?.cost ?? 45;
+          sPref.sell = sPref.sizes['M']?.sell ?? sPref.sizes['S']?.sell ?? 95;
+        }
+      });
+
+      saveSettings();
+      renderAll();
+      showToast('Size-wise cost, selling prices & limits saved successfully!', 'success');
+    });
   }
 
   // ================= 5 USER-FRIENDLY THEMES & COLOR PICKER =================
@@ -1528,6 +1829,7 @@
     renderAll();
     setupAdjustModalControls();
     setupLowStockModalControls();
+    setupShapePreferencesHandlers();
 
     // Nav Click handlers
     document.querySelectorAll('.side-nav .nav-item').forEach(btn => {
@@ -1544,18 +1846,40 @@
     document.getElementById('formStockIn')?.addEventListener('submit', handleStockInSubmit);
     document.getElementById('formStockOut')?.addEventListener('submit', handleStockOutSubmit);
 
-    // Dynamic color and stock hints when changing dropdowns
+    // Dynamic color, price and stock hints when changing dropdowns
     document.getElementById('inShape')?.addEventListener('change', () => {
       updateColorDropdowns();
+      const inShapeEl = document.getElementById('inShape');
+      const inSizeEl = document.getElementById('inSize');
+      const inCostPrice = document.getElementById('inCostPrice');
+      if (inCostPrice && inShapeEl && inSizeEl) inCostPrice.value = getShapeSizeCostPrice(inShapeEl.value, inSizeEl.value);
+    });
+
+    document.getElementById('inSize')?.addEventListener('change', () => {
+      const inShapeEl = document.getElementById('inShape');
+      const inSizeEl = document.getElementById('inSize');
+      const inCostPrice = document.getElementById('inCostPrice');
+      if (inCostPrice && inShapeEl && inSizeEl) inCostPrice.value = getShapeSizeCostPrice(inShapeEl.value, inSizeEl.value);
     });
 
     document.getElementById('outShape')?.addEventListener('change', () => {
       updateColorDropdowns();
+      const outShapeEl = document.getElementById('outShape');
+      const outSizeEl = document.getElementById('outSize');
+      const outSellPrice = document.getElementById('outSellPrice');
+      if (outSellPrice && outShapeEl && outSizeEl) outSellPrice.value = getShapeSizeSellPrice(outShapeEl.value, outSizeEl.value);
+      updateOutwardStockHint();
+    });
+
+    document.getElementById('outSize')?.addEventListener('change', () => {
+      const outShapeEl = document.getElementById('outShape');
+      const outSizeEl = document.getElementById('outSize');
+      const outSellPrice = document.getElementById('outSellPrice');
+      if (outSellPrice && outShapeEl && outSizeEl) outSellPrice.value = getShapeSizeSellPrice(outShapeEl.value, outSizeEl.value);
       updateOutwardStockHint();
     });
 
     document.getElementById('outColor')?.addEventListener('change', updateOutwardStockHint);
-    document.getElementById('outSize')?.addEventListener('change', updateOutwardStockHint);
 
     // Matrix buttons
     document.getElementById('btnRefreshMatrix')?.addEventListener('click', () => {

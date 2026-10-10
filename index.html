@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=26">
+  <link rel="stylesheet" href="styles.css?v=30">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -614,28 +614,32 @@
               <button class="btn btn-primary mt-3" id="btnSaveNames">💾 Save Custom Names</button>
             </div>
 
-            <!-- STOCK THRESHOLDS & PREFERENCES -->
-            <div class="settings-card">
-              <h3 class="settings-card-title">Stock Alert Preferences</h3>
-              <p class="settings-card-desc">Get notified when stock drops below minimum threshold</p>
-
-              <div class="form-group">
-                <label for="settingLowStockThreshold">Low Stock Alert Limit (Pcs)</label>
-                <input type="number" id="settingLowStockThreshold" min="1" class="form-control" value="50">
-                <small class="form-hint">Any shape/size below this number will show in red with a warning.</small>
+            <!-- SHAPE & SIZE-WISE STOCK ALERT LIMITS & PRICING PREFERENCES -->
+            <div class="settings-card full-width-card">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+                <div>
+                  <h3 class="settings-card-title">Shape & Size-Wise Low Stock Limits & Prices (7 Products × 3 Sizes)</h3>
+                  <p class="settings-card-desc">Set custom Low Stock Alert Limit (Pcs), Factory Cost Price (₹), and Wholesale Selling Price (₹) for each shape and size (Small, Medium, Large)</p>
+                </div>
+                <button class="btn btn-primary" id="btnSaveShapePreferences">💾 Save Size-Wise Preferences</button>
               </div>
 
-              <div class="form-group">
-                <label for="settingDefaultCost">Default Factory Cost Price Per Cup (₹)</label>
-                <input type="number" id="settingDefaultCost" min="0" step="1" class="form-control" value="45">
+              <div class="table-responsive mt-3">
+                <table class="data-table shape-pref-table">
+                  <thead>
+                    <tr>
+                      <th style="min-width:200px;">Cup Shape / Product</th>
+                      <th style="min-width:110px;">Cup Size</th>
+                      <th style="min-width:140px; text-align:right;">⚠️ Low Alert Limit (Pcs)</th>
+                      <th style="min-width:140px; text-align:right;">🏭 Factory Cost Price (₹)</th>
+                      <th style="min-width:140px; text-align:right;">🛒 Wholesale Sell Price (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="shapePreferencesTbody">
+                    <!-- Populated dynamically by JS for 7 shapes x 3 sizes -->
+                  </tbody>
+                </table>
               </div>
-
-              <div class="form-group">
-                <label for="settingDefaultSellPrice">Default Wholesale Selling Price Per Cup (₹)</label>
-                <input type="number" id="settingDefaultSellPrice" min="0" step="1" class="form-control" value="95">
-              </div>
-
-              <button class="btn btn-primary mt-3" id="btnSavePreferences">💾 Save Preferences</button>
             </div>
 
             <!-- LAYOUT COLOR & THEME PREFERENCES -->
@@ -782,6 +786,6 @@
 
   </div>
 
-  <script src="app.js?v=26"></script>
+  <script src="app.js?v=30"></script>
 </body>
 </html>

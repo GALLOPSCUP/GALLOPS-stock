@@ -2133,6 +2133,104 @@ body.theme-dark .cg-btn-step:hover {
   color: #0f172a;
 }
 
+/* ================= SHAPE PREFERENCES TABLE ================= */
+.full-width-card {
+  grid-column: 1 / -1;
+}
+
+.shape-pref-table th {
+  padding: 0.85rem 1rem;
+  background: var(--bg-tertiary);
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.shape-pref-table td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.shape-pref-input {
+  width: 100%;
+  max-width: 140px;
+  padding: 0.55rem 0.75rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: right;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.shape-pref-input:focus {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.shape-pref-shape-cell {
+  vertical-align: top;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  padding: 1rem !important;
+}
+
+.shape-pref-shape-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.btn-copy-sizes {
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  color: var(--accent-purple);
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: fit-content;
+  margin-top: 0.25rem;
+}
+
+.btn-copy-sizes:hover {
+  background: var(--accent-purple);
+  color: #fff;
+}
+
+.size-pref-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.size-pref-tag.size-s {
+  border-left: 3px solid #06b6d4;
+}
+
+.size-pref-tag.size-m {
+  border-left: 3px solid #8b5cf6;
+}
+
+.size-pref-tag.size-l {
+  border-left: 3px solid #ec4899;
+}
+
 /* ================= PRINT STYLESHEET ================= */
 @media print {
   body {
