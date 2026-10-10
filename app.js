@@ -105,7 +105,8 @@
     ifsc: 'MAHB0001539',
     defaultHsn: '9619',
     defaultGstRate: 5,
-    invoicePrefix: 'SR-'
+    invoicePrefix: 'SR-',
+    nextInvoiceNumber: 1023
   };
 
   const DEFAULT_SETTINGS = {
@@ -273,6 +274,9 @@
 
     settings.colors = DEFAULT_COLORS;
     settings.company = Object.assign({}, DEFAULT_COMPANY, parsed?.company || {});
+    if (!settings.company.nextInvoiceNumber || isNaN(parseInt(settings.company.nextInvoiceNumber, 10))) {
+      settings.company.nextInvoiceNumber = 1023;
+    }
 
     // Ensure shapePreferences has entries for all shapes and each size
     if (!settings.shapePreferences || typeof settings.shapePreferences !== 'object') {
@@ -458,9 +462,9 @@
     }
     return [
       {
-        id: 'INV-SAMPLE-1015',
-        invoiceNo: 'SR-1015',
-        date: '27/07/2026',
+        id: 'INV-SAMPLE-1023',
+        invoiceNo: 'SR-1023',
+        date: '10/10/2026',
         copyType: 'Original',
         buyerName: 'SHRENIK AGENCY',
         buyerAddress: '315 G B COMPLEX, MOTI TANKI CHOWK, RAJKOT 36001',
@@ -1354,6 +1358,11 @@
     renderShapePreferences();
     renderProductConfigCard();
     renderSavedInvoicesTable();
+
+    const outRefInput = document.getElementById('outOrderRef');
+    if (outRefInput && !outRefInput.value) {
+      outRefInput.placeholder = 'e.g. ' + getNextInvoiceNumber(false);
+    }
   }
 
   // ================= TRANSACTION ACTIONS =================
@@ -1462,7 +1471,7 @@
       buyerGstin: buyerGstin,
       courierCharges: courierCharges,
       paymentStatus: paymentStatus,
-      reference: orderRef || (appState.settings.company?.invoicePrefix || 'SR-') + Date.now().toString().slice(-4),
+      reference: orderRef || getNextInvoiceNumber(true),
       notes: notes,
       timestamp: Date.now()
     };
@@ -2216,9 +2225,38 @@
   }
 
   // ================= GST TAX INVOICE ENGINE (EARTH ENTERPRISE FORMAT) =================
+  function getNextInvoiceNumber(increment = false) {
+    if (!appState.settings.company) {
+      appState.settings.company = Object.assign({}, DEFAULT_COMPANY);
+    }
+    const prefix = appState.settings.company.invoicePrefix || 'SR-';
+    let nextNum = parseInt(appState.settings.company.nextInvoiceNumber, 10);
+    if (isNaN(nextNum) || nextNum < 1) {
+      nextNum = 1023;
+    }
+
+    const formattedNo = `${prefix}${nextNum}`;
+
+    if (increment) {
+      appState.settings.company.nextInvoiceNumber = nextNum + 1;
+      saveSettings();
+
+      const outRefInput = document.getElementById('outOrderRef');
+      if (outRefInput) {
+        outRefInput.placeholder = `e.g. ${prefix}${nextNum + 1}`;
+      }
+      const cfgNextInput = document.getElementById('cfgNextInvoiceNo');
+      if (cfgNextInput) {
+        cfgNextInput.value = nextNum + 1;
+      }
+    }
+
+    return formattedNo;
+  }
+
   let currentInvoiceData = {
-    invoiceNo: 'SR-1015',
-    date: '27/07/2026',
+    invoiceNo: 'SR-1023',
+    date: '10/10/2026',
     copyType: 'Original',
     buyerName: 'SHRENIK AGENCY',
     buyerAddress: '315 G B COMPLEX, MOTI TANKI CHOWK, RAJKOT 36001',
@@ -2756,7 +2794,7 @@
     const itemDesc = `MENSTRUAL CUP ${shape.name.toUpperCase()} ${size.name.toUpperCase()}`.replace(/\s+/g, ' ');
 
     currentInvoiceData = {
-      invoiceNo: txn.reference && txn.reference.startsWith('SR-') ? txn.reference : (txn.reference || 'SR-' + Date.now().toString().slice(-4)),
+      invoiceNo: txn.reference && txn.reference.startsWith(appState.settings.company?.invoicePrefix || 'SR-') ? txn.reference : (txn.reference || getNextInvoiceNumber(true)),
       date: txn.date || new Date().toISOString().split('T')[0],
       copyType: 'Original',
       buyerName: txn.partyName || 'WHOLESALE BUYER',
@@ -2791,7 +2829,7 @@
       const dateStr = `${dd}/${mm}/${yyyy}`;
 
       currentInvoiceData = {
-        invoiceNo: (appState.settings.company?.invoicePrefix || 'SR-') + Math.floor(1000 + Math.random() * 9000),
+        invoiceNo: getNextInvoiceNumber(true),
         date: dateStr,
         copyType: 'Original',
         buyerName: 'SHRENIK AGENCY',
@@ -2952,6 +2990,7 @@
     const elAc = document.getElementById('cfgBankAcNo');
     const elIfsc = document.getElementById('cfgBankIfsc');
     const elPrefix = document.getElementById('cfgInvoicePrefix');
+    const elNextNo = document.getElementById('cfgNextInvoiceNo');
 
     if (elName) elName.value = comp.name || 'EARTH ENTERPRISE';
     if (elGstin) elGstin.value = comp.gstin || '24BIOPB7033F1ZJ';
@@ -2961,6 +3000,7 @@
     if (elAc) elAc.value = comp.accountNo || '60413462290';
     if (elIfsc) elIfsc.value = comp.ifsc || 'MAHB0001539';
     if (elPrefix) elPrefix.value = comp.invoicePrefix || 'SR-';
+    if (elNextNo) elNextNo.value = comp.nextInvoiceNumber || 1023;
 
     document.getElementById('btnSaveCompanyProfile')?.addEventListener('click', () => {
       appState.settings.company = {
@@ -2972,6 +3012,7 @@
         accountNo: elAc ? elAc.value.trim() : '60413462290',
         ifsc: elIfsc ? elIfsc.value.trim() : 'MAHB0001539',
         invoicePrefix: elPrefix ? elPrefix.value.trim() : 'SR-',
+        nextInvoiceNumber: elNextNo ? (parseInt(elNextNo.value, 10) || 1023) : 1023,
         defaultHsn: '9619',
         defaultGstRate: 5
       };
