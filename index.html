@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=47">
+  <link rel="stylesheet" href="styles.css?v=48">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -1504,8 +1504,8 @@
   </div>
 
   <!-- ================= LOGIN AUTHENTICATION OVERLAY ================= -->
-  <div id="loginOverlay" class="login-overlay">
-    <div class="login-card">
+  <div id="loginOverlay" class="login-overlay" style="position:fixed; inset:0; z-index:999999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:1.5rem; background:radial-gradient(circle at 50% 25%, #fdf2f8 0%, #f1f5f9 100%);">
+    <div class="login-card" style="width:100%; max-width:420px; background:#ffffff; border:1px solid #e2e8f0; border-radius:20px; padding:2.2rem 2rem; box-shadow:0 20px 40px -15px rgba(0,0,0,0.15); text-align:center;">
       <div class="login-brand-icon">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
@@ -1556,6 +1556,6 @@
   </div>
 
   <script src="html2pdf.bundle.min.js"></script>
-  <script src="app.js?v=47"></script>
+  <script src="app.js?v=48"></script>
 </body>
 </html>
