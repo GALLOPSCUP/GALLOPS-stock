@@ -15,8 +15,37 @@
     TRANSACTIONS: 'gallops_cup_transactions_v4',
     SETTINGS: 'gallops_cup_settings_v4',
     THEME: 'gallops_cup_theme_v4',
-    INVOICES: 'gallops_cup_invoices_v4'
+    INVOICES: 'gallops_cup_invoices_v4',
+    AUTH_USER: 'gallops_cup_auth_user_v1'
   };
+
+  // ================= USER ACCOUNTS & CREDENTIALS =================
+  const AUTH_USERS = [
+    {
+      id: 'Admin',
+      name: 'Admin',
+      password: 'Vaibhavadmin@123',
+      role: 'admin',
+      title: 'Administrator',
+      defaultReceiver: 'VAIBHAV'
+    },
+    {
+      id: 'Sanjay',
+      name: 'Sanjay',
+      password: 'Sanjaygallops@123',
+      role: 'sales',
+      title: 'Sales Executive',
+      defaultReceiver: 'SANJAY'
+    },
+    {
+      id: 'Asha',
+      name: 'Asha',
+      password: 'Ashagallops@123',
+      role: 'sales',
+      title: 'Sales Executive',
+      defaultReceiver: 'ASHA'
+    }
+  ];
 
   // ================= DEFAULT CONFIGURATION =================
   const DEFAULT_SHAPES = [
@@ -173,8 +202,153 @@
     stock: loadStock(),
     transactions: loadTransactions(),
     invoices: loadInvoices(),
+    currentUser: loadAuthUser(),
     currentAdjustSku: null
   };
+
+  function loadAuthUser() {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
+      if (stored) {
+        const u = JSON.parse(stored);
+        const matched = AUTH_USERS.find(user => user.id.toLowerCase() === (u?.id || '').toLowerCase());
+        if (matched) return matched;
+      }
+    } catch (e) {
+      console.warn('Error loading auth user', e);
+    }
+    return null;
+  }
+
+  function saveAuthUser(user) {
+    if (user) {
+      localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify({ id: user.id }));
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+    }
+  }
+
+  function applyUserRole(user) {
+    const loginOverlay = document.getElementById('loginOverlay');
+    const chip = document.getElementById('userProfileChip');
+    const chipName = document.getElementById('userChipName');
+    const chipRole = document.getElementById('userChipRole');
+    const chipAvatar = document.getElementById('userChipAvatar');
+
+    document.body.classList.remove('role-admin', 'role-sales');
+
+    if (user) {
+      document.body.classList.add(`role-${user.role}`);
+      if (loginOverlay) loginOverlay.style.display = 'none';
+      if (chip) chip.style.display = 'inline-flex';
+      if (chipName) chipName.textContent = user.name;
+      if (chipRole) chipRole.textContent = user.role.toUpperCase();
+      if (chipAvatar) chipAvatar.textContent = user.name.charAt(0).toUpperCase();
+
+      // Auto-set payment receiver dropdown in wholesale out
+      const outRec = document.getElementById('outReceivedBy');
+      if (outRec && user.defaultReceiver) {
+        outRec.value = user.defaultReceiver;
+      }
+
+      // If sales user is on restricted tab, switch back to dashboard
+      if (user.role === 'sales') {
+        const activeTabPane = document.querySelector('.tab-pane.active');
+        if (activeTabPane && (activeTabPane.id === 'tab-settings' || activeTabPane.id === 'tab-inward')) {
+          switchTab('dashboard');
+        }
+      }
+    } else {
+      if (loginOverlay) loginOverlay.style.display = 'flex';
+      if (chip) chip.style.display = 'none';
+      const pwInput = document.getElementById('loginPassword');
+      if (pwInput) pwInput.value = '';
+    }
+  }
+
+  function setupAuthControls() {
+    const form = document.getElementById('loginForm');
+    const uInput = document.getElementById('loginUserId');
+    const pInput = document.getElementById('loginPassword');
+    const errDiv = document.getElementById('loginErrorMsg');
+    const toggleBtn = document.getElementById('btnTogglePassword');
+    const logoutBtn = document.getElementById('btnLogout');
+    const mobileLogoutBtn = document.getElementById('imNavMobileLogout');
+
+    // Quick user selection buttons
+    document.querySelectorAll('.btn-quick-user').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.btn-quick-user').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (uInput) uInput.value = btn.dataset.uid;
+        if (pInput) {
+          pInput.value = '';
+          pInput.focus();
+        }
+        if (errDiv) errDiv.style.display = 'none';
+      });
+    });
+
+    // Password toggle
+    if (toggleBtn && pInput) {
+      toggleBtn.addEventListener('click', () => {
+        if (pInput.type === 'password') {
+          pInput.type = 'text';
+          toggleBtn.textContent = '🙈';
+        } else {
+          pInput.type = 'password';
+          toggleBtn.textContent = '👁️';
+        }
+      });
+    }
+
+    // Submit form
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const rawUid = (uInput?.value || '').trim();
+        const rawPass = (pInput?.value || '').trim();
+
+        if (!rawUid || !rawPass) {
+          if (errDiv) {
+            errDiv.textContent = 'Please enter both User ID and Password.';
+            errDiv.style.display = 'block';
+          }
+          return;
+        }
+
+        const matched = AUTH_USERS.find(u => 
+          u.id.toLowerCase() === rawUid.toLowerCase() && u.password === rawPass
+        );
+
+        if (matched) {
+          appState.currentUser = matched;
+          saveAuthUser(matched);
+          applyUserRole(matched);
+          if (errDiv) errDiv.style.display = 'none';
+          showToast(`Welcome back, ${matched.name}! (${matched.title})`, 'success');
+        } else {
+          if (errDiv) {
+            errDiv.textContent = '⚠️ Invalid User ID or Password. Please try again.';
+            errDiv.style.display = 'block';
+          }
+        }
+      });
+    }
+
+    // Logout handlers
+    const doLogout = () => {
+      if (confirm('Are you sure you want to log out?')) {
+        appState.currentUser = null;
+        saveAuthUser(null);
+        applyUserRole(null);
+        showToast('Logged out successfully.', 'info');
+      }
+    };
+
+    if (logoutBtn) logoutBtn.addEventListener('click', doLogout);
+    if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', doLogout);
+  }
 
   function loadSettings() {
     let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
@@ -1831,6 +2005,10 @@
   };
 
   function openAdjustModal(shapeId, colorId, sizeId) {
+    if (appState.currentUser && appState.currentUser.role === 'sales') {
+      showToast('Access restricted: Only Admin can adjust stock quantities directly.', 'warning');
+      return;
+    }
     appState.currentAdjustSku = { shapeId, colorId, sizeId };
     const shape = getShapeById(shapeId);
     const color = getColorById(colorId);
@@ -1888,6 +2066,17 @@
 
   // ================= TAB SWITCHING =================
   function switchTab(tabId) {
+    if (appState.currentUser && appState.currentUser.role === 'sales') {
+      if (tabId === 'settings') {
+        showToast('Access restricted: Only Admin has permission for Settings & Backup.', 'warning');
+        return;
+      }
+      if (tabId === 'inward') {
+        showToast('Access restricted: Only Admin can enter Factory Stock Receipts.', 'warning');
+        return;
+      }
+    }
+
     document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.side-nav .nav-item').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.indiamart-bottom-nav .im-nav-item').forEach(el => el.classList.remove('active'));
@@ -3605,6 +3794,8 @@
 
     populateDropdowns();
     renderAll();
+    setupAuthControls();
+    applyUserRole(appState.currentUser);
     setupAdjustModalControls();
     setupLowStockModalControls();
     setupNotificationModalControls();

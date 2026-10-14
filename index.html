@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=46">
+  <link rel="stylesheet" href="styles.css?v=47">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -36,6 +36,23 @@
       </div>
 
       <div class="header-actions">
+        <!-- Logged In User Profile Chip -->
+        <div id="userProfileChip" class="user-chip" style="display:none;">
+          <div class="user-chip-avatar" id="userChipAvatar">A</div>
+          <div class="user-chip-details">
+            <span id="userChipName" class="user-chip-name">Admin</span>
+            <span id="userChipRole" class="user-chip-role">ADMIN</span>
+          </div>
+          <button type="button" id="btnLogout" class="btn-user-logout" title="Sign Out">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>Logout</span>
+          </button>
+        </div>
+
         <button id="btnOpenNotificationModal" class="btn btn-secondary" title="Alerts & Reminders (Low Stock & Pending Payments)" style="display:inline-flex; align-items:center; gap:0.4rem; position:relative;">
           <span style="font-size:1.05rem; line-height:1;">🔔</span>
           <span class="btn-label">Alerts</span>
@@ -64,7 +81,7 @@
           <span class="nav-text">Wholesale Sales (Out)</span>
         </button>
         <!-- 3. Factory Stock Receipt (Inward Entry) -->
-        <button class="nav-item" data-tab="inward">
+        <button class="nav-item" data-tab="inward" data-role-required="admin">
           <span class="nav-icon">🏭</span>
           <span class="nav-text">Factory Stock Receipt (In)</span>
         </button>
@@ -79,7 +96,7 @@
           <span class="nav-text">Stock Ledger & Logs</span>
         </button>
         <!-- 6. Settings & Data Management -->
-        <button class="nav-item" data-tab="settings">
+        <button class="nav-item" data-tab="settings" data-role-required="admin">
           <span class="nav-icon">⚙️</span>
           <span class="nav-text">Settings & Backup</span>
         </button>
@@ -489,6 +506,7 @@
                   <select id="outReceivedBy" class="form-control">
                     <option value="VAIBHAV">👤 VAIBHAV</option>
                     <option value="SANJAY">👤 SANJAY</option>
+                    <option value="ASHA">👤 ASHA</option>
                   </select>
                 </div>
 
@@ -759,6 +777,44 @@
                 <div class="danger-buttons">
                   <button class="btn btn-ghost" id="btnLoadSampleData">Load Demo Samples</button>
                   <button class="btn btn-danger" id="btnResetAllData">⚠️ Clear All Stock Data</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- AUTHORIZED USERS & ACCESS ROLES CARD -->
+            <div class="settings-card">
+              <h3 class="settings-card-title">👥 Authorized User Accounts & Login</h3>
+              <p class="settings-card-desc">Active staff credentials and role-based permissions</p>
+              <div style="display:flex; flex-direction:column; gap:0.65rem; margin-top:0.75rem;">
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:0.65rem 0.85rem; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:10px;">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <span style="font-size:1.2rem;">👑</span>
+                    <div>
+                      <strong style="color:var(--text-primary); font-size:0.92rem;">Admin</strong>
+                      <div style="font-size:0.75rem; color:var(--text-secondary);">Full System & Settings Access</div>
+                    </div>
+                  </div>
+                  <span style="font-size:0.75rem; font-weight:700; color:#10b981; background:rgba(16, 185, 129, 0.12); padding:0.2rem 0.5rem; border-radius:6px;">ACTIVE</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:0.65rem 0.85rem; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:10px;">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <span style="font-size:1.2rem;">👤</span>
+                    <div>
+                      <strong style="color:var(--text-primary); font-size:0.92rem;">Sanjay (User 1)</strong>
+                      <div style="font-size:0.75rem; color:var(--text-secondary);">Sales & Stock View Access</div>
+                    </div>
+                  </div>
+                  <span style="font-size:0.75rem; font-weight:700; color:#2563eb; background:rgba(37, 99, 235, 0.12); padding:0.2rem 0.5rem; border-radius:6px;">ACTIVE</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:0.65rem 0.85rem; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:10px;">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <span style="font-size:1.2rem;">👤</span>
+                    <div>
+                      <strong style="color:var(--text-primary); font-size:0.92rem;">Asha (User 2)</strong>
+                      <div style="font-size:0.75rem; color:var(--text-secondary);">Sales & Stock View Access</div>
+                    </div>
+                  </div>
+                  <span style="font-size:0.75rem; font-weight:700; color:#2563eb; background:rgba(37, 99, 235, 0.12); padding:0.2rem 0.5rem; border-radius:6px;">ACTIVE</span>
                 </div>
               </div>
             </div>
@@ -1174,6 +1230,7 @@
                 <select id="editInvReceivedBy" class="form-control form-control-sm">
                   <option value="VAIBHAV">👤 VAIBHAV</option>
                   <option value="SANJAY">👤 SANJAY</option>
+                  <option value="ASHA">👤 ASHA</option>
                 </select>
               </div>
               <div class="form-group full-width">
@@ -1383,7 +1440,7 @@
         </button>
 
         <!-- 3. STOCK IN (Factory Stock Receipt - Factory Icon Matching Photo 1) -->
-        <button type="button" class="im-nav-item" data-tab="inward" id="imNavStockIn" title="STOCK IN (Factory Stock Receipt)">
+        <button type="button" class="im-nav-item" data-tab="inward" id="imNavStockIn" data-role-required="admin" title="STOCK IN (Factory Stock Receipt)">
           <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="22" height="22">
             <path d="M2 20h20V9l-5.5 3V8l-5.5 3V4L2 8.5v11.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="6.5" cy="15" r="1" fill="currentColor"/>
@@ -1418,12 +1475,22 @@
         </button>
 
         <!-- 6. Settings (Settings & Backup - Gear Icon Matching Photo 1) -->
-        <button type="button" class="im-nav-item" data-tab="settings" id="imNavSettings" title="Settings & Data Management">
+        <button type="button" class="im-nav-item" data-tab="settings" id="imNavSettings" data-role-required="admin" title="Settings & Data Management">
           <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="22" height="22">
             <circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33 1.82H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <span class="im-nav-label">Settings</span>
+        </button>
+
+        <!-- 7. Mobile Logout for Sales Users -->
+        <button type="button" class="im-nav-item" id="imNavMobileLogout" data-role-required="sales" title="Sign Out">
+          <svg class="im-icon" viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span class="im-nav-label">Logout</span>
         </button>
       </div>
 
@@ -1436,7 +1503,59 @@
 
   </div>
 
+  <!-- ================= LOGIN AUTHENTICATION OVERLAY ================= -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+      <div class="login-brand-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+      </div>
+      <h2 class="login-brand-title">GALLOPS STOCK</h2>
+      <p class="login-brand-sub">Select your user ID & enter password to sign in</p>
+
+      <!-- Quick User Selector Buttons -->
+      <div class="login-quick-users">
+        <button type="button" class="btn-quick-user" data-uid="Admin">
+          <span>👑</span>
+          <span>Admin</span>
+        </button>
+        <button type="button" class="btn-quick-user" data-uid="Sanjay">
+          <span>👤</span>
+          <span>Sanjay</span>
+        </button>
+        <button type="button" class="btn-quick-user" data-uid="Asha">
+          <span>👤</span>
+          <span>Asha</span>
+        </button>
+      </div>
+
+      <form id="loginForm" autocomplete="off" onsubmit="return false;">
+        <div class="login-field-wrap">
+          <label class="login-label" for="loginUserId">User ID / Username</label>
+          <div class="login-input-row">
+            <input type="text" id="loginUserId" class="login-input" placeholder="Admin, Sanjay, or Asha" required autocomplete="username" />
+          </div>
+        </div>
+
+        <div class="login-field-wrap">
+          <label class="login-label" for="loginPassword">PIN / Password</label>
+          <div class="login-input-row">
+            <input type="password" id="loginPassword" class="login-input" placeholder="Enter password" required autocomplete="current-password" />
+            <button type="button" id="btnTogglePassword" class="btn-pw-toggle" title="Show/Hide Password">👁️</button>
+          </div>
+        </div>
+
+        <div id="loginErrorMsg" class="login-error-msg"></div>
+
+        <button type="submit" id="btnLoginSubmit" class="btn-login-submit">Sign In 🔒</button>
+      </form>
+    </div>
+  </div>
+
   <script src="html2pdf.bundle.min.js"></script>
-  <script src="app.js?v=46"></script>
+  <script src="app.js?v=47"></script>
 </body>
 </html>
