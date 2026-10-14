@@ -22,7 +22,7 @@
   const DEFAULT_SHAPES = [
     { id: 'GALLOPS_CUP', name: 'Gallops Cup', icon: '🏆', colors: ['PINK'] },
     { id: 'REGULAR', name: 'Regular Shape', icon: '🌸', colors: ['PINK', 'BLUE', 'PURPLE'] },
-    { id: 'BELL', name: 'Bell Shape', icon: '🔔', colors: ['PINK', 'BLUE', 'PURPLE'] },
+    { id: 'BELL', name: 'Bell Shape', icon: '🔔', colors: ['PINK'] },
     { id: 'LSR', name: 'LSR', icon: '💎', colors: ['WHITE'] },
     { id: 'SINGLE_FOLD', name: 'Single Fold', icon: '📐', colors: ['PINK'] },
     { id: 'MULTI_FOLD', name: 'Multi Fold', icon: '🥏', colors: ['PINK'] },
@@ -139,16 +139,10 @@
     'REGULAR_PURPLE_M': 0,
     'REGULAR_PURPLE_L': 0,
 
-    // 3. BELL SHAPE
+    // 3. BELL SHAPE (Pink Only)
     'BELL_PINK_S': 0,
     'BELL_PINK_M': 0,
     'BELL_PINK_L': 0,
-    'BELL_BLUE_S': 0,
-    'BELL_BLUE_M': 0,
-    'BELL_BLUE_L': 0,
-    'BELL_PURPLE_S': 0,
-    'BELL_PURPLE_M': 0,
-    'BELL_PURPLE_L': 0,
 
     // 4. LSR (Only White Available)
     'LSR_WHITE_S': 0,
@@ -327,7 +321,13 @@
     } catch (e) {
       console.warn('Error loading stock', e);
     }
-    // Clean up deleted variations (Single Fold & Multi Fold Blue/Purple, LSR non-white)
+    // Clean up deleted variations (Single Fold & Multi Fold Blue/Purple, Bell Blue/Purple, LSR non-white)
+    delete stock['BELL_BLUE_S'];
+    delete stock['BELL_BLUE_M'];
+    delete stock['BELL_BLUE_L'];
+    delete stock['BELL_PURPLE_S'];
+    delete stock['BELL_PURPLE_M'];
+    delete stock['BELL_PURPLE_L'];
     delete stock['SINGLE_FOLD_BLUE_S'];
     delete stock['SINGLE_FOLD_BLUE_M'];
     delete stock['SINGLE_FOLD_BLUE_L'];
@@ -3581,6 +3581,26 @@
       });
       saveStock();
       localStorage.setItem(STOCK_ZERO_RESET_FLAG, 'true');
+    }
+
+    // Clean up Bell Shape Blue & Purple colors
+    const BELL_COLORS_CLEANUP_FLAG = 'gallops_bell_pink_only_v46';
+    if (!localStorage.getItem(BELL_COLORS_CLEANUP_FLAG)) {
+      const bellShape = appState.settings.shapes.find(s => s.id === 'BELL');
+      if (bellShape) {
+        bellShape.colors = ['PINK'];
+      }
+      if (appState.stock) {
+        delete appState.stock['BELL_BLUE_S'];
+        delete appState.stock['BELL_BLUE_M'];
+        delete appState.stock['BELL_BLUE_L'];
+        delete appState.stock['BELL_PURPLE_S'];
+        delete appState.stock['BELL_PURPLE_M'];
+        delete appState.stock['BELL_PURPLE_L'];
+      }
+      saveSettings();
+      saveStock();
+      localStorage.setItem(BELL_COLORS_CLEANUP_FLAG, 'true');
     }
 
     populateDropdowns();
