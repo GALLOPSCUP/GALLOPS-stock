@@ -574,9 +574,22 @@
           renderAll();
           isReceivingRemoteUpdate = false;
           updateSyncStatus('online', 'Cloud Live');
-          return true;
         } else if (appState.currentUser?.role === 'admin' && Object.keys(appState.stock).length > 0) {
           pushStockToCloudRest();
+        }
+      }
+
+      // Also sync transactions
+      const txRes = await fetch(`${RTDB_URL}/gallops_transactions.json?t=${Date.now()}`);
+      if (txRes.ok) {
+        const cloudTxns = await txRes.json();
+        if (Array.isArray(cloudTxns)) {
+          isReceivingRemoteUpdate = true;
+          appState.transactions = cloudTxns;
+          localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(appState.transactions));
+          renderRecentTransactions();
+          renderLedgerTable();
+          isReceivingRemoteUpdate = false;
         }
       }
     } catch (e) {
@@ -597,6 +610,18 @@
       }
     } catch (e) {
       console.warn('REST push error', e);
+    }
+  }
+
+  async function pushTransactionsToCloudRest() {
+    try {
+      await fetch(`${RTDB_URL}/gallops_transactions.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(appState.transactions || [])
+      });
+    } catch (e) {
+      console.warn('REST push txns error', e);
     }
   }
 
@@ -699,6 +724,7 @@
   }
 
   function syncTransactionsToCloud() {
+    pushTransactionsToCloudRest();
     if (firebaseDb && !isReceivingRemoteUpdate) {
       try {
         firebaseDb.ref('gallops_transactions').set(appState.transactions);
@@ -3918,20 +3944,12 @@
   function init() {
     setupThemeSystem();
 
-    // Ensure legacy sample/demo transactions are cleared so user starts with a clean slate
-    const DEMO_CLEARED_FLAG = 'gallops_demo_txns_cleared_v36';
-    if (!localStorage.getItem(DEMO_CLEARED_FLAG)) {
-      const demoIds = ['TXN-1001', 'TXN-1002', 'TXN-1003', 'TXN-1004'];
-      appState.transactions = (appState.transactions || []).filter(t => 
-        !demoIds.includes(t.id) &&
-        t.reference !== 'LOT-5983' &&
-        t.reference !== 'LOT-5743' &&
-        !(t.partyName === 'Supreme Silicone Molds Ltd' && (t.reference === 'INV-4402' || t.reference === 'CHALLAN-901')) &&
-        !(t.partyName === 'Aarav Surgical & Pharmacy, Delhi') &&
-        !(t.partyName === 'Femina Care Wholesale, Bangalore')
-      );
+    // Clear all transactions completely so user starts with a 100% clean ledger
+    const ALL_TXNS_CLEARED_FLAG = 'gallops_all_txns_cleared_v52';
+    if (!localStorage.getItem(ALL_TXNS_CLEARED_FLAG)) {
+      appState.transactions = [];
       saveTransactions();
-      localStorage.setItem(DEMO_CLEARED_FLAG, 'true');
+      localStorage.setItem(ALL_TXNS_CLEARED_FLAG, 'true');
     }
 
     // Reset all stock counts to 0 so user can manually enter real inventory
