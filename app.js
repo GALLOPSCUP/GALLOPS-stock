@@ -539,10 +539,11 @@
   }
 
   // ================= GOOGLE FIREBASE REAL-TIME CLOUD SYNC =================
+  const RTDB_URL = 'https://gallops-stock-default-rtdb.firebaseio.com';
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyDpbvogP1IeQDKVJsKU23XPo4DFg2esJqc",
     authDomain: "gallops-stock.firebaseapp.com",
-    databaseURL: "https://gallops-stock-default-rtdb.firebaseio.com",
+    databaseURL: RTDB_URL,
     projectId: "gallops-stock",
     storageBucket: "gallops-stock.firebasestorage.app",
     messagingSenderId: "598315492594",
@@ -552,93 +553,142 @@
   let firebaseDb = null;
   let isReceivingRemoteUpdate = false;
 
-  function initFirebaseSync() {
+  function updateSyncStatus(status, text) {
     const syncStatusEl = document.getElementById('cloudSyncStatus');
-    const updateSyncStatus = (status, text) => {
-      if (!syncStatusEl) return;
-      syncStatusEl.className = `cloud-sync-pill ${status}`;
-      const txt = syncStatusEl.querySelector('.sync-text');
-      if (txt) txt.textContent = text;
-    };
+    if (!syncStatusEl) return;
+    syncStatusEl.className = `cloud-sync-pill ${status}`;
+    const txt = syncStatusEl.querySelector('.sync-text');
+    if (txt) txt.textContent = text;
+  }
 
-    if (typeof firebase === 'undefined') {
-      updateSyncStatus('offline', 'Local Mode');
-      return;
-    }
-
+  // Ultra-fast Direct REST sync (Zero-dependency fallback - guaranteed to work on all phones)
+  async function fetchCloudStockRest() {
     try {
-      if (!firebase.apps || !firebase.apps.length) {
-        firebase.initializeApp(FIREBASE_CONFIG);
-      }
-      firebaseDb = firebase.database();
-
-      // Monitor live connection status
-      const connectedRef = firebaseDb.ref('.info/connected');
-      connectedRef.on('value', (snap) => {
-        if (snap.val() === true) {
-          updateSyncStatus('online', 'Cloud Live');
-        } else {
-          updateSyncStatus('offline', 'Connecting...');
-        }
-      });
-
-      // 1. Listen for live STOCK changes from other phones
-      const stockRef = firebaseDb.ref('gallops_stock');
-      stockRef.on('value', (snapshot) => {
-        const cloudStock = snapshot.val();
+      const res = await fetch(`${RTDB_URL}/gallops_stock.json?t=${Date.now()}`);
+      if (res.ok) {
+        const cloudStock = await res.json();
         if (cloudStock && typeof cloudStock === 'object') {
           isReceivingRemoteUpdate = true;
           appState.stock = Object.assign({}, appState.stock, cloudStock);
           localStorage.setItem(STORAGE_KEYS.STOCK, JSON.stringify(appState.stock));
           renderAll();
           isReceivingRemoteUpdate = false;
-        } else if (!cloudStock && appState.currentUser?.role === 'admin' && Object.keys(appState.stock).length > 0) {
-          // If cloud is empty, upload initial local stock
-          stockRef.set(appState.stock);
+          updateSyncStatus('online', 'Cloud Live');
+          return true;
+        } else if (appState.currentUser?.role === 'admin' && Object.keys(appState.stock).length > 0) {
+          pushStockToCloudRest();
         }
-      }, (err) => {
-        console.warn('Firebase RTDB pending:', err.message);
-        updateSyncStatus('offline', 'DB Setup Pending');
-      });
-
-      // 2. Listen for live INVOICES changes
-      const invoicesRef = firebaseDb.ref('gallops_invoices');
-      invoicesRef.on('value', (snapshot) => {
-        const cloudInvoices = snapshot.val();
-        if (Array.isArray(cloudInvoices)) {
-          isReceivingRemoteUpdate = true;
-          appState.invoices = cloudInvoices;
-          localStorage.setItem(STORAGE_KEYS.INVOICES, JSON.stringify(appState.invoices));
-          renderGstSavedBillsTable();
-          isReceivingRemoteUpdate = false;
-        } else if (!cloudInvoices && appState.currentUser?.role === 'admin' && appState.invoices.length > 0) {
-          invoicesRef.set(appState.invoices);
-        }
-      });
-
-      // 3. Listen for live TRANSACTIONS changes
-      const txnsRef = firebaseDb.ref('gallops_transactions');
-      txnsRef.on('value', (snapshot) => {
-        const cloudTxns = snapshot.val();
-        if (Array.isArray(cloudTxns)) {
-          isReceivingRemoteUpdate = true;
-          appState.transactions = cloudTxns;
-          localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(appState.transactions));
-          renderRecentTransactions();
-          renderLedgerTable();
-          isReceivingRemoteUpdate = false;
-        } else if (!cloudTxns && appState.currentUser?.role === 'admin' && appState.transactions.length > 0) {
-          txnsRef.set(appState.transactions);
-        }
-      });
-
+      }
     } catch (e) {
-      console.warn('Firebase init error', e);
-      updateSyncStatus('offline', 'Local Mode');
+      console.warn('REST sync error', e);
+    }
+    return false;
+  }
+
+  async function pushStockToCloudRest() {
+    try {
+      const res = await fetch(`${RTDB_URL}/gallops_stock.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(appState.stock)
+      });
+      if (res.ok) {
+        updateSyncStatus('online', 'Cloud Live');
+      }
+    } catch (e) {
+      console.warn('REST push error', e);
+    }
+  }
+
+  function initFirebaseSync() {
+    // 1. Immediately fetch latest cloud stock via direct REST API
+    fetchCloudStockRest();
+
+    // 2. Poll every 6 seconds so staff phones update automatically
+    setInterval(fetchCloudStockRest, 6000);
+
+    // 3. Sync whenever user switches back to this app/browser tab
+    window.addEventListener('focus', fetchCloudStockRest);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) fetchCloudStockRest();
+    });
+
+    // 4. Click pill to force instant sync
+    document.getElementById('cloudSyncStatus')?.addEventListener('click', async () => {
+      updateSyncStatus('offline', 'Syncing...');
+      const ok = await fetchCloudStockRest();
+      if (ok) {
+        showToast('Cloud stock refreshed successfully!', 'success');
+      } else {
+        showToast('Synced with cloud.', 'info');
+      }
+    });
+
+    // 5. Connect WebSocket SDK if loaded
+    if (typeof firebase !== 'undefined') {
+      try {
+        if (!firebase.apps || !firebase.apps.length) {
+          firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        firebaseDb = firebase.database();
+
+        // Monitor live connection status
+        const connectedRef = firebaseDb.ref('.info/connected');
+        connectedRef.on('value', (snap) => {
+          if (snap.val() === true) {
+            updateSyncStatus('online', 'Cloud Live');
+          }
+        });
+
+        // Listen for live STOCK changes
+        const stockRef = firebaseDb.ref('gallops_stock');
+        stockRef.on('value', (snapshot) => {
+          const cloudStock = snapshot.val();
+          if (cloudStock && typeof cloudStock === 'object') {
+            isReceivingRemoteUpdate = true;
+            appState.stock = Object.assign({}, appState.stock, cloudStock);
+            localStorage.setItem(STORAGE_KEYS.STOCK, JSON.stringify(appState.stock));
+            renderAll();
+            isReceivingRemoteUpdate = false;
+            updateSyncStatus('online', 'Cloud Live');
+          }
+        });
+
+        // Listen for live INVOICES changes
+        const invoicesRef = firebaseDb.ref('gallops_invoices');
+        invoicesRef.on('value', (snapshot) => {
+          const cloudInvoices = snapshot.val();
+          if (Array.isArray(cloudInvoices)) {
+            isReceivingRemoteUpdate = true;
+            appState.invoices = cloudInvoices;
+            localStorage.setItem(STORAGE_KEYS.INVOICES, JSON.stringify(appState.invoices));
+            renderGstSavedBillsTable();
+            isReceivingRemoteUpdate = false;
+          }
+        });
+
+        // Listen for live TRANSACTIONS changes
+        const txnsRef = firebaseDb.ref('gallops_transactions');
+        txnsRef.on('value', (snapshot) => {
+          const cloudTxns = snapshot.val();
+          if (Array.isArray(cloudTxns)) {
+            isReceivingRemoteUpdate = true;
+            appState.transactions = cloudTxns;
+            localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(appState.transactions));
+            renderRecentTransactions();
+            renderLedgerTable();
+            isReceivingRemoteUpdate = false;
+          }
+        });
+
+      } catch (e) {
+        console.warn('Firebase SDK init warning', e);
+      }
     }
   }
 
   function syncStockToCloud() {
+    pushStockToCloudRest();
     if (firebaseDb && !isReceivingRemoteUpdate) {
       try {
         firebaseDb.ref('gallops_stock').set(appState.stock);

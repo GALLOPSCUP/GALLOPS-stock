@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="styles.css?v=50">
+  <link rel="stylesheet" href="styles.css?v=51">
 </head>
 <body class="theme-light">
   <div id="app" class="app-container">
@@ -37,10 +37,10 @@
 
       <div class="header-actions">
         <!-- Live Cloud Sync Status Pill -->
-        <div id="cloudSyncStatus" class="cloud-sync-pill" title="Real-time Multi-Device Stock Sync">
+        <button type="button" id="cloudSyncStatus" class="cloud-sync-pill" title="Tap to Sync Cloud Stock" style="cursor:pointer; background:none;">
           <span class="sync-dot"></span>
           <span class="sync-text">Cloud Sync</span>
-        </div>
+        </button>
 
         <!-- Logged In User Profile Chip -->
         <div id="userProfileChip" class="user-chip" style="display:none;">
@@ -1549,6 +1549,6 @@
   <!-- Firebase Realtime Database SDK for Real-time Multi-Device Sync -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="app.js?v=50"></script>
+  <script src="app.js?v=51"></script>
 </body>
 </html>
