@@ -3158,6 +3158,57 @@ body.role-admin [data-role-required="sales"] {
   display: none !important;
 }
 
+/* Cloud Database Real-time Sync Status Pill */
+.cloud-sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  user-select: none;
+  transition: all 0.25s ease;
+}
+
+.cloud-sync-pill.offline {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.cloud-sync-pill.error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.cloud-sync-pill .sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.85); }
+}
+
+@media (max-width: 600px) {
+  .cloud-sync-pill .sync-text {
+    display: none;
+  }
+  .cloud-sync-pill {
+    padding: 0.3rem 0.45rem;
+  }
+}
+
+
 /* ================= PRINT STYLESHEET ================= */
 @media print {
   @page {
