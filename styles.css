@@ -1291,6 +1291,16 @@ body.theme-dark .tag-pending {
   background: rgba(239, 68, 68, 0.08);
 }
 
+.matrix-cell-na {
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.85rem 0.5rem;
+  user-select: none;
+  opacity: 0.55;
+}
+
 .matrix-cell-qty {
   font-size: 1.45rem;
   font-weight: 800;

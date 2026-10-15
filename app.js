@@ -54,7 +54,7 @@
     { id: 'BELL', name: 'Bell Shape', icon: '🔔', colors: ['PINK'] },
     { id: 'LSR', name: 'LSR', icon: '💎', colors: ['WHITE'] },
     { id: 'SINGLE_FOLD', name: 'Single Fold', icon: '📐', colors: ['PINK'] },
-    { id: 'MULTI_FOLD', name: 'Multi Fold', icon: '🥏', colors: ['PINK'] },
+    { id: 'MULTI_FOLD', name: 'Multi Fold', icon: '🥏', colors: ['PINK'], sizes: ['S', 'L'] },
     { id: 'BOX', name: 'Box', icon: '📦', colors: ['PRINTED'] }
   ];
 
@@ -111,7 +111,6 @@
     'MULTI_FOLD': {
       sizes: {
         'S': { lowLimit: 10, cost: 42, sell: 90 },
-        'M': { lowLimit: 10, cost: 45, sell: 95 },
         'L': { lowLimit: 10, cost: 48, sell: 100 }
       }
     },
@@ -183,9 +182,8 @@
     'SINGLE_FOLD_PINK_M': 0,
     'SINGLE_FOLD_PINK_L': 0,
 
-    // 6. MULTI FOLD (Pink Only)
+    // 6. MULTI FOLD (Pink Only - Small & Large Only)
     'MULTI_FOLD_PINK_S': 0,
-    'MULTI_FOLD_PINK_M': 0,
     'MULTI_FOLD_PINK_L': 0,
 
     // 7. BOX (Packaging Box: Small, Medium, Large)
@@ -403,7 +401,8 @@
           pref.sizes[sz.id] = { lowLimit: fallbackLow, cost: fallbackCost, sell: fallbackSell };
         });
       } else {
-        settings.sizes.forEach(sz => {
+        const shapeSizes = (shape.sizes && Array.isArray(shape.sizes)) ? settings.sizes.filter(s => shape.sizes.includes(s.id)) : (shapeId === 'MULTI_FOLD' ? settings.sizes.filter(s => s.id !== 'M') : settings.sizes);
+        shapeSizes.forEach(sz => {
           if (!pref.sizes[sz.id]) {
             const defSz = DEFAULT_SHAPE_PREFERENCES[shapeId]?.sizes?.[sz.id] || { lowLimit: 50, cost: 45, sell: 95 };
             pref.sizes[sz.id] = { ...defSz };
@@ -411,6 +410,10 @@
         });
       }
     });
+
+    if (settings.shapePreferences && settings.shapePreferences['MULTI_FOLD'] && settings.shapePreferences['MULTI_FOLD'].sizes) {
+      delete settings.shapePreferences['MULTI_FOLD'].sizes['M'];
+    }
 
     return settings;
   }
@@ -469,15 +472,27 @@
     return 95;
   }
 
-  function getShapeLowLimit(shapeId, sizeId = 'M') {
+  function getShapeLowLimit(shapeId, sizeId) {
+    if (!sizeId) {
+      const sizes = getSizesForShape(shapeId);
+      sizeId = sizes[0]?.id || 'S';
+    }
     return getShapeSizeLowLimit(shapeId, sizeId);
   }
 
-  function getShapeCostPrice(shapeId, sizeId = 'M') {
+  function getShapeCostPrice(shapeId, sizeId) {
+    if (!sizeId) {
+      const sizes = getSizesForShape(shapeId);
+      sizeId = sizes[0]?.id || 'S';
+    }
     return getShapeSizeCostPrice(shapeId, sizeId);
   }
 
-  function getShapeSellPrice(shapeId, sizeId = 'M') {
+  function getShapeSellPrice(shapeId, sizeId) {
+    if (!sizeId) {
+      const sizes = getSizesForShape(shapeId);
+      sizeId = sizes[0]?.id || 'S';
+    }
     return getShapeSizeSellPrice(shapeId, sizeId);
   }
 
@@ -514,6 +529,7 @@
     delete stock['MULTI_FOLD_PURPLE_S'];
     delete stock['MULTI_FOLD_PURPLE_M'];
     delete stock['MULTI_FOLD_PURPLE_L'];
+    delete stock['MULTI_FOLD_PINK_M'];
     delete stock['LSR_PINK_S'];
     delete stock['LSR_PINK_M'];
     delete stock['LSR_PINK_L'];
@@ -568,8 +584,10 @@
       if (res.ok) {
         const cloudStock = await res.json();
         if (cloudStock && typeof cloudStock === 'object') {
+          delete cloudStock['MULTI_FOLD_PINK_M'];
           isReceivingRemoteUpdate = true;
           appState.stock = Object.assign({}, appState.stock, cloudStock);
+          delete appState.stock['MULTI_FOLD_PINK_M'];
           localStorage.setItem(STORAGE_KEYS.STOCK, JSON.stringify(appState.stock));
           renderAll();
           isReceivingRemoteUpdate = false;
@@ -670,8 +688,10 @@
         stockRef.on('value', (snapshot) => {
           const cloudStock = snapshot.val();
           if (cloudStock && typeof cloudStock === 'object') {
+            delete cloudStock['MULTI_FOLD_PINK_M'];
             isReceivingRemoteUpdate = true;
             appState.stock = Object.assign({}, appState.stock, cloudStock);
+            delete appState.stock['MULTI_FOLD_PINK_M'];
             localStorage.setItem(STORAGE_KEYS.STOCK, JSON.stringify(appState.stock));
             renderAll();
             isReceivingRemoteUpdate = false;
@@ -904,6 +924,28 @@
     return DEFAULT_COLORS.filter(c => allowed.includes(c.id));
   }
 
+  function getSizesForShape(shapeId) {
+    const shape = getShapeById(shapeId);
+    if (shape && Array.isArray(shape.sizes) && shape.sizes.length > 0) {
+      return appState.settings.sizes.filter(s => shape.sizes.includes(s.id));
+    }
+    if (shapeId === 'MULTI_FOLD') {
+      return appState.settings.sizes.filter(s => s.id !== 'M');
+    }
+    return appState.settings.sizes;
+  }
+
+  function isSizeApplicableForShape(shapeId, sizeId) {
+    const shape = getShapeById(shapeId);
+    if (shape && Array.isArray(shape.sizes) && shape.sizes.length > 0) {
+      return shape.sizes.includes(sizeId);
+    }
+    if (shapeId === 'MULTI_FOLD' && sizeId === 'M') {
+      return false;
+    }
+    return true;
+  }
+
   // ================= TOAST SYSTEM =================
   function showToast(message, type = 'success') {
     const container = document.getElementById('toastContainer');
@@ -952,8 +994,9 @@
 
     if (filterColor) filterColor.innerHTML = '<option value="ALL">All Colors</option>' + allColorOptions;
 
-    // Populate shape-specific color dropdowns
+    // Populate shape-specific color and size dropdowns
     updateColorDropdowns();
+    updateSizeDropdowns();
 
     // Set today's date in date inputs
     const today = new Date().toISOString().split('T')[0];
@@ -996,6 +1039,35 @@
     }
   }
 
+  function updateSizeDropdowns() {
+    const inShape = document.getElementById('inShape');
+    const outShape = document.getElementById('outShape');
+    const inSize = document.getElementById('inSize');
+    const outSize = document.getElementById('outSize');
+
+    if (inShape && inSize) {
+      const sizes = getSizesForShape(inShape.value);
+      const prevVal = inSize.value;
+      inSize.innerHTML = sizes.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      if (sizes.some(s => s.id === prevVal)) {
+        inSize.value = prevVal;
+      } else if (sizes.length > 0) {
+        inSize.value = sizes[0].id;
+      }
+    }
+
+    if (outShape && outSize) {
+      const sizes = getSizesForShape(outShape.value);
+      const prevVal = outSize.value;
+      outSize.innerHTML = sizes.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      if (sizes.some(s => s.id === prevVal)) {
+        outSize.value = prevVal;
+      } else if (sizes.length > 0) {
+        outSize.value = sizes[0].id;
+      }
+    }
+  }
+
   function updateOutwardStockHint() {
     const outShape = document.getElementById('outShape');
     const outColor = document.getElementById('outColor');
@@ -1034,7 +1106,7 @@
       const colors = getColorsForShape(shape.id);
 
       colors.forEach(color => {
-        appState.settings.sizes.forEach(size => {
+        getSizesForShape(shape.id).forEach(size => {
           const qty = getStockQty(shape.id, color.id, size.id);
           const sizeCost = getShapeSizeCostPrice(shape.id, size.id);
           const sizeSell = getShapeSizeSellPrice(shape.id, size.id);
@@ -1556,8 +1628,9 @@
 
       colors.forEach(color => {
         let sizesColsHtml = '';
+        const shapeSizes = getSizesForShape(shape.id);
 
-        appState.settings.sizes.forEach(size => {
+        shapeSizes.forEach(size => {
           const qty = getStockQty(shape.id, color.id, size.id);
           const sizeLowLimit = getShapeSizeLowLimit(shape.id, size.id);
           const isLow = qty < sizeLowLimit;
@@ -1587,7 +1660,7 @@
               <span class="cg-color-dot" style="background-color: ${color.hex}; ${color.id === 'WHITE' ? 'border: 1px solid #94a3b8;' : ''}"></span>
               <span class="cg-color-name">${color.name.toUpperCase()}</span>
             </div>
-            <div class="cg-sizes-grid">
+            <div class="cg-sizes-grid" style="grid-template-columns: repeat(${shapeSizes.length}, minmax(0, 1fr));">
               ${sizesColsHtml}
             </div>
           </div>
@@ -1734,6 +1807,15 @@
         let rowLowLimitSum = 0;
 
         appState.settings.sizes.forEach(size => {
+          if (!isSizeApplicableForShape(shape.id, size.id)) {
+            cellsHtml += `
+              <td style="background: rgba(148, 163, 184, 0.08); vertical-align: middle;">
+                <div class="matrix-cell-na" title="${size.name} not available for ${shape.name}">—</div>
+              </td>
+            `;
+            return;
+          }
+
           const qty = getStockQty(shape.id, color.id, size.id);
           const sizeLowLimit = getShapeSizeLowLimit(shape.id, size.id);
           rowTotal += qty;
@@ -1839,7 +1921,7 @@
       const colors = getColorsForShape(shape.id);
 
       colors.forEach(color => {
-        appState.settings.sizes.forEach(size => {
+        getSizesForShape(shape.id).forEach(size => {
           const qty = getStockQty(shape.id, color.id, size.id);
           const sizeCost = getShapeSizeCostPrice(shape.id, size.id);
           const sizeLowLimit = getShapeSizeLowLimit(shape.id, size.id);
@@ -2325,13 +2407,16 @@
       const cL = getShapeSizeCostPrice(shape.id, 'L');
 
       colors.forEach(color => {
+        const hasM = isSizeApplicableForShape(shape.id, 'M');
         const qS = getStockQty(shape.id, color.id, 'S');
-        const qM = getStockQty(shape.id, color.id, 'M');
+        const qM = hasM ? getStockQty(shape.id, color.id, 'M') : 0;
         const qL = getStockQty(shape.id, color.id, 'L');
         const total = qS + qM + qL;
-        const val = (qS * cS) + (qM * cM) + (qL * cL);
+        const val = (qS * cS) + (hasM ? (qM * cM) : 0) + (qL * cL);
+        const mCol = hasM ? qM : '-';
+        const rateCol = hasM ? `S:₹${cS} M:₹${cM} L:₹${cL}` : `S:₹${cS} L:₹${cL}`;
 
-        csv += `"${shape.name}","${color.name}",${qS},${qM},${qL},${total},"S:₹${cS} M:₹${cM} L:₹${cL}",${val}\n`;
+        csv += `"${shape.name}","${color.name}",${qS},${mCol},${qL},${total},"${rateCol}",${val}\n`;
       });
     });
 
@@ -2422,11 +2507,12 @@
     if (!tbody) return;
 
     let rowsHtml = '';
-    const sizes = appState.settings.sizes;
-    const firstSizeId = sizes[0]?.id || 'S';
 
     appState.settings.shapes.forEach((shape, shapeIdx) => {
       const isStandardShape = DEFAULT_SHAPES.some(d => d.id === shape.id);
+      const sizes = getSizesForShape(shape.id);
+      const firstSizeId = sizes[0]?.id || 'S';
+
       sizes.forEach((sz, szIdx) => {
         const isFirst = szIdx === 0;
         const lowLimit = getShapeSizeLowLimit(shape.id, sz.id);
@@ -4006,6 +4092,28 @@
       localStorage.setItem(BELL_COLORS_CLEANUP_FLAG, 'true');
     }
 
+    // Purge Multi Fold Medium size (only Small and Large available)
+    const MULTI_FOLD_SL_ONLY_FLAG = 'gallops_multifold_sl_only_v54';
+    if (!localStorage.getItem(MULTI_FOLD_SL_ONLY_FLAG)) {
+      const mfShape = appState.settings.shapes.find(s => s.id === 'MULTI_FOLD');
+      if (mfShape) {
+        mfShape.sizes = ['S', 'L'];
+      }
+      if (appState.stock) {
+        delete appState.stock['MULTI_FOLD_PINK_M'];
+      }
+      if (appState.settings.shapePreferences && appState.settings.shapePreferences['MULTI_FOLD']?.sizes) {
+        delete appState.settings.shapePreferences['MULTI_FOLD'].sizes['M'];
+      }
+      if (Array.isArray(appState.transactions)) {
+        appState.transactions = appState.transactions.filter(t => !(t.shapeId === 'MULTI_FOLD' && t.sizeId === 'M'));
+      }
+      saveSettings();
+      saveStock();
+      saveTransactions();
+      localStorage.setItem(MULTI_FOLD_SL_ONLY_FLAG, 'true');
+    }
+
     populateDropdowns();
     renderAll();
     setupAuthControls();
@@ -4045,6 +4153,7 @@
     // Dynamic color, price and stock hints when changing dropdowns
     document.getElementById('inShape')?.addEventListener('change', () => {
       updateColorDropdowns();
+      updateSizeDropdowns();
       const inShapeEl = document.getElementById('inShape');
       const inSizeEl = document.getElementById('inSize');
       const inCostPrice = document.getElementById('inCostPrice');
@@ -4060,6 +4169,7 @@
 
     document.getElementById('outShape')?.addEventListener('change', () => {
       updateColorDropdowns();
+      updateSizeDropdowns();
       const outShapeEl = document.getElementById('outShape');
       const outSizeEl = document.getElementById('outSize');
       const outSellPrice = document.getElementById('outSellPrice');
