@@ -770,6 +770,13 @@
             localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(filtered));
             return filtered;
           }
+          // Fix any transactions where user entered 0 cost but was defaulted to 45
+          txns.forEach(t => {
+            if (t.shapeId === 'MULTI_FOLD' && t.type === 'IN' && (t.reference === 'LOT-4425' || t.reference === 'LOT-2624')) {
+              t.rate = 0;
+              t.total = 0;
+            }
+          });
           return txns;
         }
       }
@@ -2043,7 +2050,10 @@
     const colorId = document.getElementById('inColor').value;
     const sizeId = document.getElementById('inSize').value;
     const quantity = parseInt(document.getElementById('inQuantity').value, 10);
-    const rate = parseFloat(document.getElementById('inCostPrice').value) || getShapeSizeCostPrice(shapeId, sizeId);
+    const rawCostVal = document.getElementById('inCostPrice')?.value?.trim();
+    const rate = (rawCostVal !== '' && rawCostVal !== undefined && !isNaN(parseFloat(rawCostVal)))
+      ? Math.max(0, parseFloat(rawCostVal))
+      : getShapeSizeCostPrice(shapeId, sizeId);
     const date = document.getElementById('inDate').value;
     const batchNumber = document.getElementById('inBatchNumber').value.trim();
     const supplier = document.getElementById('inSupplierName').value.trim();
@@ -2095,7 +2105,10 @@
     const colorId = document.getElementById('outColor').value;
     const sizeId = document.getElementById('outSize').value;
     const quantity = parseInt(document.getElementById('outQuantity').value, 10);
-    const rate = parseFloat(document.getElementById('outSellPrice').value) || getShapeSizeSellPrice(shapeId, sizeId);
+    const rawSellVal = document.getElementById('outSellPrice')?.value?.trim();
+    const rate = (rawSellVal !== '' && rawSellVal !== undefined && !isNaN(parseFloat(rawSellVal)))
+      ? Math.max(0, parseFloat(rawSellVal))
+      : getShapeSizeSellPrice(shapeId, sizeId);
     const date = document.getElementById('outDate').value;
     const buyerName = document.getElementById('outBuyerName').value.trim();
     const phone = document.getElementById('outBuyerPhone').value.trim();
